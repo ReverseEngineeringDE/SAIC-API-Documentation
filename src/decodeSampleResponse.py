@@ -1,10 +1,17 @@
 # https://github.com/eerimoq/asn1tools
 import asn1tools
+import os
+
 # read file
 from pathlib import Path
 
+asn_files = []
 # init asn1tools with ASN.1 schema and PER decoding
-asn1Tool = asn1tools.compile_files('ApplicationDataMP.asn1', 'per')
+for path in os.listdir("asn1_files"):
+    print(path)
+    asn_files.append("asn1_files/" + path)
+
+asn1Tool = asn1tools.compile_files(asn_files, 'per')
 
 # read RAW-Body post response from response.per
 raw_response = Path('response.per').read_text()
