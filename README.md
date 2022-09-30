@@ -57,15 +57,16 @@ The project consists of the readme, some sample Python code and the ASN.1 schema
 If we completely understand the API we can start to build adapters for projects like [Sonne tanken](https://github.com/evcc-io/evcc) and a integration for [Home Assistant](https://github.com/home-assistant).
 
 What's working:
-- nothing...
+- [x] First version of [asn1extractor](#asn1extractor)
 
 What's in progress:
-- [ ]  Understanding the ASN.1 post response for vehicleStatus.
+- [ ] Understanding the ASN.1 post response for vehicleStatus.
+- [ ] Extracting ASN.1 schema for ota.mpv30
 
 To-Do:
 - [ ] Get SOC state of vehicle
-- [ ]  Get GPS position
-- [ ]  Login via post requests
+- [ ] Get GPS position
+- [ ] Login via post requests
 
 
 
@@ -229,6 +230,27 @@ JSON
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## ASN.1 schema
+The [ASN.1 schema](/ASN.1%20schema/ApplicationDataMP.asn1) provided by the source APK seems to be an old version of the protocol. It is not possible to decode the API response without the correct ASN.1 schema. See (issue 1) [https://github.com/ReverseEngineeringDE/SAIC-API-Documentation/issues/1]
+
+There are several versions of the binary protocol which can be found in the source of the APK (com.saicmotor.telematics.tsgp.otaadapter.mp). They all have different API endpoints according to their version number.
+
+- v1_1 (https://tap-eu.soimt.com/TAP.Web/ota.mpv11)
+- v1_2 (https://tap-eu.soimt.com/TAP.Web/ota.mpv12)
+- v2_0 (https://tap-eu.soimt.com/TAP.Web/ota.mpv20)
+- v2_1 (https://tap-eu.soimt.com/TAP.Web/ota.mpv21)
+- v3_0 (https://tap-eu.soimt.com/TAP.Web/ota.mpv30)
+
+### asn1extractor
+The helper tool built by [@tisoft](https://github.com/tisoft) automatically generates ASN.1 schema files from the annotated classes of the APK. Take a look at the [asn1extrator readme](https://github.com/ReverseEngineeringDE/SAIC-API-Documentation/tree/main/asn1extractor) to understand how it works.
+
+### v3_0 Endpoint (ota.mpv30)
+V3.0 seems to be the first version which features entities used by electric vehicles (RvsChargingStatus.java). The ota.mpv30 endpoint only gets called on the "Charging Management"-page of the mobile application. A ASN.1 schema needs to be built.
+
+![](docs/images/batteryManagement.jpg)
+![](docs/images/chargingStatus.jpg)
+
 
 ## Caveats
 [ASN.1 schema](/ASN.1%20schema/ApplicationDataMP.asn1) decoded outputs with asn1tools are weird?
