@@ -1,0 +1,51 @@
+= Vehicle Charging Status
+
+To get the charging status, send a messeage with eventId=0 to the API endpoint. You will get a message back with en eventId>0, result=0 and no application data. Send the message again with the eventId you just got, and you will get the filled application data. (You maybe need to repeat this, until you get a valid answer)
+
+== Request
+
+[source,hexdump]
+----
+include::516_768_request.per[]
+----
+
+[source,json]
+----
+include::516_768_request.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::516_768_response.per[]
+----
+
+[source,json]
+----
+include::516_768_response.json[]
+----
+
+== Request
+
+[source,hexdump]
+----
+include::516_768_request_with_eventid.per[]
+----
+
+[source,json]
+----
+include::516_768_request_with_eventid.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::516_768_response_with_eventid.per[]
+----
+
+[source,json]
+----
+include::516_768_response_with_eventid.json[]
+----

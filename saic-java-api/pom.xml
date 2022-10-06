@@ -223,6 +223,66 @@
               </arguments>
             </configuration>
           </execution>
+          <execution>
+            <id>generate-dispatcher-header-v3_0</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <mainClass>org.bn.compiler.Main</mainClass>
+              <arguments>
+                <argument>-m</argument>
+                <argument>java</argument>
+                <argument>-o</argument>
+                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
+                <argument>-f</argument>
+                <argument>../ASN.1 schema/v3_0/MP_DispatcherHeader.asn1</argument>
+                <argument>-ns</argument>
+                <argument>net.heberling.ismart.asn1.v3_0</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-dispatcher-body-mp-v3_0</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <mainClass>org.bn.compiler.Main</mainClass>
+              <arguments>
+                <argument>-m</argument>
+                <argument>java</argument>
+                <argument>-o</argument>
+                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
+                <argument>-f</argument>
+                <argument>../ASN.1 schema/v3_0/MP_DispatcherBody.asn1</argument>
+                <argument>-ns</argument>
+                <argument>net.heberling.ismart.asn1.v3_0</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-application-data-mp-v3_0</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <mainClass>org.bn.compiler.Main</mainClass>
+              <arguments>
+                <argument>-m</argument>
+                <argument>java</argument>
+                <argument>-o</argument>
+                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
+                <argument>-f</argument>
+                <argument>../ASN.1 schema/v3_0/ApplicationData.asn1</argument>
+                <argument>-ns</argument>
+                <argument>net.heberling.ismart.asn1.v3_0</argument>
+              </arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

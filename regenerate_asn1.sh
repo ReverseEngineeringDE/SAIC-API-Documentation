@@ -37,3 +37,17 @@ asn1extractor/asn1extractor.sh ApplicationDataModule \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v2_1.entity.vehicle.OTA_RVMVehicleStatusResp25857 \
            > "ASN.1 schema/v2_1/ApplicationData.asn1"
 
+rm -rf "ASN.1 schema/v3_0"
+mkdir -p "ASN.1 schema/v3_0"
+
+asn1extractor/asn1extractor.sh MP_DispatcherHeaderModule \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v3_0.entity.dispatcher.MP_DispatcherHeader \
+  > "ASN.1 schema/v3_0/MP_DispatcherHeader.asn1"
+
+asn1extractor/asn1extractor.sh MP_DispatcherBodyModule \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v3_0.entity.dispatcher.MP_DispatcherBody \
+  > "ASN.1 schema/v3_0/MP_DispatcherBody.asn1"
+
+asn1extractor/asn1extractor.sh ApplicationDataModule \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v3_0.entity.charging.OTA_ChrgMangDataResp \
+  > "ASN.1 schema/v3_0/ApplicationData.asn1"
