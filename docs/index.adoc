@@ -1,4 +1,5 @@
 = API Documentation
 
 include::examples/v1_1.adoc[leveloffset=1]
+include::examples/v2_1.adoc[leveloffset=1]
 

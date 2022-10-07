@@ -1,0 +1,37 @@
+= Vehicle Status
+
+== Request
+
+[source,hexdump]
+----
+include::511_25857_request.per[]
+----
+
+[source,json]
+----
+include::511_25857_request.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::511_25857_response_failed.per[]
+----
+
+[source,json]
+----
+include::511_25857_response_failed.json[]
+----
+
+Error message: The remote control instruction failed, please try again later.
+
+[source,hexdump]
+----
+include::511_25857_response.per[]
+----
+
+[source,json]
+----
+include::511_25857_response.json[]
+----
