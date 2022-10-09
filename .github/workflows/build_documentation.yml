@@ -1,0 +1,26 @@
+name: Build documentation
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - '!docs/README.adoc'
+    branches:
+      - '**'
+
+jobs:
+  build:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install asciidoctor-reducer
+        run: sudo gem install asciidoctor-reducer --pre
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Reduce documentation
+        run: asciidoctor-reducer -o docs/README.adoc docs/index.adoc
+
+      - name: Commit documentation
+        uses: EndBug/add-and-commit@v8
