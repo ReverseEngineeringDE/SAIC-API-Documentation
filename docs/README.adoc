@@ -1,0 +1,878 @@
+= API Documentation
+
+:leveloffset: 1
+
+= API v1.1
+
+== Endpoint
+POST
+https://tap-eu.soimt.com/TAP.Web/ota.mp
+
+== Message Format
+
+AAAABCCCCCCCCDDD...DDD(EEE...EEE)
+
+[horizontal]
+A:: hexencoded message length (hex byte count)
+B:: 1 following data is hexencoded, 0 following data is raw
+C:: message header, one byte per attribute
++
+[source,asn1]
+----
+MP_DispatcherHeaderModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+MP_DispatcherHeader ::= SEQUENCE
+{
+  dispatcherBodyEncoding INTEGER(0..2),
+  dispatcherMessageLength INTEGER(0..255),
+  protocolVersion INTEGER(0..255),
+  securityContext INTEGER(0..255)
+}
+
+END
+----
+D:: message body, encoding defined by message header, usually PER
++
+[source,asn1]
+----
+MP_DispatcherBodyModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+MP_DispatcherBody ::= SEQUENCE
+{
+  uid IA5String(SIZE(50)) OPTIONAL,
+  token IA5String(SIZE(40)) OPTIONAL,
+  applicationID IA5String(SIZE(3)),
+  vin IA5String(SIZE(17)) OPTIONAL,
+  eventCreationTime INTEGER(0..4294967295),
+  eventID INTEGER(0..281474976710655) OPTIONAL,
+  messageID INTEGER(0..255),
+  messageCounter MessageCounter OPTIONAL,
+  ackRequired BOOLEAN OPTIONAL,
+  statelessDispatcherMessage BOOLEAN OPTIONAL,
+  crqmRequest BOOLEAN OPTIONAL,
+  basicPosition BasicPosition OPTIONAL,
+  networkInfo NetworkInfo OPTIONAL,
+  simInfo NumericString(SIZE(19)) OPTIONAL,
+  hmiLanguage LanguageType OPTIONAL,
+  iccID NumericString(SIZE(20)),
+  applicationDataLength INTEGER(0..4294967295),
+  applicationDataEncoding DataEncodingType OPTIONAL,
+  applicationDataProtocolVersion INTEGER(0..65535),
+  testFlag INTEGER(1..3) OPTIONAL,
+  result INTEGER(0..65535) OPTIONAL,
+  errorMessage OCTET STRING(SIZE(1..1024)) OPTIONAL
+}
+MessageCounter ::= SEQUENCE
+{
+  uplinkCounter INTEGER(0..255),
+  downlinkCounter INTEGER(0..255)
+}
+BasicPosition ::= SEQUENCE
+{
+  latitude INTEGER(-90000000..90000000),
+  longitude INTEGER(-180000000..180000000)
+}
+NetworkInfo ::= SEQUENCE
+{
+  mccNetwork NumericString(SIZE(3)),
+  mncNetwork NumericString(SIZE(3)),
+  mccSim NumericString(SIZE(3)),
+  mncSim NumericString(SIZE(3)),
+  signalStrength INTEGER(0..99)
+}
+LanguageType ::= ENUMERATED
+{
+  simplifiedChinese(0),
+  english(1),
+  spanish(2),
+  arabic(3),
+  hindi(4)
+}
+DataEncodingType ::= ENUMERATED
+{
+  perUnaligned(0),
+  der(1),
+  ber(2)
+}
+
+END
+----
+E:: optional application data, encoding defined by message body, usually PER
++
+[source,asn1]
+----
+ApplicationDataModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+MP_UserLoggingInReq ::= SEQUENCE
+{
+  password IA5String(SIZE(6..30)),
+  deviceId IA5String(SIZE(1..200)) OPTIONAL
+}
+MP_UserLoggingInResp ::= SEQUENCE
+{
+  token IA5String(SIZE(40)) OPTIONAL,
+  refreshToken IA5String(SIZE(40)) OPTIONAL,
+  tokenExpiration Timestamp OPTIONAL,
+  vinList SEQUENCE SIZE(1..256) OF VinInfo OPTIONAL,
+  userPhoto IA5String(SIZE(1..128)) OPTIONAL,
+  userName IA5String(SIZE(8..12)),
+  languageType LanguageType OPTIONAL
+}
+APPUpgradeInfoReq ::= SEQUENCE
+{
+  appType APPType,
+  appVersion IA5String(SIZE(1..50))
+}
+APPUpgradeInfoResp ::= SEQUENCE
+{
+  hasNewVersion BOOLEAN,
+  appVersion IA5String(SIZE(1..50)) OPTIONAL,
+  forcedUpdate BOOLEAN OPTIONAL,
+  updateUrl IA5String(SIZE(1..200)) OPTIONAL,
+  updateInfoEn OCTET STRING(SIZE(1..500)) OPTIONAL,
+  updateInfoTh OCTET STRING(SIZE(1..500)) OPTIONAL
+}
+MPAppAttributeResp ::= SEQUENCE
+{
+  dataAppAttribute IA5String(SIZE(1..65535)) OPTIONAL
+}
+AdvertiseResp ::= SEQUENCE
+{
+  advertiseVersion INTEGER(0..281474976710655) OPTIONAL,
+  advertises SEQUENCE SIZE(0..255) OF Advertise OPTIONAL
+}
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
+VinInfo ::= SEQUENCE
+{
+  vin IA5String(SIZE(17)),
+  name OCTET STRING(SIZE(1..128)) OPTIONAL,
+  series IA5String(SIZE(1..10)),
+  brandName OCTET STRING(SIZE(1..24)),
+  modelName OCTET STRING(SIZE(1..100)),
+  vehiclePhoto IA5String(SIZE(1..128)) OPTIONAL,
+  isAcivate BOOLEAN,
+  isCurrentVehicle INTEGER(0..10) OPTIONAL,
+  modelYear IA5String(SIZE(4)) OPTIONAL,
+  colorName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  modelConfigurationJsonStr IA5String(SIZE(1..1024)) OPTIONAL,
+  bindTime Timestamp OPTIONAL,
+  tboxSimNo IA5String(SIZE(19)) OPTIONAL
+}
+LanguageType ::= ENUMERATED
+{
+  thai(0),
+  english(1),
+  china(2),
+  de(3),
+  fr(4),
+  es(5),
+  nl(6),
+  nn(7),
+  da(8),
+  sv(9),
+  it(10),
+  pt(11),
+  pl(12),
+  el(13),
+  fi(14),
+  arabic(15),
+  hindi(16)
+}
+APPType ::= ENUMERATED
+{
+  ios(0),
+  android(1)
+}
+Advertise ::= SEQUENCE
+{
+  advertiseType IA5String(SIZE(3)) OPTIONAL,
+  title OCTET STRING(SIZE(1..128)) OPTIONAL,
+  photoUrl IA5String(SIZE(1..255)) OPTIONAL,
+  detailsUrl IA5String(SIZE(1..255)) OPTIONAL,
+  startTime Timestamp OPTIONAL,
+  endTime Timestamp OPTIONAL
+}
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
+
+END
+----
+
+== Message Types
+
+:leveloffset: 1
+
+= App Version
+
+== Request
+
+[source,hexdump]
+----
+0065111002A00082C6B11AB19B4BB580808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D08000000300402888C57315CD80
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "appType":"android",
+    "appVersion":"1.1.6"
+  },
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":6,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"5D5",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1664522091,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":null,
+    "tokenPresent":false,
+    "uid":null,
+    "uidPresent":false,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":42,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+00A5111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11AB19B4BB581008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000804028000040
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "appVersion":null,
+    "appVersionPresent":false,
+    "forcedUpdate":false,
+    "forcedUpdatePresent":true,
+    "hasNewVersion":false,
+    "updateInfoEn":null,
+    "updateInfoEnPresent":false,
+    "updateInfoTh":null,
+    "updateInfoThPresent":false,
+    "updateUrl":null,
+    "updateUrlPresent":false
+  },
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":1,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"5D5",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1664522091,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":null,
+    "uidPresent":false,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":79,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Unknown
+
+== Request
+
+[source,hexdump]
+----
+0059111002A00082C6B11B319B4BB380808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000004028
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"5D6",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1664522087,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":null,
+    "tokenPresent":false,
+    "uid":null,
+    "uidPresent":false,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":42,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+00BD111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11B319B4BB381008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D08000000680402800008005E3C74346FDD95D3164D9B8
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "dataAppAttribute":"ccPhone:1267",
+    "dataAppAttributePresent":true
+  },
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":13,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"5D6",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1664522087,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":null,
+    "uidPresent":false,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":79,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Unknown
+
+== Request
+
+[source,hexdump]
+----
+0059111002A00082C6B11BB19B4BB980808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000004028
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"5D7",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1664522099,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":null,
+    "tokenPresent":false,
+    "uid":null,
+    "uidPresent":false,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":42,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+00A3111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11BB19B4BB981008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D0800000000040280000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"5D7",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1664522099,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":null,
+    "uidPresent":false,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":79,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Login
+
+== Request
+
+[source,hexdump]
+----
+01F5111005600882CB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B161AB062C66DA9E4020200468ACF1343530ECA864468ACF1342468ACF1342000001440100A08BA65E7D18B266D2BAC30B162C586162C58B161858B162C30B162C587562C5860C2C58B162FD8B162C58B0C1858B162C58B162C58BF62C586162C58B162C58B0B6C306161858B161830B162C30B162C58B162C586162C58B162C58617EFD8B162C586162C58B162C30B162C30B161830B162C58B162C58B162C58B162C306161858B162C58B162C58B161858B162C58B162C586162C58B08D1A3CBD796FE1971E1E4
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "deviceId":"X0XXXX0XXXXX0XXXX0XXXX:XXX00XXXX_XXXXXX00XXXXXXXXX_XXX0XXXXXXXX-X00X0XXX00XXX0XXXXXXXX0XXXXXXX0__XXXXX0XXXXXX0XXX0XX00XXXXXXXXXXXXXXX00X0XXXXXXXXXXX0XXXXXXXXX0XXXX###europecar",
+    "deviceIdPresent":true,
+    "password":"test1234"
+  },
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":162,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"501",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1664537842,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":null,
+    "tokenPresent":false,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":86,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+0139111009A00C82FB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B161AB062C66DA9E4040202468ACF1343530ECA864468ACF1342468ACF1342000000000100A75460EAA34329030B1B1B7BAB73A1034B9903737BA103932B3B4B9BA32B932B2170
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"501",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":"VGhlIGFjY291bnQgaXMgbm90IHJlZ2lzdGVyZWQu",
+    "errorMessagePresent":true,
+    "eventCreationTime":1664537842,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":15011,
+    "resultPresent":true,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":154,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+The error message is a byte array, containing the UTF-8 String "The account is not registered."
+
+
+[source,hexdump]
+----
+0915111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E6C39B161CD8B0C1CD860E5CB07362C397361CB97361CD8B16183972E5CD872E6C5872E5AB062C68D7068040202468ACF1343530ECA864468ACF1342468ACF13420000081A0100A00000F6C39B161CD8B0E56B9B0E5CAD72C18395B62C5872B5CD872E6C3960E5CD860E6C3972E6C39B161CD8B0E56B9B0E5CAD72C18395B62C5872B5CD872E6C3960E5CD860E6C3972E58DB94D1800FAC58B161CB960E5CD8B0C1CB972E5CAC5A0CA2506614D47169A8E6A408AD8CAC6E8E4D2C6164C19312D0931050D2F0A814115054933FADD876E575534F2CA83872CBCF9F5E59506DDFBB4F4DFCB4EECE839F9E7D32ED598F7E4CAEA5316EB3B61D9D72BA62EF761DB95D52CB9FAECC3C9061D3CB161CFCD663DF932BAA2C182CED87675CAE98BBDD876E5751B96FDDD16F3CB87A20C3A7962C39F9ACC7BF265754583159DB0ECEB95D3177BB0EDCAEA0E9E58B0E741CFBE9E98F42CC7BF265754583959DB0ECEB95D3177BB0EDCAEA9F5DC8296FDF99663DF932BAA6CDAACED87675CAE983BDD876E5754B2EDDFD32A0C7BF774E5BF62CC7BF265754DB3159DB0ECEB95D3177BB0EDCAEA0E9E4831EFDD934F4D3BF769DD9D663DF932BAA8C58ACED87675CAE98BBDD876E57517665C7D3969C68286FEF97920A7D32E5E5A7767598F7E4CAEA2D0A6B3B61D9D72BA62EF761DB95D53CB8FAF2D3D3CA0C3B32F2E8B31EFC995D5382D9A2CED87675CAE983162C58B160C183060C183060C183062C183060C183160C18B062C183060C183062C18B060C183060C183060C183060C183060C183162C1DEEC3B72BA85BF76EEBD1053E987A75E6B31EFC995D429F3A755A8B3B61D9D72BA62EF761DB95D44DFBF920A7D30F4EBCD663DF932BA893E7D259DB0ECEB95D3162C58BBDD876E5750B7EFE8829F4C3D3AF3598F7E4CAEA14F9F51676C3B3AE574C5DEEC3B72BA8BBB3E9DD95053E987A75E6B31EFC995D459D1E4CE8AB3B61D9D72BA62EF761DB95D45D9971F4E5A71A0AD97469C7B32ACC7BF2657516B2CED87675CAE983BDD876E575232E1E997253CB87A2CC7BF26575232E1E997253CB87A2CED87675CAE983BDD876E5752F2F941437F3D3D34EFDCB31EFC995D4B8B6684FA6B3B61D9D72BA62EF761DB95D45DD97967F2839F4C3D32ACC7BF2657516745A51ECACED87675CAE983BDD876E5750B0F4E997979415B7ECE9873E5598F7E4CAEA141A9522D2B2B3B61D9D72BA62EF761DB95D49DDD32F2D3BF920A9976F0CBCB0F4EBCB2ACC7BF26575267548B3682CED87675CAE98BBDD876E57517C74CBCB4EFE482A65DBC32F2C3D3AF2CAB31EFC995D45B1522CDA0B3B61D9D72BA62EF761DB95D57D3BB26FEE829F4C3D3AF3598F7E4CAEABC99D127D759DB0ECEB95D3060C183BDD876E575332E6E8B6969CFA3A2089CB4F6D3BB3ACC7BF265753294459DB0ECEB95D3077BB0EDCAEA16CEB97A6FDFD34209797CACC7BF265750AA4B8B65676C3B3AE574C1DEEC3B72BA8587A74CBCBCA0A9E7865598F7E4CAEA154F3C32ACED87675CAE993191A023A62C99B46AD9BB872C060
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "languageType":"de",
+    "languageTypePresent":true,
+    "refreshToken":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
+    "refreshTokenPresent":true,
+    "token":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
+    "tokenExpiration":{
+      "seconds":1668174662
+    },
+    "tokenExpirationPresent":true,
+    "tokenPresent":true,
+    "userName":"1234567890",
+    "userPhoto":null,
+    "userPhotoPresent":false,
+    "vinList":[
+      {
+        "bindTime":{
+          "seconds":1663254599
+        },
+        "bindTimePresent":true,
+        "brandName":"TUc=",
+        "colorName":"QkxBQ0vCoFBFQVJM",
+        "colorNamePresent":true,
+        "isAcivate":false,
+        "isCurrentVehicle":1,
+        "isCurrentVehiclePresent":true,
+        "modelConfigurationJsonStr":"name:Tire pressure monitoring system,code:J17,value:1;name:Regular airbags,code:Q00,value:1;name:Front-seat airbags,code:Q01,value:1;name:Airbag switch,code:Q09,value:1;name:Sun Roof,code:S35,value:0;name:Remote control,code:S61,value:1;name:Air conditioning,code:T11,value:1;name:Electric Power Steering,code:EPS,value:1;name:Security alert,code:SA64,value:0111110000000000001000000100101000000010100000000000000000000110;name:Bonnut Status,code:BONNUT,value:1;name:Door Status,code:DOOR,value:1111;name:Boot Status,code:BOOT,value:1;name:Engine Status,code:ENGINE,value:1;name:Electric Vehicle,code:EV,value:0;name:HeatedSeat,code:HeatedSeat,value:0;name:Key Position,code:KEYPOS,value:1;name:Energy state,code:ENERGY,value:0;name:Battery Voltage,code:BATTERY,value:1;name:Interior Temperature,code:INTEMP,value:1;name:Exterior Temperature,code:EXTEMP,value:1;name:Window Status,code:WINDOW,value:0000;name:Left-Right Driving,code:LRD,value:0;name:Bluetooth Key,code:BTKEY,value:0;name:Battery Type,code:BType,value:2",
+        "modelConfigurationJsonStrPresent":true,
+        "modelName":"TUc1IEVsZWN0cmlj",
+        "modelYear":"2021",
+        "modelYearPresent":true,
+        "name":null,
+        "namePresent":false,
+        "series":"EP2DP3",
+        "tboxSimNo":null,
+        "tboxSimNoPresent":false,
+        "vehiclePhoto":null,
+        "vehiclePhotoPresent":false,
+        "vin":"XXXX99099XX099999"
+      }
+    ],
+    "vinListPresent":true
+  },
+  "body":{
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":1037,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"501",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665579060,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"X9XX9XX09X09909XX99X999X9XXX09999X99XX99",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+
+:leveloffset!:
