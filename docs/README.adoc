@@ -1696,3 +1696,394 @@ Error message: The remote control instruction failed, please try again later.
 :leveloffset: 1
 
 :leveloffset!:
+:leveloffset: 1
+
+= API v3.0
+
+== Endpoint
+POST
+https://tap-eu.soimt.com/TAP.Web/ota.mpv30
+
+== Message Format
+
+ABBBBCCCCCCDDD...DDD(EEE...EEE)
+
+[horizontal]
+A:: 1 following data is hexencoded, 0 following data is raw
+B:: hexencoded message length (raw byte count)
+C:: message header, one byte per attribute
++
+[source,asn1]
+----
+MP_DispatcherHeaderModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+MP_DispatcherHeader ::= SEQUENCE
+{
+  dispatcherBodyEncoding INTEGER(0..2),
+  dispatcherMessageLength INTEGER(0..255),
+  protocolVersion INTEGER(0..255)
+}
+
+END
+----
+D:: message body, encoding defined by message header, usually PER
++
+[source,asn1]
+----
+MP_DispatcherBodyModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+MP_DispatcherBody ::= SEQUENCE
+{
+  uid IA5String(SIZE(50)) OPTIONAL,
+  token IA5String(SIZE(40)) OPTIONAL,
+  applicationID IA5String(SIZE(3)),
+  vin IA5String(SIZE(17)) OPTIONAL,
+  messageID INTEGER(0..255),
+  eventCreationTime INTEGER(0..2147483647),
+  eventID INTEGER(0..2147483647) OPTIONAL,
+  ulMessageCounter INTEGER(0..65535) OPTIONAL,
+  dlMessageCounter INTEGER(0..65535) OPTIONAL,
+  ackMessageCounter INTEGER(0..65535) OPTIONAL,
+  ackRequired BOOLEAN OPTIONAL,
+  applicationDataLength INTEGER(0..65535) OPTIONAL,
+  applicationDataEncoding DataEncodingType OPTIONAL,
+  applicationDataProtocolVersion INTEGER(0..65535) OPTIONAL,
+  testFlag INTEGER(1..3) OPTIONAL,
+  result INTEGER(0..65535) OPTIONAL,
+  errorMessage OCTET STRING(SIZE(1..1024)) OPTIONAL
+}
+DataEncodingType ::= ENUMERATED
+{
+  perUnaligned(0),
+  der(1),
+  ber(2)
+}
+
+END
+----
+E:: optional application data, encoding defined by message body, usually PER
++
+[source,asn1]
+----
+ApplicationDataModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+OTA_ChrgMangDataResp ::= SEQUENCE
+{
+  bmsReserCtrlDspCmd INTEGER(0..255),
+  bmsReserStHourDspCmd INTEGER(0..255),
+  bmsReserStMintueDspCmd INTEGER(0..255),
+  bmsReserSpHourDspCmd INTEGER(0..255),
+  bmsReserSpMintueDspCmd INTEGER(0..255),
+  bmsOnBdChrgTrgtSOCDspCmd INTEGER(0..255),
+  bmsEstdElecRng INTEGER(0..65535),
+  bmsAltngChrgCrntDspCmd INTEGER(0..255),
+  bmsChrgCtrlDspCmd INTEGER(0..255),
+  chrgngRmnngTime INTEGER(0..65535),
+  chrgngRmnngTimeV INTEGER(0..255),
+  bmsChrgOtptCrntReq INTEGER(0..65535),
+  bmsChrgOtptCrntReqV INTEGER(0..255) OPTIONAL,
+  bmsPackCrnt INTEGER(0..65535),
+  bmsPackCrntV INTEGER(0..255) OPTIONAL,
+  bmsPackVol INTEGER(0..65535),
+  bmsPackSOCDsp INTEGER(0..65535),
+  bmsChrgSts INTEGER(0..255),
+  bmsChrgSpRsn INTEGER(0..255),
+  clstrElecRngToEPT INTEGER(0..65535),
+  bmsPTCHeatReqDspCmd INTEGER(0..255),
+  bmsPTCHeatResp INTEGER(0..255) OPTIONAL,
+  ccuEleccLckCtrlDspCmd INTEGER(0..255) OPTIONAL,
+  bmsPTCHeatSpRsn INTEGER(0..255) OPTIONAL,
+  bmsDsChrgSpRsn INTEGER(0..255) OPTIONAL,
+  disChrgngRmnngTime INTEGER(0..65535) OPTIONAL,
+  disChrgngRmnngTimeV INTEGER(0..255) OPTIONAL,
+  imcuVehElecRng INTEGER(0..65535) OPTIONAL,
+  imcuVehElecRngV INTEGER(0..255) OPTIONAL,
+  imcuChrgngEstdElecRng INTEGER(0..65535) OPTIONAL,
+  imcuChrgngEstdElecRngV INTEGER(0..255) OPTIONAL,
+  imcuDschrgngEstdElecRng INTEGER(0..65535) OPTIONAL,
+  imcuDschrgngEstdElecRngV INTEGER(0..255) OPTIONAL,
+  chrgngSpdngTime INTEGER(0..65535) OPTIONAL,
+  chrgngSpdngTimeV INTEGER(0..255) OPTIONAL,
+  chrgngAddedElecRng INTEGER(0..65535) OPTIONAL,
+  chrgngAddedElecRngV INTEGER(0..255) OPTIONAL,
+  onBdChrgrAltrCrntInptCrnt INTEGER(0..255) OPTIONAL,
+  onBdChrgrAltrCrntInptVol INTEGER(0..255) OPTIONAL,
+  ccuOnbdChrgrPlugOn INTEGER(0..255) OPTIONAL,
+  ccuOffBdChrgrPlugOn INTEGER(0..255) OPTIONAL,
+  chrgngDoorPosSts INTEGER(0..255) OPTIONAL,
+  chrgngDoorOpenCnd INTEGER(0..255) OPTIONAL,
+  chargeStatus RvsChargingStatus(1),
+  bmsAdpPubChrgSttnDspCmd INTEGER(0..255)
+}
+RvsChargingStatus ::= SEQUENCE
+{
+  realtimePower INTEGER(0..65535),
+  chargingGunState BOOLEAN,
+  fuelRangeElec INTEGER(0..65535),
+  chargingType INTEGER(0..255),
+  startTime INTEGER(0..2147483647) OPTIONAL,
+  endTime INTEGER(0..2147483647) OPTIONAL,
+  chargingPileID IA5String(SIZE(0..64)) OPTIONAL,
+  chargingPileSupplier IA5String(SIZE(0..64)) OPTIONAL,
+  workingCurrent INTEGER(0..65535) OPTIONAL,
+  workingVoltage INTEGER(0..65535) OPTIONAL,
+  mileageSinceLastCharge INTEGER(0..65535) OPTIONAL,
+  powerUsageSinceLastCharge INTEGER(0..65535) OPTIONAL,
+  mileageOfDay INTEGER(0..65535) OPTIONAL,
+  powerUsageOfDay INTEGER(0..65535) OPTIONAL,
+  staticEnergyConsumption INTEGER(0..65535) OPTIONAL,
+  chargingElectricityPhase INTEGER(0..255) OPTIONAL,
+  chargingDuration INTEGER(0..2147483647) OPTIONAL,
+  lastChargeEndingPower INTEGER(0..65535) OPTIONAL,
+  totalBatteryCapacity INTEGER(0..65535) OPTIONAL,
+  fotaLowestVoltage INTEGER(0..255) OPTIONAL,
+  mileage INTEGER(0..2147483647),
+  extendedData1 INTEGER(0..2147483647) OPTIONAL,
+  extendedData2 INTEGER(0..2147483647) OPTIONAL,
+  extendedData3 IA5String(SIZE(0..1024)) OPTIONAL,
+  extendedData4 IA5String(SIZE(0..1024)) OPTIONAL
+}
+
+END
+----
+
+== Message Types
+
+:leveloffset: 1
+
+= Vehicle Charging Status
+
+== Request
+
+[source,hexdump]
+----
+1008630730000000000000000000000000000000000F0F2C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC5B58B162C58B162C58B162C58B162C5805C67CBAA97038A3840000030040
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":768,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"516",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665031508,
+    "eventID":1544431841,
+    "eventIDPresent":true,
+    "messageID":5,
+    "result":null,
+    "resultPresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXXXXXXXXXXXXXXX",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":115,
+    "protocolVersion":48
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+100CF30750000000000000000000000000000000000F0FAC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC5B58B162C58B162C58B162C58B162C5806C67CBAA97038A384011C03004000000800000216000600070122000203FF0103FF4E2006420349000000F30000CFCE0026204BF00E33D509CC67AFD5C9C400C8400F0002A000000000000000009DC0B5400025BC0100
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "bmsAdpPubChrgSttnDspCmd":2,
+    "bmsAltngChrgCrntDspCmd":0,
+    "bmsChrgCtrlDspCmd":2,
+    "bmsChrgOtptCrntReq":1023,
+    "bmsChrgOtptCrntReqV":null,
+    "bmsChrgOtptCrntReqVPresent":false,
+    "bmsChrgSpRsn":0,
+    "bmsChrgSts":0,
+    "bmsDsChrgSpRsn":null,
+    "bmsDsChrgSpRsnPresent":false,
+    "bmsEstdElecRng":290,
+    "bmsOnBdChrgTrgtSOCDspCmd":7,
+    "bmsPackCrnt":20000,
+    "bmsPackCrntV":null,
+    "bmsPackCrntVPresent":false,
+    "bmsPackSOCDsp":841,
+    "bmsPackVol":1602,
+    "bmsPTCHeatReqDspCmd":0,
+    "bmsPTCHeatResp":null,
+    "bmsPTCHeatRespPresent":false,
+    "bmsPTCHeatSpRsn":0,
+    "bmsPTCHeatSpRsnPresent":true,
+    "bmsReserCtrlDspCmd":2,
+    "bmsReserSpHourDspCmd":6,
+    "bmsReserSpMintueDspCmd":0,
+    "bmsReserStHourDspCmd":22,
+    "bmsReserStMintueDspCmd":0,
+    "ccuEleccLckCtrlDspCmd":null,
+    "ccuEleccLckCtrlDspCmdPresent":false,
+    "ccuOffBdChrgrPlugOn":null,
+    "ccuOffBdChrgrPlugOnPresent":false,
+    "ccuOnbdChrgrPlugOn":null,
+    "ccuOnbdChrgrPlugOnPresent":false,
+    "chargeStatus":{
+      "chargingDuration":0,
+      "chargingDurationPresent":true,
+      "chargingElectricityPhase":null,
+      "chargingElectricityPhasePresent":false,
+      "chargingGunState":false,
+      "chargingPileID":null,
+      "chargingPileIDPresent":false,
+      "chargingPileSupplier":null,
+      "chargingPileSupplierPresent":false,
+      "chargingType":1,
+      "endTime":1664974510,
+      "endTimePresent":true,
+      "extendedData1":null,
+      "extendedData1Present":false,
+      "extendedData2":null,
+      "extendedData2Present":false,
+      "extendedData3":null,
+      "extendedData3Present":false,
+      "extendedData4":null,
+      "extendedData4Present":false,
+      "fotaLowestVoltage":null,
+      "fotaLowestVoltagePresent":false,
+      "fuelRangeElec":2430,
+      "lastChargeEndingPower":631,
+      "lastChargeEndingPowerPresent":true,
+      "mileage":19320,
+      "mileageOfDay":0,
+      "mileageOfDayPresent":true,
+      "mileageSinceLastCharge":120,
+      "mileageSinceLastChargePresent":true,
+      "powerUsageOfDay":0,
+      "powerUsageOfDayPresent":true,
+      "powerUsageSinceLastCharge":21,
+      "powerUsageSinceLastChargePresent":true,
+      "realtimePower":610,
+      "startTime":1664962716,
+      "startTimePresent":true,
+      "staticEnergyConsumption":null,
+      "staticEnergyConsumptionPresent":false,
+      "totalBatteryCapacity":725,
+      "totalBatteryCapacityPresent":true,
+      "workingCurrent":20000,
+      "workingCurrentPresent":true,
+      "workingVoltage":1602,
+      "workingVoltagePresent":true
+    },
+    "chrgngAddedElecRng":null,
+    "chrgngAddedElecRngPresent":false,
+    "chrgngAddedElecRngV":null,
+    "chrgngAddedElecRngVPresent":false,
+    "chrgngDoorOpenCnd":null,
+    "chrgngDoorOpenCndPresent":false,
+    "chrgngDoorPosSts":null,
+    "chrgngDoorPosStsPresent":false,
+    "chrgngRmnngTime":1023,
+    "chrgngRmnngTimeV":1,
+    "chrgngSpdngTime":null,
+    "chrgngSpdngTimePresent":false,
+    "chrgngSpdngTimeV":null,
+    "chrgngSpdngTimeVPresent":false,
+    "clstrElecRngToEPT":243,
+    "disChrgngRmnngTime":null,
+    "disChrgngRmnngTimePresent":false,
+    "disChrgngRmnngTimeV":null,
+    "disChrgngRmnngTimeVPresent":false,
+    "imcuChrgngEstdElecRng":null,
+    "imcuChrgngEstdElecRngPresent":false,
+    "imcuChrgngEstdElecRngV":null,
+    "imcuChrgngEstdElecRngVPresent":false,
+    "imcuDschrgngEstdElecRng":null,
+    "imcuDschrgngEstdElecRngPresent":false,
+    "imcuDschrgngEstdElecRngV":null,
+    "imcuDschrgngEstdElecRngVPresent":false,
+    "imcuVehElecRng":null,
+    "imcuVehElecRngPresent":false,
+    "imcuVehElecRngV":null,
+    "imcuVehElecRngVPresent":false,
+    "onBdChrgrAltrCrntInptCrnt":null,
+    "onBdChrgrAltrCrntInptCrntPresent":false,
+    "onBdChrgrAltrCrntInptVol":null,
+    "onBdChrgrAltrCrntInptVolPresent":false
+  },
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":71,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":768,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"516",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665031508,
+    "eventID":1544431841,
+    "eventIDPresent":true,
+    "messageID":6,
+    "result":0,
+    "resultPresent":true,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXXXXXXXXXXXXXXX",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":117,
+    "protocolVersion":48
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+:leveloffset: 1
+
+:leveloffset!:
