@@ -876,3 +876,823 @@ The error message is a byte array, containing the UTF-8 String "The account is n
 :leveloffset: 1
 
 :leveloffset!:
+:leveloffset: 1
+
+= API v2.1
+
+== Endpoint
+POST
+https://tap-eu.soimt.com/TAP.Web/ota.mpv21
+
+== Message Format
+
+ABBBBCCCCCCDDD...DDD(EEE...EEE)
+
+[horizontal]
+A:: 1 following data is hexencoded, 0 following data is raw
+B:: hexencoded message length (raw byte count)
+C:: message header, one byte per attribute
++
+[source,asn1]
+----
+MP_DispatcherHeaderModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+MP_DispatcherHeader ::= SEQUENCE
+{
+  dispatcherBodyEncoding INTEGER(0..2),
+  dispatcherMessageLength INTEGER(0..255),
+  protocolVersion INTEGER(0..255)
+}
+
+END
+----
+D:: message body, encoding defined by message header, usually PER
++
+[source,asn1]
+----
+MP_DispatcherBodyModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+MP_DispatcherBody ::= SEQUENCE
+{
+  uid IA5String(SIZE(50)) OPTIONAL,
+  token IA5String(SIZE(40)) OPTIONAL,
+  applicationID IA5String(SIZE(3)),
+  vin IA5String(SIZE(17)) OPTIONAL,
+  messageID INTEGER(0..255),
+  eventCreationTime INTEGER(0..2147483647),
+  eventID INTEGER(0..2147483647) OPTIONAL,
+  ulMessageCounter INTEGER(0..65535) OPTIONAL,
+  dlMessageCounter INTEGER(0..65535) OPTIONAL,
+  ackMessageCounter INTEGER(0..65535) OPTIONAL,
+  ackRequired BOOLEAN OPTIONAL,
+  applicationDataLength INTEGER(0..65535) OPTIONAL,
+  applicationDataEncoding DataEncodingType OPTIONAL,
+  applicationDataProtocolVersion INTEGER(0..65535) OPTIONAL,
+  testFlag INTEGER(1..3) OPTIONAL,
+  result INTEGER(0..65535) OPTIONAL,
+  errorMessage OCTET STRING(SIZE(1..1024)) OPTIONAL
+}
+DataEncodingType ::= ENUMERATED
+{
+  perUnaligned(0),
+  der(1),
+  ber(2)
+}
+
+END
+----
+E:: optional application data, encoding defined by message body, usually PER
++
+[source,asn1]
+----
+ApplicationDataModule
+
+DEFINITIONS
+AUTOMATIC TAGS ::= 
+BEGIN
+MP_SecurityAlarmResp ::= SEQUENCE
+{
+  securityAlarms SEQUENCE SIZE(1..256) OF SecurityAlarm OPTIONAL
+}
+OTA_RVMVehicleStatusReq ::= SEQUENCE
+{
+  vehStatusReqType INTEGER(0..255)
+}
+OTA_RVMVehicleStatusResp25857 ::= SEQUENCE
+{
+  statusTime INTEGER(0..2147483647),
+  gpsPosition RvsPosition(1),
+  basicVehicleStatus RvsBasicStatus25857(1),
+  extendedVehicleStatus RvsExtStatus(1) OPTIONAL
+}
+SecurityAlarm ::= SEQUENCE
+{
+  title OCTET STRING(SIZE(1..128)) OPTIONAL,
+  content OCTET STRING(SIZE(1..2048)) OPTIONAL,
+  messageType IA5String(SIZE(3)),
+  vin IA5String(SIZE(17)),
+  alertId INTEGER(0..65535),
+  alertTime INTEGER(0..2147483647) OPTIONAL,
+  latitude INTEGER(-90000000..90000000),
+  longitude INTEGER(-180000000..180000000)
+}
+RvsPosition ::= SEQUENCE
+{
+  wayPoint RvsWayPoint,
+  timestamp4Short Timestamp4Short,
+  gpsStatus GPSStatus
+}
+RvsBasicStatus25857 ::= SEQUENCE
+{
+  driverDoor BOOLEAN,
+  passengerDoor BOOLEAN,
+  rearLeftDoor BOOLEAN,
+  rearRightDoor BOOLEAN,
+  bootStatus BOOLEAN,
+  bonnetStatus BOOLEAN,
+  lockStatus BOOLEAN,
+  driverWindow BOOLEAN OPTIONAL,
+  passengerWindow BOOLEAN OPTIONAL,
+  rearLeftWindow BOOLEAN OPTIONAL,
+  rearRightWindow BOOLEAN OPTIONAL,
+  sunroofStatus BOOLEAN OPTIONAL,
+  frontRrightTyrePressure INTEGER(0..255) OPTIONAL,
+  frontLeftTyrePressure INTEGER(0..255) OPTIONAL,
+  rearRightTyrePressure INTEGER(0..255) OPTIONAL,
+  rearLeftTyrePressure INTEGER(0..255) OPTIONAL,
+  wheelTyreMonitorStatus  INTEGER(0..255) OPTIONAL,
+  sideLightStatus BOOLEAN,
+  dippedBeamStatus BOOLEAN,
+  mainBeamStatus BOOLEAN,
+  vehicleAlarmStatus INTEGER(0..255) OPTIONAL,
+  engineStatus INTEGER(0..255),
+  powerMode INTEGER(0..255),
+  lastKeySeen INTEGER(0..65535),
+  currentjourneyDistance INTEGER(0..65535),
+  currentJourneyID INTEGER(0..2147483647),
+  interiorTemperature INTEGER(-128..127),
+  exteriorTemperature INTEGER(-128..127),
+  fuelLevelPrc INTEGER(0..255),
+  fuelRange INTEGER(0..65535),
+  remoteClimateStatus INTEGER(0..255),
+  frontLeftSeatHeatLevel INTEGER(0..255) OPTIONAL,
+  frontRightSeatHeatLevel INTEGER(0..255) OPTIONAL,
+  canBusActive BOOLEAN,
+  timeOfLastCANBUSActivity INTEGER(0..2147483647),
+  clstrDspdFuelLvlSgmt INTEGER(0..255),
+  mileage INTEGER(0..2147483647),
+  batteryVoltage INTEGER(0..65535),
+  handBrake BOOLEAN,
+  vehElecRngDsp INTEGER(0..255),
+  fuelRangeElec INTEGER(0..65535) OPTIONAL,
+  rmtHtdRrWndSt INTEGER(0..255),
+  extendedData1 INTEGER(0..2147483647) OPTIONAL,
+  extendedData2 INTEGER(0..2147483647) OPTIONAL
+}
+RvsExtStatus ::= SEQUENCE
+{
+  vehicleAlerts SEQUENCE SIZE(0..64) OF VehicleAlertInfo
+}
+RvsWayPoint ::= SEQUENCE
+{
+  position RvsWGS84Point,
+  heading INTEGER(0..359),
+  speed INTEGER(-1000..4500),
+  hdop INTEGER(0..1000),
+  satellites INTEGER(0..16)
+}
+Timestamp4Short ::= SEQUENCE
+{
+  seconds INTEGER(0..2147483647)
+}
+GPSStatus ::= ENUMERATED
+{
+  noGpsSignal(0),
+  timeFix(1),
+  fix2D(2),
+  fix3D(3)
+}
+VehicleAlertInfo ::= SEQUENCE
+{
+  id INTEGER(0..255),
+  value INTEGER(0..255)
+}
+RvsWGS84Point ::= SEQUENCE
+{
+  latitude INTEGER(-90000000..90000000),
+  longitude INTEGER(-180000000..180000000),
+  altitude INTEGER(-100..8900)
+}
+
+END
+----
+
+== Message Types
+
+:leveloffset: 1
+
+= Unknown
+
+== Request
+
+[source,hexdump]
+----
+1008621730000000000000000000000000000000000F0F2C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B0A258B162C58B162C58B162C58B162C5801C67CBA14000000000000650140
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":25857,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"5BD",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665031434,
+    "eventID":0,
+    "eventIDPresent":true,
+    "messageID":1,
+    "result":null,
+    "resultPresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXXXXXXXXXXXXXXX",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":115,
+    "protocolVersion":33
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+1008821750000000000000000000000000000000000F0FAC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B0A258B162C58B162C58B162C58B162C5802C67CBA140000000000006501400000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":25857,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"5BD",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665031434,
+    "eventID":0,
+    "eventIDPresent":true,
+    "messageID":2,
+    "result":0,
+    "resultPresent":true,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXXXXXXXXXXXXXXX",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":117,
+    "protocolVersion":33
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Vehicle Status
+
+== Request
+
+[source,hexdump]
+----
+1008721730000000000000000000000000000000000F0F2C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5801C67CBA2200000000000465014002
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "vehStatusReqType":2
+  },
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":1,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":25857,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"511",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665031441,
+    "eventID":0,
+    "eventIDPresent":true,
+    "messageID":1,
+    "result":null,
+    "resultPresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXXXXXXXXXXXXXXX",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":115,
+    "protocolVersion":33
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+100C721B40000000000000000000000000000000000F0FEC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5802C67CBA29F34144FC00006501400103D5468652072656D6F746520636F6E74726F6C20696E737472756374696F6E206661696C65642C20706C656173652074727920616761696E206C617465722E0
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":25857,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"511",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":"VGhlIHJlbW90ZSBjb250cm9sIGluc3RydWN0aW9uIGZhaWxlZCwgcGxlYXNlIHRyeSBhZ2FpbiBsYXRlci4=",
+    "errorMessagePresent":true,
+    "eventCreationTime":1665031444,
+    "eventID":2094027071,
+    "eventIDPresent":true,
+    "messageID":2,
+    "result":4,
+    "resultPresent":true,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXXXXXXXXXXXXXXX",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":180,
+    "protocolVersion":33
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+Error message: The remote control instruction failed, please try again later.
+
+[source,hexdump]
+----
+1014F21750000000000000000000000000000000000F0FAC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5802C67CBA31F34144FC031C6501400000E33E5D1786A8A8059BDA2003B2001F4012AC67CBA2B7FF38101A999999000020000270F003C0000024200000012FC01C67CBA2C0000012DE001F80012FC00000001500000000400100020003000400050006000700080009000A000B000C000D000E000F0010001100120013001400150016001700180019001A001B001C001D001E001F0020002100220023002400250026002700280029002A002B002C002D002E002F0030003100320033003400350036003700380039003A003B003C003D003E003F004000
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "basicVehicleStatus":{
+      "batteryVoltage":126,
+      "bonnetStatus":false,
+      "bootStatus":false,
+      "canBusActive":true,
+      "clstrDspdFuelLvlSgmt":0,
+      "currentjourneyDistance":60,
+      "currentJourneyID":289,
+      "dippedBeamStatus":false,
+      "driverDoor":false,
+      "driverWindow":false,
+      "driverWindowPresent":true,
+      "engineStatus":0,
+      "extendedData1":84,
+      "extendedData1Present":true,
+      "extendedData2":0,
+      "extendedData2Present":true,
+      "exteriorTemperature":-128,
+      "frontLeftSeatHeatLevel":null,
+      "frontLeftSeatHeatLevelPresent":false,
+      "frontLeftTyrePressure":51,
+      "frontLeftTyrePressurePresent":true,
+      "frontRightSeatHeatLevel":null,
+      "frontRightSeatHeatLevelPresent":false,
+      "frontRrightTyrePressure":53,
+      "frontRrightTyrePressurePresent":true,
+      "fuelLevelPrc":0,
+      "fuelRange":2430,
+      "fuelRangeElec":2430,
+      "fuelRangeElecPresent":true,
+      "handBrake":false,
+      "interiorTemperature":-128,
+      "lastKeySeen":9999,
+      "lockStatus":true,
+      "mainBeamStatus":false,
+      "mileage":19320,
+      "passengerDoor":false,
+      "passengerWindow":false,
+      "passengerWindowPresent":true,
+      "powerMode":0,
+      "rearLeftDoor":false,
+      "rearLeftTyrePressure":50,
+      "rearLeftTyrePressurePresent":true,
+      "rearLeftWindow":false,
+      "rearLeftWindowPresent":true,
+      "rearRightDoor":false,
+      "rearRightTyrePressure":51,
+      "rearRightTyrePressurePresent":true,
+      "rearRightWindow":false,
+      "rearRightWindowPresent":true,
+      "remoteClimateStatus":0,
+      "rmtHtdRrWndSt":0,
+      "sideLightStatus":false,
+      "sunroofStatus":false,
+      "sunroofStatusPresent":true,
+      "timeOfLastCANBUSActivity":1665031446,
+      "vehElecRngDsp":0,
+      "vehicleAlarmStatus":2,
+      "vehicleAlarmStatusPresent":true,
+      "wheelTyreMonitorStatus":0,
+      "wheelTyreMonitorStatusPresent":true
+    },
+    "extendedVehicleStatus":{
+      "vehicleAlerts":[
+        {
+          "id":1,
+          "value":0
+        },
+        {
+          "id":2,
+          "value":0
+        },
+        {
+          "id":3,
+          "value":0
+        },
+        {
+          "id":4,
+          "value":0
+        },
+        {
+          "id":5,
+          "value":0
+        },
+        {
+          "id":6,
+          "value":0
+        },
+        {
+          "id":7,
+          "value":0
+        },
+        {
+          "id":8,
+          "value":0
+        },
+        {
+          "id":9,
+          "value":0
+        },
+        {
+          "id":10,
+          "value":0
+        },
+        {
+          "id":11,
+          "value":0
+        },
+        {
+          "id":12,
+          "value":0
+        },
+        {
+          "id":13,
+          "value":0
+        },
+        {
+          "id":14,
+          "value":0
+        },
+        {
+          "id":15,
+          "value":0
+        },
+        {
+          "id":16,
+          "value":0
+        },
+        {
+          "id":17,
+          "value":0
+        },
+        {
+          "id":18,
+          "value":0
+        },
+        {
+          "id":19,
+          "value":0
+        },
+        {
+          "id":20,
+          "value":0
+        },
+        {
+          "id":21,
+          "value":0
+        },
+        {
+          "id":22,
+          "value":0
+        },
+        {
+          "id":23,
+          "value":0
+        },
+        {
+          "id":24,
+          "value":0
+        },
+        {
+          "id":25,
+          "value":0
+        },
+        {
+          "id":26,
+          "value":0
+        },
+        {
+          "id":27,
+          "value":0
+        },
+        {
+          "id":28,
+          "value":0
+        },
+        {
+          "id":29,
+          "value":0
+        },
+        {
+          "id":30,
+          "value":0
+        },
+        {
+          "id":31,
+          "value":0
+        },
+        {
+          "id":32,
+          "value":0
+        },
+        {
+          "id":33,
+          "value":0
+        },
+        {
+          "id":34,
+          "value":0
+        },
+        {
+          "id":35,
+          "value":0
+        },
+        {
+          "id":36,
+          "value":0
+        },
+        {
+          "id":37,
+          "value":0
+        },
+        {
+          "id":38,
+          "value":0
+        },
+        {
+          "id":39,
+          "value":0
+        },
+        {
+          "id":40,
+          "value":0
+        },
+        {
+          "id":41,
+          "value":0
+        },
+        {
+          "id":42,
+          "value":0
+        },
+        {
+          "id":43,
+          "value":0
+        },
+        {
+          "id":44,
+          "value":0
+        },
+        {
+          "id":45,
+          "value":0
+        },
+        {
+          "id":46,
+          "value":0
+        },
+        {
+          "id":47,
+          "value":0
+        },
+        {
+          "id":48,
+          "value":0
+        },
+        {
+          "id":49,
+          "value":0
+        },
+        {
+          "id":50,
+          "value":0
+        },
+        {
+          "id":51,
+          "value":0
+        },
+        {
+          "id":52,
+          "value":0
+        },
+        {
+          "id":53,
+          "value":0
+        },
+        {
+          "id":54,
+          "value":0
+        },
+        {
+          "id":55,
+          "value":0
+        },
+        {
+          "id":56,
+          "value":0
+        },
+        {
+          "id":57,
+          "value":0
+        },
+        {
+          "id":58,
+          "value":0
+        },
+        {
+          "id":59,
+          "value":0
+        },
+        {
+          "id":60,
+          "value":0
+        },
+        {
+          "id":61,
+          "value":0
+        },
+        {
+          "id":62,
+          "value":0
+        },
+        {
+          "id":63,
+          "value":0
+        },
+        {
+          "id":64,
+          "value":0
+        }
+      ]
+    },
+    "extendedVehicleStatusPresent":true,
+    "gpsPosition":{
+      "gpsStatus":"fix2D",
+      "timestamp4Short":{
+        "seconds":1665031445
+      },
+      "wayPoint":{
+        "hdop":9,
+        "heading":0,
+        "position":{
+          "altitude":373,
+          "latitude":51200000,
+          "longitude":8200000
+        },
+        "satellites":10,
+        "speed":0
+      }
+    },
+    "statusTime":1665031447
+  },
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":199,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":25857,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"511",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665031448,
+    "eventID":2094027071,
+    "eventIDPresent":true,
+    "messageID":2,
+    "result":0,
+    "resultPresent":true,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "tokenPresent":true,
+    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXXXXXXXXXXXXXXX",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":117,
+    "protocolVersion":33
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+:leveloffset: 1
+
+:leveloffset!:
