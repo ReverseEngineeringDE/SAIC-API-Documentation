@@ -1862,11 +1862,13 @@ END
 
 = Vehicle Charging Status
 
+To get the charging status, send a messeage with eventId=0 to the API endpoint. You will get a message back with en eventId>0, result=0 and no application data. Send the message again with the eventId you just got, and you will get the filled application data. (You maybe need to repeat this, until you get a valid answer)
+
 == Request
 
 [source,hexdump]
 ----
-1008630730000000000000000000000000000000000F0F2C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC5B58B162C58B162C58B162C58B162C5805C67CBAA97038A3840000030040
+1008630730000000000000000000000000000000000F0F183060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB905C67CBA86000000000000030040
 ----
 
 [source,json]
@@ -1889,21 +1891,21 @@ END
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031508,
-    "eventID":1544431841,
+    "eventCreationTime":1665031491,
+    "eventID":0,
     "eventIDPresent":true,
     "messageID":5,
     "result":null,
     "resultPresent":false,
     "testFlag":2,
     "testFlagPresent":true,
-    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "token":"9X999999-0X9X-909X-9999-99XX99X9X9XX9999",
     "tokenPresent":true,
-    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uid":"00000000000000000000000000000000000090000000099999",
     "uidPresent":true,
     "ulMessageCounter":null,
     "ulMessageCounterPresent":false,
-    "vin":"XXXXXXXXXXXXXXXXX",
+    "vin":"XXXX99099XX099999",
     "vinPresent":true
   },
   "header":{
@@ -1919,14 +1921,120 @@ END
 
 [source,hexdump]
 ----
-100CF30750000000000000000000000000000000000F0FAC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC5B58B162C58B162C58B162C58B162C5806C67CBAA97038A384011C03004000000800000216000600070122000203FF0103FF4E2006420349000000F30000CFCE0026204BF00E33D509CC67AFD5C9C400C8400F0002A000000000000000009DC0B5400025BC0100
+1008830750000000000000000000000000000000000F0F983060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB906C67CBA8754037DDC00000300400000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":768,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"516",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665031491,
+    "eventID":1426120567,
+    "eventIDPresent":true,
+    "messageID":6,
+    "result":0,
+    "resultPresent":true,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9X999999-0X9X-909X-9999-99XX99X9X9XX9999",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXX99099XX099999",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":117,
+    "protocolVersion":48
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+== Request
+
+[source,hexdump]
+----
+1008630730000000000000000000000000000000000F0F183060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB905C67CBA9154037DDC0000030040
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "ackMessageCounter":null,
+    "ackMessageCounterPresent":false,
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":768,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"516",
+    "dlMessageCounter":null,
+    "dlMessageCounterPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1665031496,
+    "eventID":1426120567,
+    "eventIDPresent":true,
+    "messageID":5,
+    "result":null,
+    "resultPresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9X999999-0X9X-909X-9999-99XX99X9X9XX9999",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "ulMessageCounter":null,
+    "ulMessageCounterPresent":false,
+    "vin":"XXXX99099XX099999",
+    "vinPresent":true
+  },
+  "header":{
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":115,
+    "protocolVersion":48
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+100CF30750000000000000000000000000000000000F0F983060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB906C67CBA9154037DDC011C03004000000800000000000000070122000203FF0103FF4E2006420349000000F30000CFCE0026204BF00633D509CC67AFD5C9C400C8400F0002A000000000000000009DC0B5400025BC0000
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
-    "bmsAdpPubChrgSttnDspCmd":2,
+    "bmsAdpPubChrgSttnDspCmd":0,
     "bmsAltngChrgCrntDspCmd":0,
     "bmsChrgCtrlDspCmd":2,
     "bmsChrgOtptCrntReq":1023,
@@ -1948,10 +2056,10 @@ END
     "bmsPTCHeatRespPresent":false,
     "bmsPTCHeatSpRsn":0,
     "bmsPTCHeatSpRsnPresent":true,
-    "bmsReserCtrlDspCmd":2,
-    "bmsReserSpHourDspCmd":6,
+    "bmsReserCtrlDspCmd":0,
+    "bmsReserSpHourDspCmd":0,
     "bmsReserSpMintueDspCmd":0,
-    "bmsReserStHourDspCmd":22,
+    "bmsReserStHourDspCmd":0,
     "bmsReserStMintueDspCmd":0,
     "ccuEleccLckCtrlDspCmd":null,
     "ccuEleccLckCtrlDspCmdPresent":false,
@@ -1969,7 +2077,7 @@ END
       "chargingPileIDPresent":false,
       "chargingPileSupplier":null,
       "chargingPileSupplierPresent":false,
-      "chargingType":1,
+      "chargingType":0,
       "endTime":1664974510,
       "endTimePresent":true,
       "extendedData1":null,
@@ -2058,21 +2166,21 @@ END
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031508,
-    "eventID":1544431841,
+    "eventCreationTime":1665031496,
+    "eventID":1426120567,
     "eventIDPresent":true,
     "messageID":6,
     "result":0,
     "resultPresent":true,
     "testFlag":2,
     "testFlagPresent":true,
-    "token":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "token":"9X999999-0X9X-909X-9999-99XX99X9X9XX9999",
     "tokenPresent":true,
-    "uid":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "uid":"00000000000000000000000000000000000090000000099999",
     "uidPresent":true,
     "ulMessageCounter":null,
     "ulMessageCounterPresent":false,
-    "vin":"XXXXXXXXXXXXXXXXX",
+    "vin":"XXXX99099XX099999",
     "vinPresent":true
   },
   "header":{
