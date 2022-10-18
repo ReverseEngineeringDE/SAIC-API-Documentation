@@ -97,7 +97,13 @@ public class ASN1Extractor {
         } else {
 
             ASN1Sequence sequence = aClass.getAnnotation(ASN1Sequence.class);
-            sequenceDefinition.append(sequence.name());
+
+            String name = sequence.name();
+            if (name.startsWith("mp")) {
+                // must be upper case...
+                name = "MP" + name.substring(2);
+            }
+            sequenceDefinition.append(name);
             sequenceDefinition.append(" ::= SEQUENCE\n" + "{\n");
             String collect =
                     Arrays.stream(aClass.getDeclaredFields())

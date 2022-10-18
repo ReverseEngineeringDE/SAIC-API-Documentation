@@ -1,0 +1,38 @@
+= Login
+
+== Request
+
+[source,hexdump]
+----
+include::501_513_request.per[]
+----
+
+[source,json]
+----
+include::501_513_request.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::501_513_response_not_registered.per[]
+----
+
+[source,json]
+----
+include::501_513_response_not_registered.json[]
+----
+
+The error message is a byte array, containing the UTF-8 String "The account is not registered."
+
+
+[source,hexdump]
+----
+include::501_513_response.per[]
+----
+
+[source,json]
+----
+include::501_513_response.json[]
+----

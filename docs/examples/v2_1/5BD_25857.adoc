@@ -1,0 +1,25 @@
+= Unknown
+
+== Request
+
+[source,hexdump]
+----
+include::5BD_25857_request.per[]
+----
+
+[source,json]
+----
+include::5BD_25857_request.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::5BD_25857_response.per[]
+----
+
+[source,json]
+----
+include::5BD_25857_response.json[]
+----
