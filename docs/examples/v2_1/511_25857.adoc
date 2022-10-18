@@ -12,6 +12,8 @@ include::511_25857_request.per[]
 include::511_25857_request.json[]
 ----
 
+* vehStatusReqType: 1: only basic data 2: include extendedData
+
 == Response
 
 [source,hexdump]
@@ -35,3 +37,6 @@ include::511_25857_response.per[]
 ----
 include::511_25857_response.json[]
 ----
+
+* extendedData1: SOC
+* extendedData2: 0: not charging, 1: charging

@@ -49,3 +49,6 @@ include::516_768_response_with_eventid.per[]
 ----
 include::516_768_response_with_eventid.json[]
 ----
+
+* current power usage (kW): (bmsPackCrnt * 0.05 - 1000.0) * (bmsPackVol * 0.25) / 1000.0
+* negative values denote recuperation/charging
