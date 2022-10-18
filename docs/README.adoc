@@ -1245,6 +1245,8 @@ END
 }
 ----
 
+* vehStatusReqType: 1: only basic data 2: include extendedData
+
 == Response
 
 [source,hexdump]
@@ -1692,6 +1694,9 @@ Error message: The remote control instruction failed, please try again later.
   "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
 }
 ----
+
+* extendedData1: SOC
+* extendedData2: 0: not charging, 1: charging
 
 :leveloffset: 1
 
@@ -2191,6 +2196,9 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
   "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
 }
 ----
+
+* current power usage (kW): (bmsPackCrnt * 0.05 - 1000.0) * (bmsPackVol * 0.25) / 1000.0
+* negative values denote recuperation/charging
 
 :leveloffset: 1
 
