@@ -3,6 +3,7 @@ package net.heberling.ismart.asn1.v3_0;
 import static org.junit.jupiter.api.Assertions.*;
 
 import net.heberling.ismart.asn1.AbstractMessageCoderTest;
+import net.heberling.ismart.asn1.v3_0.entity.OTA_ChrgMangDataResp;
 import org.bn.coders.IASN1PreparedElement;
 import org.junit.jupiter.api.Test;
 

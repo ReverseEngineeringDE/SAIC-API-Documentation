@@ -1,5 +1,13 @@
 package net.heberling.ismart.asn1.v1_1;
 
+import net.heberling.ismart.asn1.v1_1.entity.APPUpgradeInfoReq;
+import net.heberling.ismart.asn1.v1_1.entity.APPUpgradeInfoResp;
+import net.heberling.ismart.asn1.v1_1.entity.AdvertiseResp;
+import net.heberling.ismart.asn1.v1_1.entity.MPAppAttributeResp;
+import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInReq;
+import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInResp;
+import net.heberling.ismart.asn1.v1_1.entity.MessageListReq;
+import net.heberling.ismart.asn1.v1_1.entity.MessageListResp;
 import org.bn.coders.IASN1PreparedElement;
 import org.junit.jupiter.api.Test;
 
