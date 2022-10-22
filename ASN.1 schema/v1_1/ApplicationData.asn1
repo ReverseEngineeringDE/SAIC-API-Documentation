@@ -41,6 +41,16 @@ AdvertiseResp ::= SEQUENCE
   advertiseVersion INTEGER(0..281474976710655) OPTIONAL,
   advertises SEQUENCE SIZE(0..255) OF Advertise OPTIONAL
 }
+MessageListReq ::= SEQUENCE
+{
+  startEndNumber StartEndNumber,
+  messageGroup IA5String(SIZE(1..20)) OPTIONAL
+}
+MessageListResp ::= SEQUENCE
+{
+  recordsNumber INTEGER(0..281474976710655),
+  messages SEQUENCE SIZE(1..256) OF Message OPTIONAL
+}
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
@@ -95,6 +105,27 @@ Advertise ::= SEQUENCE
   startTime Timestamp OPTIONAL,
   endTime Timestamp OPTIONAL
 }
+StartEndNumber ::= SEQUENCE
+{
+  startNumber INTEGER(0..281474976710655),
+  endNumber INTEGER(0..281474976710655)
+}
+Message ::= SEQUENCE
+{
+  messageId INTEGER(0..281474976710655),
+  messageType IA5String(SIZE(3)),
+  title OCTET STRING(SIZE(1..128)),
+  messageTime Timestamp,
+  sender OCTET STRING(SIZE(1..64)),
+  contentId SEQUENCE SIZE(1..256) OF ContentId OPTIONAL,
+  content OCTET STRING(SIZE(1..2048)) OPTIONAL,
+  readStatus INTEGER(-128..128) OPTIONAL,
+  vin IA5String(SIZE(17)) OPTIONAL
+}
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
@@ -106,6 +137,11 @@ Timestamp ::= SEQUENCE
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
+}
+ContentId ::= SEQUENCE
+{
+  contentId INTEGER(0..281474976710655),
+  description OCTET STRING(SIZE(1..255)) OPTIONAL
 }
 
 END

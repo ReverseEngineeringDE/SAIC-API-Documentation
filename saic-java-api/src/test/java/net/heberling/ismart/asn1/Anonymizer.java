@@ -1,6 +1,7 @@
 package net.heberling.ismart.asn1;
 
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import org.bn.coders.IASN1PreparedElement;
@@ -67,6 +68,13 @@ public class Anonymizer {
                             break;
                         case "lastKeySeen":
                             field.set(element, 9999);
+                            break;
+                        case "content":
+                            field.set(
+                                    element,
+                                    new String((byte[]) field.get(element), StandardCharsets.UTF_8)
+                                            .replaceAll("\\(\\*\\*\\*...\\)", "(***XXX)")
+                                            .getBytes(StandardCharsets.UTF_8));
                             break;
                     }
                 }

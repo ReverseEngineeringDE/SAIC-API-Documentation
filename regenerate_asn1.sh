@@ -18,6 +18,8 @@ asn1extractor/asn1extractor.sh ApplicationDataModule \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.software.APPUpgradeInfoResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.software.MPAppAttributeResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.advertise.AdvertiseResp \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.message.MessageListReq \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.message.MessageListResp \
            > "ASN.1 schema/v1_1/ApplicationData.asn1"
 
 rm -rf "ASN.1 schema/v2_1"

@@ -65,10 +65,6 @@ public class GetData {
                                 + args[0]);
 
         loginRequestMessage.getApplicationData().setPassword(args[1]);
-        loginRequestMessage
-                .getApplicationData()
-                .setDeviceId(
-                        "cqSHOMG1SmK4k-fzAeK6hr:APA91bGtGihOG5SEQ9hPx3Dtr9o9mQguNiKZrQzboa-1C_UBlRZYdFcMmdfLvh9Q_xA8A0dGFIjkMhZbdIXOYnKfHCeWafAfLXOrxBS3N18T4Slr-x9qpV6FHLMhE9s7I6s89k9lU7DD###europecar");
 
         String loginRequest =
                 new MessageCoder<>(MP_UserLoggingInReq.class).encodeRequest(loginRequestMessage);
