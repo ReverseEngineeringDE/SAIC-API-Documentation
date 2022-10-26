@@ -1,0 +1,25 @@
+= Get Unread Message Count
+
+== Request
+
+[source,hexdump]
+----
+include::533_513_request.per[]
+----
+
+[source,json]
+----
+include::533_513_request.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::533_513_response.per[]
+----
+
+[source,json]
+----
+include::533_513_response.json[]
+----

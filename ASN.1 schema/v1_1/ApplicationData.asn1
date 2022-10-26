@@ -51,6 +51,13 @@ MessageListResp ::= SEQUENCE
   recordsNumber INTEGER(0..281474976710655),
   messages SEQUENCE SIZE(1..256) OF Message OPTIONAL
 }
+GetUnreadMessageCountResp ::= SEQUENCE
+{
+  totalNumber INTEGER(0..281474976710655),
+  newsNumber INTEGER(0..281474976710655),
+  commandNumber INTEGER(0..281474976710655),
+  alarmNumber INTEGER(0..281474976710655)
+}
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
