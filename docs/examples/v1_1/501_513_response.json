@@ -1,11 +1,13 @@
 {
   "applicationData":{
+    "@ASN1Type":"MP_UserLoggingInResp",
     "languageType":"de",
     "languageTypePresent":true,
     "refreshToken":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
     "refreshTokenPresent":true,
     "token":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
     "tokenExpiration":{
+      "@ASN1Type":"Timestamp",
       "seconds":1668174662
     },
     "tokenExpirationPresent":true,
@@ -15,7 +17,9 @@
     "userPhotoPresent":false,
     "vinList":[
       {
+        "@ASN1Type":"VinInfo",
         "bindTime":{
+          "@ASN1Type":"Timestamp",
           "seconds":1663254599
         },
         "bindTimePresent":true,
@@ -43,6 +47,7 @@
     "vinListPresent":true
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -63,6 +68,7 @@
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -86,6 +92,7 @@
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":123,
     "protocolVersion":17,

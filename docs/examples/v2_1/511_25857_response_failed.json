@@ -1,6 +1,7 @@
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -15,6 +16,7 @@
     "dlMessageCounter":null,
     "dlMessageCounterPresent":false,
     "errorMessage":"VGhlIHJlbW90ZSBjb250cm9sIGluc3RydWN0aW9uIGZhaWxlZCwgcGxlYXNlIHRyeSBhZ2FpbiBsYXRlci4=",
+    "@errorMessageUTF8":"The remote control instruction failed, please try again later.",
     "errorMessagePresent":true,
     "eventCreationTime":1665031444,
     "eventID":2094027071,
@@ -34,6 +36,7 @@
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":180,
     "protocolVersion":33

@@ -1,6 +1,7 @@
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -13,6 +14,7 @@
     "crqmRequest":null,
     "crqmRequestPresent":false,
     "errorMessage":"VGhlIGFjY291bnQgaXMgbm90IHJlZ2lzdGVyZWQu",
+    "@errorMessageUTF8":"The account is not registered.",
     "errorMessagePresent":true,
     "eventCreationTime":1664537842,
     "eventID":null,
@@ -21,6 +23,7 @@
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -44,6 +47,7 @@
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":154,
     "protocolVersion":17,

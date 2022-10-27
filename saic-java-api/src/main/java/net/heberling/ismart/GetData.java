@@ -6,11 +6,13 @@ import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
 import com.owlike.genson.convert.ChainedFactory;
 import com.owlike.genson.reflect.TypeUtil;
+import com.owlike.genson.stream.JsonType;
 import com.owlike.genson.stream.ObjectReader;
 import com.owlike.genson.stream.ObjectWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Random;
 import net.heberling.ismart.asn1.AbstractMessage;
@@ -34,6 +36,7 @@ import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.bn.annotations.ASN1Enum;
+import org.bn.annotations.ASN1Sequence;
 import org.bn.coders.IASN1PreparedElement;
 
 public class GetData {
@@ -201,52 +204,266 @@ public class GetData {
                     M extends AbstractMessage<H, B, E>>
             String toJSON(M message) {
         // TODO: make sure this corresponds to the JER ASN.1 serialisation format
-        String json =
-                new GensonBuilder()
-                        .useIndentation(true)
-                        .useRuntimeType(true)
-                        .exclude("preparedData")
-                        .withConverterFactory(
-                                new ChainedFactory() {
-                                    @Override
-                                    protected Converter<?> create(
-                                            Type type, Genson genson, Converter<?> converter) {
-                                        final Class<?> clazz = TypeUtil.getRawClass(type);
-                                        if (clazz.isAnnotationPresent(ASN1Enum.class)) {
-
-                                            return new Converter<>() {
-                                                @Override
-                                                public void serialize(
-                                                        Object o,
-                                                        ObjectWriter objectWriter,
-                                                        Context context)
-                                                        throws Exception {
-                                                    Method getValue = clazz.getMethod("getValue");
-                                                    Object value = getValue.invoke(o);
-                                                    if (value == null) {
-                                                        objectWriter.writeNull();
-                                                    } else {
-                                                        objectWriter.writeString(
-                                                                String.valueOf(value));
-                                                    }
-                                                }
-
-                                                @Override
-                                                public Object deserialize(
-                                                        ObjectReader objectReader, Context context)
-                                                        throws Exception {
-                                                    throw new UnsupportedOperationException(
-                                                            "not implemented yet");
-                                                }
-                                            };
-                                        } else {
-
-                                            return converter;
-                                        }
+        final ChainedFactory chain =
+                new ChainedFactory() {
+                    @Override
+                    protected Converter<?> create(
+                            Type type, Genson genson, Converter<?> nextConverter) {
+                        return new Converter<>() {
+                            @Override
+                            public void serialize(Object object, ObjectWriter writer, Context ctx)
+                                    throws Exception {
+                                if (object != null) {
+                                    writer.beginNextObjectMetadata();
+                                    if (object.getClass().isAnnotationPresent(ASN1Enum.class)) {
+                                        writer.writeMetadata(
+                                                "ASN1Type",
+                                                object.getClass()
+                                                        .getAnnotation(ASN1Enum.class)
+                                                        .name());
+                                    } else if (object.getClass()
+                                            .isAnnotationPresent(ASN1Sequence.class)) {
+                                        writer.writeMetadata(
+                                                "ASN1Type",
+                                                object.getClass()
+                                                        .getAnnotation(ASN1Sequence.class)
+                                                        .name());
                                     }
-                                })
-                        .create()
-                        .serialize(message);
-        return json;
+                                }
+
+                                @SuppressWarnings("unchecked")
+                                Converter<Object> n = (Converter<Object>) nextConverter;
+                                if (!(writer instanceof MyObjectWriter)) {
+                                    writer = new MyObjectWriter(writer);
+                                }
+                                n.serialize(object, writer, ctx);
+                            }
+
+                            @Override
+                            public Object deserialize(ObjectReader reader, Context ctx)
+                                    throws Exception {
+                                return nextConverter.deserialize(reader, ctx);
+                            }
+                        };
+                    }
+                };
+        chain.withNext(
+                new ChainedFactory() {
+                    @Override
+                    protected Converter<?> create(
+                            Type type, Genson genson, Converter<?> converter) {
+                        final Class<?> clazz = TypeUtil.getRawClass(type);
+                        if (clazz.isAnnotationPresent(ASN1Enum.class)) {
+
+                            return new Converter<>() {
+                                @Override
+                                public void serialize(
+                                        Object o, ObjectWriter objectWriter, Context context)
+                                        throws Exception {
+                                    Method getValue = clazz.getMethod("getValue");
+                                    Object value = getValue.invoke(o);
+                                    if (value == null) {
+                                        objectWriter.writeNull();
+                                    } else {
+                                        objectWriter.writeString(String.valueOf(value));
+                                    }
+                                }
+
+                                @Override
+                                public Object deserialize(
+                                        ObjectReader objectReader, Context context)
+                                        throws Exception {
+                                    throw new UnsupportedOperationException("not implemented yet");
+                                }
+                            };
+                        } else {
+
+                            return converter;
+                        }
+                    }
+                });
+        return new GensonBuilder()
+                .useIndentation(true)
+                .useRuntimeType(true)
+                .exclude("preparedData")
+                .withConverterFactory(chain)
+                .create()
+                .serialize(message);
+    }
+
+    private static class MyObjectWriter implements ObjectWriter {
+        private final ObjectWriter delegate;
+
+        private String utf8EncodedByteArrayName;
+
+        private MyObjectWriter(ObjectWriter delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public ObjectWriter beginArray() {
+            return delegate.beginArray();
+        }
+
+        @Override
+        public ObjectWriter endArray() {
+            return delegate.endArray();
+        }
+
+        @Override
+        public ObjectWriter beginObject() {
+            return delegate.beginObject();
+        }
+
+        @Override
+        public ObjectWriter endObject() {
+            return delegate.endObject();
+        }
+
+        @Override
+        public ObjectWriter writeName(String name) {
+            return delegate.writeName(name);
+        }
+
+        @Override
+        public ObjectWriter writeEscapedName(char[] name) {
+            final String nameString = String.valueOf(name);
+            if (nameString.equals("content")
+                    || nameString.equals("sender")
+                    || nameString.equals("title")
+                    || nameString.equals("errorMessage")) {
+                // Some fields are really UTF8 strings, but the ASN.1 schema declares them as byte
+                // arrays. We want to see the plain text additionally to the HEX String in the JSON
+                utf8EncodedByteArrayName = "@" + nameString + "UTF8";
+            }
+            return delegate.writeEscapedName(name);
+        }
+
+        @Override
+        public ObjectWriter writeValue(int value) {
+            return delegate.writeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeValue(double value) {
+            return delegate.writeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeValue(long value) {
+            return delegate.writeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeValue(short value) {
+            return delegate.writeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeValue(float value) {
+            return delegate.writeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeValue(boolean value) {
+            return delegate.writeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeBoolean(Boolean value) {
+            return delegate.writeBoolean(value);
+        }
+
+        @Override
+        public ObjectWriter writeValue(Number value) {
+            return delegate.writeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeNumber(Number value) {
+            return delegate.writeNumber(value);
+        }
+
+        @Override
+        public ObjectWriter writeValue(String value) {
+            return delegate.writeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeString(String value) {
+            return delegate.writeString(value);
+        }
+
+        @Override
+        public ObjectWriter writeValue(byte[] value) {
+            final ObjectWriter writer = delegate.writeValue(value);
+            if (utf8EncodedByteArrayName != null) {
+                writer.writeEscapedName(utf8EncodedByteArrayName.toCharArray());
+                writer.writeString(new String(value, StandardCharsets.UTF_8));
+                utf8EncodedByteArrayName = null;
+            }
+            return writer;
+        }
+
+        @Override
+        public ObjectWriter writeBytes(byte[] value) {
+            return delegate.writeBytes(value);
+        }
+
+        @Override
+        public ObjectWriter writeUnsafeValue(String value) {
+            return delegate.writeUnsafeValue(value);
+        }
+
+        @Override
+        public ObjectWriter writeNull() {
+            utf8EncodedByteArrayName = null;
+            return delegate.writeNull();
+        }
+
+        @Override
+        public ObjectWriter beginNextObjectMetadata() {
+            return delegate.beginNextObjectMetadata();
+        }
+
+        @Override
+        public ObjectWriter writeMetadata(String name, String value) {
+            return delegate.writeMetadata(name, value);
+        }
+
+        @Override
+        public ObjectWriter writeBoolean(String name, Boolean value) {
+            return delegate.writeBoolean(name, value);
+        }
+
+        @Override
+        public ObjectWriter writeNumber(String name, Number value) {
+            return delegate.writeNumber(name, value);
+        }
+
+        @Override
+        public ObjectWriter writeString(String name, String value) {
+            return delegate.writeString(name, value);
+        }
+
+        @Override
+        public ObjectWriter writeBytes(String name, byte[] value) {
+            return delegate.writeBytes(name, value);
+        }
+
+        @Override
+        public void flush() {
+            delegate.flush();
+        }
+
+        @Override
+        public void close() {
+            delegate.close();
+        }
+
+        @Override
+        public JsonType enclosingType() {
+            return delegate.enclosingType();
+        }
     }
 }

@@ -1,6 +1,7 @@
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -34,6 +35,7 @@
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":33

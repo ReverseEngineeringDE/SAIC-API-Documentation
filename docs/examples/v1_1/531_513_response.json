@@ -1,20 +1,26 @@
 {
   "applicationData":{
+    "@ASN1Type":"MessageListResp",
     "messages":[
       {
+        "@ASN1Type":"Message",
         "content":"RGFzIEZhaHJ6ZXVnICgqKipYWFgpIHN0YXJ0ZXQgYW0gMjItMTAtMjAyMiAxMzo1MjowNyBHTVQrMDI6MDAsIGJpdHRlIHp1ciBLZW5udG5pc25haG1lIGJlc3TDpHRpZ2VuLg==",
+        "@contentUTF8":"Das Fahrzeug (***XXX) startet am 22-10-2022 13:52:07 GMT+02:00, bitte zur Kenntnisnahme bestätigen.",
         "contentId":null,
         "contentIdPresent":false,
         "contentPresent":true,
         "messageId":1336129,
         "messageTime":{
+          "@ASN1Type":"Timestamp",
           "seconds":1666439528
         },
         "messageType":"323",
         "readStatus":0,
         "readStatusPresent":true,
         "sender":"VEJPWA==",
+        "@senderUTF8":"TBOX",
         "title":"TW90b3JzdGFydA==",
+        "@titleUTF8":"Motorstart",
         "vin":"XXXX99099XX099999",
         "vinPresent":true
       }
@@ -23,6 +29,7 @@
     "recordsNumber":1
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -43,6 +50,7 @@
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -66,6 +74,7 @@
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":123,
     "protocolVersion":18,

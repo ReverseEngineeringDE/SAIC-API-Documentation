@@ -1,10 +1,12 @@
 {
   "applicationData":{
+    "@ASN1Type":"MP_UserLoggingInReq",
     "deviceId":"X0XXXX0XXXXX0XXXX0XXXX:XXX00XXXX_XXXXXX00XXXXXXXXX_XXX0XXXXXXXX-X00X0XXX00XXX0XXXXXXXX0XXXXXXX0__XXXXX0XXXXXX0XXX0XX00XXXXXXXXXXXXXXX00X0XXXXXXXXXXX0XXXXXXXXX0XXXX###europecar",
     "deviceIdPresent":true,
     "password":"test1234"
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -25,6 +27,7 @@
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -48,6 +51,7 @@
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":86,
     "protocolVersion":17,

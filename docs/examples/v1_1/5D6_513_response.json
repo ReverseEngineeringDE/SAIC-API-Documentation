@@ -1,9 +1,11 @@
 {
   "applicationData":{
+    "@ASN1Type":"MPAppAttributeResp",
     "dataAppAttribute":"ccPhone:1267",
     "dataAppAttributePresent":true
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -24,6 +26,7 @@
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -47,6 +50,7 @@
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":79,
     "protocolVersion":17,

@@ -1,5 +1,6 @@
 {
   "applicationData":{
+    "@ASN1Type":"OTA_ChrgMangDataResp",
     "bmsAdpPubChrgSttnDspCmd":0,
     "bmsAltngChrgCrntDspCmd":0,
     "bmsChrgCtrlDspCmd":2,
@@ -34,6 +35,7 @@
     "ccuOnbdChrgrPlugOn":null,
     "ccuOnbdChrgrPlugOnPresent":false,
     "chargeStatus":{
+      "@ASN1Type":"RvsChargingStatus",
       "chargingDuration":0,
       "chargingDurationPresent":true,
       "chargingElectricityPhase":null,
@@ -117,6 +119,7 @@
     "onBdChrgrAltrCrntInptVolPresent":false
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -150,6 +153,7 @@
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":48

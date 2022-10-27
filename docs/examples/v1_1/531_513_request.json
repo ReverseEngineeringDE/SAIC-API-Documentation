@@ -1,13 +1,16 @@
 {
   "applicationData":{
+    "@ASN1Type":"MessageListReq",
     "messageGroup":"ALARM",
     "messageGroupPresent":true,
     "startEndNumber":{
+      "@ASN1Type":"StartEndNumber",
       "endNumber":20,
       "startNumber":1
     }
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -28,6 +31,7 @@
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -51,6 +55,7 @@
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":121,
     "protocolVersion":18,
