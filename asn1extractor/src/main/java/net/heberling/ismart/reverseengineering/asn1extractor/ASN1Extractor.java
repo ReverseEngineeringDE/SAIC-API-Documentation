@@ -65,6 +65,8 @@ public class ASN1Extractor {
             return;
         }
 
+        processed.add(aClass);
+
         if (aClass.isAnnotationPresent(ASN1Enum.class)) {
             ASN1Enum sequence = aClass.getAnnotation(ASN1Enum.class);
             sequenceDefinition.append(sequence.name());
