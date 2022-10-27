@@ -150,6 +150,27 @@ AdvertiseResp ::= SEQUENCE
   advertiseVersion INTEGER(0..281474976710655) OPTIONAL,
   advertises SEQUENCE SIZE(0..255) OF Advertise OPTIONAL
 }
+MessageListReq ::= SEQUENCE
+{
+  startEndNumber StartEndNumber,
+  messageGroup IA5String(SIZE(1..20)) OPTIONAL
+}
+MessageListResp ::= SEQUENCE
+{
+  recordsNumber INTEGER(0..281474976710655),
+  messages SEQUENCE SIZE(1..256) OF Message OPTIONAL
+}
+GetUnreadMessageCountResp ::= SEQUENCE
+{
+  totalNumber INTEGER(0..281474976710655),
+  newsNumber INTEGER(0..281474976710655),
+  commandNumber INTEGER(0..281474976710655),
+  alarmNumber INTEGER(0..281474976710655)
+}
+SetNotificationCountReq ::= SEQUENCE
+{
+  notificationCount INTEGER(0..255)
+}
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
@@ -204,6 +225,27 @@ Advertise ::= SEQUENCE
   startTime Timestamp OPTIONAL,
   endTime Timestamp OPTIONAL
 }
+StartEndNumber ::= SEQUENCE
+{
+  startNumber INTEGER(0..281474976710655),
+  endNumber INTEGER(0..281474976710655)
+}
+Message ::= SEQUENCE
+{
+  messageId INTEGER(0..281474976710655),
+  messageType IA5String(SIZE(3)),
+  title OCTET STRING(SIZE(1..128)),
+  messageTime Timestamp,
+  sender OCTET STRING(SIZE(1..64)),
+  contentId SEQUENCE SIZE(1..256) OF ContentId OPTIONAL,
+  content OCTET STRING(SIZE(1..2048)) OPTIONAL,
+  readStatus INTEGER(-128..128) OPTIONAL,
+  vin IA5String(SIZE(17)) OPTIONAL
+}
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
@@ -215,6 +257,11 @@ Timestamp ::= SEQUENCE
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
+}
+ContentId ::= SEQUENCE
+{
+  contentId INTEGER(0..281474976710655),
+  description OCTET STRING(SIZE(1..255)) OPTIONAL
 }
 
 END
@@ -237,10 +284,12 @@ END
 ----
 {
   "applicationData":{
+    "@ASN1Type":"APPUpgradeInfoReq",
     "appType":"android",
     "appVersion":"1.1.6"
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -261,6 +310,7 @@ END
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -284,6 +334,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":42,
     "protocolVersion":17,
@@ -303,6 +354,7 @@ END
 ----
 {
   "applicationData":{
+    "@ASN1Type":"APPUpgradeInfoResp",
     "appVersion":null,
     "appVersionPresent":false,
     "forcedUpdate":false,
@@ -316,6 +368,7 @@ END
     "updateUrlPresent":false
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -336,6 +389,7 @@ END
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -359,6 +413,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":79,
     "protocolVersion":17,
@@ -384,6 +439,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -404,6 +460,7 @@ END
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -427,6 +484,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":42,
     "protocolVersion":17,
@@ -446,10 +504,12 @@ END
 ----
 {
   "applicationData":{
+    "@ASN1Type":"MPAppAttributeResp",
     "dataAppAttribute":"ccPhone:1267",
     "dataAppAttributePresent":true
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -470,6 +530,7 @@ END
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -493,6 +554,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":79,
     "protocolVersion":17,
@@ -518,6 +580,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -538,6 +601,7 @@ END
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -561,6 +625,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":42,
     "protocolVersion":17,
@@ -581,6 +646,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -601,6 +667,7 @@ END
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -624,6 +691,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":79,
     "protocolVersion":17,
@@ -648,11 +716,13 @@ END
 ----
 {
   "applicationData":{
+    "@ASN1Type":"MP_UserLoggingInReq",
     "deviceId":"X0XXXX0XXXXX0XXXX0XXXX:XXX00XXXX_XXXXXX00XXXXXXXXX_XXX0XXXXXXXX-X00X0XXX00XXX0XXXXXXXX0XXXXXXX0__XXXXX0XXXXXX0XXX0XX00XXXXXXXXXXXXXXX00X0XXXXXXXXXXX0XXXXXXXXX0XXXX###europecar",
     "deviceIdPresent":true,
     "password":"test1234"
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -673,6 +743,7 @@ END
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -696,6 +767,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":86,
     "protocolVersion":17,
@@ -716,6 +788,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -728,6 +801,7 @@ END
     "crqmRequest":null,
     "crqmRequestPresent":false,
     "errorMessage":"VGhlIGFjY291bnQgaXMgbm90IHJlZ2lzdGVyZWQu",
+    "@errorMessageUTF8":"The account is not registered.",
     "errorMessagePresent":true,
     "eventCreationTime":1664537842,
     "eventID":null,
@@ -736,6 +810,7 @@ END
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -759,6 +834,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":154,
     "protocolVersion":17,
@@ -779,12 +855,14 @@ The error message is a byte array, containing the UTF-8 String "The account is n
 ----
 {
   "applicationData":{
+    "@ASN1Type":"MP_UserLoggingInResp",
     "languageType":"de",
     "languageTypePresent":true,
     "refreshToken":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
     "refreshTokenPresent":true,
     "token":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
     "tokenExpiration":{
+      "@ASN1Type":"Timestamp",
       "seconds":1668174662
     },
     "tokenExpirationPresent":true,
@@ -794,7 +872,9 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "userPhotoPresent":false,
     "vinList":[
       {
+        "@ASN1Type":"VinInfo",
         "bindTime":{
+          "@ASN1Type":"Timestamp",
           "seconds":1663254599
         },
         "bindTimePresent":true,
@@ -822,6 +902,7 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "vinListPresent":true
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -842,6 +923,7 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -865,6 +947,464 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Get Messages
+
+== Request
+
+[source,hexdump]
+----
+011B112007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB362C6A82C76020200468ACF134468ACF1342468ACF1342468ACF1342000000240100A080000000000080000000000A120CC834A680
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"MessageListReq",
+    "messageGroup":"ALARM",
+    "messageGroupPresent":true,
+    "startEndNumber":{
+      "@ASN1Type":"StartEndNumber",
+      "endNumber":20,
+      "startNumber":1
+    }
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":18,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"531",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666455099,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":18,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+022F112007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB362C6A82C76040202468ACF134468ACF1342468ACF1342468ACF1342000001340100A000008000000000008038000000A31A0B364CC4A6B7BA37B939BA30B93A31A9ECB406A8849EB018D1185CC811985A1C9E995D59C80A0A8A8A9616160A481CDD185C9D195D08185B480C8C8B4C4C0B4C8C0C8C880C4CCE8D4C8E8C0DC811D3550ACC0C8E8C0C0B08189A5D1D19481E9D5C8812D95B9B9D1B9A5CDB985A1B594818995CDD30E91D1A59D95B8B90162C58B0E5CB072E6C5860E5CB972E40
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"MessageListResp",
+    "messages":[
+      {
+        "@ASN1Type":"Message",
+        "content":"RGFzIEZhaHJ6ZXVnICgqKipYWFgpIHN0YXJ0ZXQgYW0gMjItMTAtMjAyMiAxMzo1MjowNyBHTVQrMDI6MDAsIGJpdHRlIHp1ciBLZW5udG5pc25haG1lIGJlc3TDpHRpZ2VuLg==",
+        "@contentUTF8":"Das Fahrzeug (***XXX) startet am 22-10-2022 13:52:07 GMT+02:00, bitte zur Kenntnisnahme bestätigen.",
+        "contentId":null,
+        "contentIdPresent":false,
+        "contentPresent":true,
+        "messageId":1336129,
+        "messageTime":{
+          "@ASN1Type":"Timestamp",
+          "seconds":1666439528
+        },
+        "messageType":"323",
+        "readStatus":0,
+        "readStatusPresent":true,
+        "sender":"VEJPWA==",
+        "@senderUTF8":"TBOX",
+        "title":"TW90b3JzdGFydA==",
+        "@titleUTF8":"Motorstart",
+        "vin":"XXXX99099XX099999",
+        "vinPresent":true
+      }
+    ],
+    "messagesPresent":true,
+    "recordsNumber":1
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":154,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"531",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666455099,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":18,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Get Unread Message Count
+
+== Request
+
+[source,hexdump]
+----
+00F7111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB366C6A82C76020200468ACF134468ACF1342468ACF1342468ACF1342000000000100A0
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"533",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666455099,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+012B111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB366C6A82C76040202468ACF134468ACF1342468ACF1342468ACF1342000000300100A00000000000000001000000000000000000000000000000000001
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"GetUnreadMessageCountResp",
+    "alarmNumber":1,
+    "commandNumber":0,
+    "newsNumber":0,
+    "totalNumber":1
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":24,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"533",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666455099,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Set Notification Count
+
+== Request
+
+[source,hexdump]
+----
+00F9111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB36AC6A82C7A020200468ACF134468ACF1342468ACF1342468ACF1342000000020100A000
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"SetNotificationCountReq",
+    "notificationCount":0
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":1,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"535",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666455101,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+00FB111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB36AC6A82C7A040202468ACF134468ACF1342468ACF1342468ACF1342000000000100A00000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"535",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666455101,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":123,
     "protocolVersion":17,
@@ -1091,6 +1631,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1124,6 +1665,7 @@ END
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":33
@@ -1144,6 +1686,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1177,6 +1720,7 @@ END
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":33
@@ -1201,9 +1745,11 @@ END
 ----
 {
   "applicationData":{
+    "@ASN1Type":"OTA_RVMVehicleStatusReq",
     "vehStatusReqType":2
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1237,6 +1783,7 @@ END
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":33
@@ -1259,6 +1806,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1273,6 +1821,7 @@ END
     "dlMessageCounter":null,
     "dlMessageCounterPresent":false,
     "errorMessage":"VGhlIHJlbW90ZSBjb250cm9sIGluc3RydWN0aW9uIGZhaWxlZCwgcGxlYXNlIHRyeSBhZ2FpbiBsYXRlci4=",
+    "@errorMessageUTF8":"The remote control instruction failed, please try again later.",
     "errorMessagePresent":true,
     "eventCreationTime":1665031444,
     "eventID":2094027071,
@@ -1292,6 +1841,7 @@ END
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":180,
     "protocolVersion":33
@@ -1311,7 +1861,9 @@ Error message: The remote control instruction failed, please try again later.
 ----
 {
   "applicationData":{
+    "@ASN1Type":"OTA_RVMVehicleStatusResp25857",
     "basicVehicleStatus":{
+      "@ASN1Type":"RvsBasicStatus25857",
       "batteryVoltage":126,
       "bonnetStatus":false,
       "bootStatus":false,
@@ -1374,260 +1926,325 @@ Error message: The remote control instruction failed, please try again later.
       "wheelTyreMonitorStatusPresent":true
     },
     "extendedVehicleStatus":{
+      "@ASN1Type":"RvsExtStatus",
       "vehicleAlerts":[
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":1,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":2,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":3,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":4,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":5,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":6,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":7,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":8,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":9,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":10,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":11,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":12,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":13,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":14,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":15,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":16,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":17,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":18,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":19,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":20,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":21,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":22,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":23,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":24,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":25,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":26,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":27,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":28,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":29,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":30,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":31,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":32,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":33,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":34,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":35,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":36,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":37,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":38,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":39,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":40,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":41,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":42,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":43,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":44,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":45,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":46,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":47,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":48,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":49,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":50,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":51,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":52,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":53,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":54,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":55,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":56,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":57,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":58,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":59,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":60,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":61,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":62,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":63,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":64,
           "value":0
         }
@@ -1635,14 +2252,18 @@ Error message: The remote control instruction failed, please try again later.
     },
     "extendedVehicleStatusPresent":true,
     "gpsPosition":{
+      "@ASN1Type":"RvsPosition",
       "gpsStatus":"fix2D",
       "timestamp4Short":{
+        "@ASN1Type":"Timestamp4Short",
         "seconds":1665031445
       },
       "wayPoint":{
+        "@ASN1Type":"RvsWayPoint",
         "hdop":9,
         "heading":0,
         "position":{
+          "@ASN1Type":"RvsWGS84Point",
           "altitude":373,
           "latitude":51200000,
           "longitude":8200000
@@ -1654,6 +2275,7 @@ Error message: The remote control instruction failed, please try again later.
     "statusTime":1665031447
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1687,6 +2309,7 @@ Error message: The remote control instruction failed, please try again later.
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":33
@@ -1881,6 +2504,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1914,6 +2538,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":48
@@ -1934,6 +2559,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1967,6 +2593,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":48
@@ -1987,6 +2614,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -2020,6 +2648,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":48
@@ -2039,6 +2668,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 ----
 {
   "applicationData":{
+    "@ASN1Type":"OTA_ChrgMangDataResp",
     "bmsAdpPubChrgSttnDspCmd":0,
     "bmsAltngChrgCrntDspCmd":0,
     "bmsChrgCtrlDspCmd":2,
@@ -2073,6 +2703,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "ccuOnbdChrgrPlugOn":null,
     "ccuOnbdChrgrPlugOnPresent":false,
     "chargeStatus":{
+      "@ASN1Type":"RvsChargingStatus",
       "chargingDuration":0,
       "chargingDurationPresent":true,
       "chargingElectricityPhase":null,
@@ -2156,6 +2787,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "onBdChrgrAltrCrntInptVolPresent":false
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -2189,6 +2821,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":48
