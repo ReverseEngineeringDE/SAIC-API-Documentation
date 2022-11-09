@@ -16,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Random;
 import net.heberling.ismart.asn1.AbstractMessage;
+import net.heberling.ismart.asn1.AbstractMessageCoder;
+import net.heberling.ismart.asn1.Anonymizer;
 import net.heberling.ismart.asn1.v1_1.MP_DispatcherBody;
 import net.heberling.ismart.asn1.v1_1.MP_DispatcherHeader;
 import net.heberling.ismart.asn1.v1_1.Message;
@@ -23,6 +25,7 @@ import net.heberling.ismart.asn1.v1_1.MessageCoder;
 import net.heberling.ismart.asn1.v1_1.MessageCounter;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInReq;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInResp;
+import net.heberling.ismart.asn1.v1_1.entity.VinInfo;
 import net.heberling.ismart.asn1.v3_0.entity.OTA_ChrgMangDataResp;
 import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -72,91 +75,125 @@ public class GetData {
         String loginRequest =
                 new MessageCoder<>(MP_UserLoggingInReq.class).encodeRequest(loginRequestMessage);
 
-        System.out.println(toJSON(loginRequestMessage));
+        System.out.println(
+                toJSON(
+                        anonymized(
+                                new MessageCoder<>(MP_UserLoggingInReq.class),
+                                loginRequestMessage)));
 
         String loginResponse = sendRequest(loginRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
 
         Message<MP_UserLoggingInResp> loginResponseMessage =
                 new MessageCoder<>(MP_UserLoggingInResp.class).decodeResponse(loginResponse);
 
-        System.out.println(loginResponse);
-        System.out.println(toJSON(loginResponseMessage));
-
-        System.out.println(loginResponseMessage.getBody().getUid());
-        System.out.println(loginResponseMessage.getBody().getToken());
-        System.out.println(loginResponseMessage.getApplicationData().getToken());
-
-        net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
-                new net.heberling.ismart.asn1.v3_0.Message<>(
-                        new net.heberling.ismart.asn1.v3_0.MP_DispatcherHeader(),
-                        new byte[16],
-                        new net.heberling.ismart.asn1.v3_0.MP_DispatcherBody(),
-                        null);
-        fillReserved(chargingStatusMessage);
-
-        chargingStatusMessage.getBody().setApplicationID("516");
-        chargingStatusMessage.getBody().setTestFlag(2);
-        chargingStatusMessage
-                .getBody()
-                .setVin(
-                        loginResponseMessage.getApplicationData().getVinList().stream()
-                                .findFirst()
-                                .get()
-                                .getVin());
-        chargingStatusMessage.getBody().setUid(loginResponseMessage.getBody().getUid());
-        chargingStatusMessage
-                .getBody()
-                .setToken(loginResponseMessage.getApplicationData().getToken());
-        chargingStatusMessage.getBody().setMessageID(5);
-        chargingStatusMessage.getBody().setEventCreationTime((int) Instant.now().getEpochSecond());
-        chargingStatusMessage.getBody().setApplicationDataProtocolVersion(768);
-        chargingStatusMessage.getBody().setEventID(0);
-
-        String chargingStatusRequestMessage =
-                new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class)
-                        .encodeRequest(chargingStatusMessage);
-
-        System.out.println(toJSON(chargingStatusMessage));
-
-        String chargingStatusResponse =
-                sendRequest(
-                        chargingStatusRequestMessage, "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
-
-        net.heberling.ismart.asn1.v3_0.Message<OTA_ChrgMangDataResp> chargingStatusResponseMessage =
-                new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class)
-                        .decodeResponse(chargingStatusResponse);
-
-        System.out.println(chargingStatusResponse);
-        System.out.println(toJSON(chargingStatusResponseMessage));
-
-        // we get an eventId back...
-        chargingStatusMessage
-                .getBody()
-                .setEventID(chargingStatusResponseMessage.getBody().getEventID());
-        // ... use that to request the data again, until we have it
-        // TODO: check for real errors (result!=0 and/or errorMessagePresent)
-        while (chargingStatusResponseMessage.getApplicationData() == null) {
-
+        System.out.println(
+                toJSON(
+                        anonymized(
+                                new MessageCoder<>(MP_UserLoggingInResp.class),
+                                loginResponseMessage)));
+        for (VinInfo vin : loginResponseMessage.getApplicationData().getVinList()) {
+            net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
+                    new net.heberling.ismart.asn1.v3_0.Message<>(
+                            new net.heberling.ismart.asn1.v3_0.MP_DispatcherHeader(),
+                            new byte[16],
+                            new net.heberling.ismart.asn1.v3_0.MP_DispatcherBody(),
+                            null);
             fillReserved(chargingStatusMessage);
 
-            System.out.println(toJSON(chargingStatusMessage));
+            chargingStatusMessage.getBody().setApplicationID("516");
+            chargingStatusMessage.getBody().setTestFlag(2);
+            chargingStatusMessage.getBody().setVin(vin.getVin());
+            chargingStatusMessage.getBody().setUid(loginResponseMessage.getBody().getUid());
+            chargingStatusMessage
+                    .getBody()
+                    .setToken(loginResponseMessage.getApplicationData().getToken());
+            chargingStatusMessage.getBody().setMessageID(5);
+            chargingStatusMessage
+                    .getBody()
+                    .setEventCreationTime((int) Instant.now().getEpochSecond());
+            chargingStatusMessage.getBody().setApplicationDataProtocolVersion(768);
+            chargingStatusMessage.getBody().setEventID(0);
 
-            chargingStatusRequestMessage =
+            String chargingStatusRequestMessage =
                     new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class)
                             .encodeRequest(chargingStatusMessage);
 
-            chargingStatusResponse =
+            System.out.println(
+                    toJSON(
+                            anonymized(
+                                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                            IASN1PreparedElement.class),
+                                    chargingStatusMessage)));
+
+            String chargingStatusResponse =
                     sendRequest(
                             chargingStatusRequestMessage,
                             "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
 
-            chargingStatusResponseMessage =
-                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class)
-                            .decodeResponse(chargingStatusResponse);
+            net.heberling.ismart.asn1.v3_0.Message<OTA_ChrgMangDataResp>
+                    chargingStatusResponseMessage =
+                            new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                            OTA_ChrgMangDataResp.class)
+                                    .decodeResponse(chargingStatusResponse);
 
-            System.out.println(chargingStatusResponse);
-            System.out.println(toJSON(chargingStatusResponseMessage));
+            System.out.println(
+                    toJSON(
+                            anonymized(
+                                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                            OTA_ChrgMangDataResp.class),
+                                    chargingStatusResponseMessage)));
+
+            // we get an eventId back...
+            chargingStatusMessage
+                    .getBody()
+                    .setEventID(chargingStatusResponseMessage.getBody().getEventID());
+            // ... use that to request the data again, until we have it
+            // TODO: check for real errors (result!=0 and/or errorMessagePresent)
+            while (chargingStatusResponseMessage.getApplicationData() == null) {
+
+                fillReserved(chargingStatusMessage);
+
+                System.out.println(
+                        toJSON(
+                                anonymized(
+                                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                                IASN1PreparedElement.class),
+                                        chargingStatusMessage)));
+
+                chargingStatusRequestMessage =
+                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                        IASN1PreparedElement.class)
+                                .encodeRequest(chargingStatusMessage);
+
+                chargingStatusResponse =
+                        sendRequest(
+                                chargingStatusRequestMessage,
+                                "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
+
+                chargingStatusResponseMessage =
+                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                        OTA_ChrgMangDataResp.class)
+                                .decodeResponse(chargingStatusResponse);
+
+                System.out.println(
+                        toJSON(
+                                anonymized(
+                                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                                OTA_ChrgMangDataResp.class),
+                                        chargingStatusResponseMessage)));
+            }
         }
+    }
+
+    private static <
+                    H extends IASN1PreparedElement,
+                    B extends IASN1PreparedElement,
+                    E extends IASN1PreparedElement,
+                    M extends AbstractMessage<H, B, E>>
+            M anonymized(AbstractMessageCoder<H, B, E, M> coder, M message) {
+        M messageCopy = coder.decodeResponse(coder.encodeRequest(message));
+        Anonymizer.anonymize(messageCopy);
+        return messageCopy;
     }
 
     private static void fillReserved(
@@ -329,6 +366,9 @@ public class GetData {
         public ObjectWriter writeEscapedName(char[] name) {
             final String nameString = String.valueOf(name);
             if (nameString.equals("content")
+                    || nameString.equals("brandName")
+                    || nameString.equals("colorName")
+                    || nameString.equals("modelName")
                     || nameString.equals("sender")
                     || nameString.equals("title")
                     || nameString.equals("errorMessage")) {

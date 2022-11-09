@@ -395,7 +395,7 @@
       "gpsStatus":"fix2D",
       "timestamp4Short":{
         "@ASN1Type":"Timestamp4Short",
-        "seconds":1665031445
+        "seconds":1665000000
       },
       "wayPoint":{
         "@ASN1Type":"RvsWayPoint",
@@ -430,8 +430,8 @@
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031448,
-    "eventID":2094027071,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":2,
     "result":0,

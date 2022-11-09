@@ -17,9 +17,9 @@ public class Anonymizer {
                 }
             }
 
-            anoymize(message.getBody());
+            anonymize(message.getBody());
             if (message.getApplicationData() != null) {
-                anoymize(message.getApplicationData());
+                anonymize(message.getApplicationData());
             }
 
         } catch (IllegalAccessException e) {
@@ -27,7 +27,7 @@ public class Anonymizer {
         }
     }
 
-    private static void anoymize(IASN1PreparedElement element) throws IllegalAccessException {
+    private static void anonymize(IASN1PreparedElement element) throws IllegalAccessException {
         for (Field field : element.getClass().getDeclaredFields()) {
             // make all fields accessible
             field.setAccessible(true);
@@ -35,18 +35,22 @@ public class Anonymizer {
                 // only replace actually filled fields
                 if (IASN1PreparedElement.class.isAssignableFrom(field.getType())) {
                     // replace nested structures
-                    anoymize((IASN1PreparedElement) field.get(element));
+                    anonymize((IASN1PreparedElement) field.get(element));
                 } else if (Collection.class.isAssignableFrom(field.getType())) {
                     // replace collections
                     Collection<?> c = (Collection<?>) field.get(element);
                     for (Object o : c) {
                         if (o instanceof IASN1PreparedElement) {
-                            anoymize((IASN1PreparedElement) o);
+                            anonymize((IASN1PreparedElement) o);
                         }
                     }
                 } else {
                     // replace identifying values
                     switch (field.getName()) {
+                        case "password":
+                            // replace everything with *
+                            field.set(element, ((String) field.get(element)).replaceAll(".", "*"));
+                            break;
                         case "email":
                         case "uid":
                         case "token":
@@ -63,10 +67,19 @@ public class Anonymizer {
                             String[] s = ((String) field.get(element)).split("###");
                             field.set(element, anonymizeString(s[0]) + "###" + s[1]);
                             break;
+                        case "seconds":
+                        case "bindTime":
+                        case "eventCreationTime":
                         case "latitude":
                         case "longitude":
-                            field.set(element, ((Integer) field.get(element)) / 100000 * 100000);
+                            if (field.get(element) instanceof Long) {
+                                field.set(element, ((Long) field.get(element)) / 100000 * 100000);
+                            } else {
+                                field.set(
+                                        element, ((Integer) field.get(element)) / 100000 * 100000);
+                            }
                             break;
+                        case "eventID":
                         case "lastKeySeen":
                             field.set(element, 9999);
                             break;

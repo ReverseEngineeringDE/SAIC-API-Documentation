@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Assertions;
 
 public class AbstractMessageCoderTest {
 
+    private static final boolean forceOverwrite =
+            System.getProperty("forceOverwrite", "false").equalsIgnoreCase("true");
+
     private static final File examplesDirectory;
 
     static {
@@ -47,6 +50,11 @@ public class AbstractMessageCoderTest {
         // make sure the message stays the same
         assertEquals(messageString, coder.encodeRequest(message));
 
+        if (forceOverwrite) {
+            Anonymizer.anonymize(message);
+            messageString = coder.encodeRequest(message);
+        }
+
         // make sure we match the stored values
         File e = new File(examplesDirectory, "v" + coder.getVersion().replace(".", "_"));
         e.mkdirs();
@@ -70,7 +78,7 @@ public class AbstractMessageCoderTest {
             }
 
             File perFile = new File(e, fileName + ".per");
-            if (perFile.exists()) {
+            if (!forceOverwrite && perFile.exists()) {
                 Assertions.assertEquals(
                         Files.readString(perFile.toPath(), StandardCharsets.UTF_8), messageString);
             } else {
@@ -80,7 +88,7 @@ public class AbstractMessageCoderTest {
             String json = toJSON(message);
 
             File jsonFile = new File(e, fileName + ".json");
-            if (jsonFile.exists()) {
+            if (!forceOverwrite && jsonFile.exists()) {
                 Assertions.assertEquals(
                         Files.readString(jsonFile.toPath(), StandardCharsets.UTF_8), json);
             } else {

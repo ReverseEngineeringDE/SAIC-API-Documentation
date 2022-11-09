@@ -8,7 +8,7 @@
     "token":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
     "tokenExpiration":{
       "@ASN1Type":"Timestamp",
-      "seconds":1668174662
+      "seconds":1668100000
     },
     "tokenExpirationPresent":true,
     "tokenPresent":true,
@@ -20,11 +20,13 @@
         "@ASN1Type":"VinInfo",
         "bindTime":{
           "@ASN1Type":"Timestamp",
-          "seconds":1663254599
+          "seconds":1663200000
         },
         "bindTimePresent":true,
         "brandName":"TUc=",
+        "@brandNameUTF8":"MG",
         "colorName":"QkxBQ0vCoFBFQVJM",
+        "@colorNameUTF8":"BLACK PEARL",
         "colorNamePresent":true,
         "isAcivate":false,
         "isCurrentVehicle":1,
@@ -32,6 +34,7 @@
         "modelConfigurationJsonStr":"name:Tire pressure monitoring system,code:J17,value:1;name:Regular airbags,code:Q00,value:1;name:Front-seat airbags,code:Q01,value:1;name:Airbag switch,code:Q09,value:1;name:Sun Roof,code:S35,value:0;name:Remote control,code:S61,value:1;name:Air conditioning,code:T11,value:1;name:Electric Power Steering,code:EPS,value:1;name:Security alert,code:SA64,value:0111110000000000001000000100101000000010100000000000000000000110;name:Bonnut Status,code:BONNUT,value:1;name:Door Status,code:DOOR,value:1111;name:Boot Status,code:BOOT,value:1;name:Engine Status,code:ENGINE,value:1;name:Electric Vehicle,code:EV,value:0;name:HeatedSeat,code:HeatedSeat,value:0;name:Key Position,code:KEYPOS,value:1;name:Energy state,code:ENERGY,value:0;name:Battery Voltage,code:BATTERY,value:1;name:Interior Temperature,code:INTEMP,value:1;name:Exterior Temperature,code:EXTEMP,value:1;name:Window Status,code:WINDOW,value:0000;name:Left-Right Driving,code:LRD,value:0;name:Bluetooth Key,code:BTKEY,value:0;name:Battery Type,code:BType,value:2",
         "modelConfigurationJsonStrPresent":true,
         "modelName":"TUc1IEVsZWN0cmlj",
+        "@modelNameUTF8":"MG5 Electric",
         "modelYear":"2021",
         "modelYearPresent":true,
         "name":null,
@@ -61,7 +64,7 @@
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665579060,
+    "eventCreationTime":1665500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,

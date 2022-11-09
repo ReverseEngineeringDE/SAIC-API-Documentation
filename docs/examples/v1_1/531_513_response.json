@@ -12,7 +12,7 @@
         "messageId":1336129,
         "messageTime":{
           "@ASN1Type":"Timestamp",
-          "seconds":1666439528
+          "seconds":1666400000
         },
         "messageType":"323",
         "readStatus":0,
@@ -43,7 +43,7 @@
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1666455099,
+    "eventCreationTime":1666400000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
