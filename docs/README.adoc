@@ -112,6 +112,30 @@ ApplicationDataModule
 DEFINITIONS
 AUTOMATIC TAGS ::= 
 BEGIN
+AlarmSwitchReq ::= SEQUENCE
+{
+  pin IA5String(SIZE(32)),
+  alarmSwitchList SEQUENCE SIZE(1..16) OF AlarmSwitch,
+  description OCTET STRING(SIZE(0..500)) OPTIONAL
+}
+MPUserInfoResp ::= SEQUENCE
+{
+  nickName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  address OCTET STRING(SIZE(1..500)) OPTIONAL,
+  mobilePhone IA5String(SIZE(1..19)) OPTIONAL,
+  emergencyName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  emergencyMobile IA5String(SIZE(1..19)) OPTIONAL,
+  userPhoto IA5String(SIZE(1..128)) OPTIONAL,
+  gender OCTET STRING(SIZE(1)) OPTIONAL,
+  birthday IA5String(SIZE(8)) OPTIONAL,
+  languageType LanguageType OPTIONAL,
+  realName OCTET STRING(SIZE(1..150)) OPTIONAL,
+  theSecondLevelCountryCode IA5String(SIZE(1..100)) OPTIONAL,
+  theThirdLevelCountryCode IA5String(SIZE(1..100)) OPTIONAL,
+  theSecondLevelCountryName OCTET STRING(SIZE(1..200)) OPTIONAL,
+  theThirdLevelCountryName OCTET STRING(SIZE(1..200)) OPTIONAL,
+  email IA5String(SIZE(0..50)) OPTIONAL
+}
 MP_UserLoggingInReq ::= SEQUENCE
 {
   password IA5String(SIZE(6..30)),
@@ -150,6 +174,12 @@ AdvertiseResp ::= SEQUENCE
   advertiseVersion INTEGER(0..281474976710655) OPTIONAL,
   advertises SEQUENCE SIZE(0..255) OF Advertise OPTIONAL
 }
+AbortSendMessageReq ::= SEQUENCE
+{
+  messages SEQUENCE SIZE(1..256) OF Message OPTIONAL,
+  messageId INTEGER(0..281474976710655) OPTIONAL,
+  actionType IA5String(SIZE(1..20)) OPTIONAL
+}
 MessageListReq ::= SEQUENCE
 {
   startEndNumber StartEndNumber,
@@ -171,25 +201,11 @@ SetNotificationCountReq ::= SEQUENCE
 {
   notificationCount INTEGER(0..255)
 }
-Timestamp ::= SEQUENCE
+AlarmSwitch ::= SEQUENCE
 {
-  seconds INTEGER(0..4294967295)
-}
-VinInfo ::= SEQUENCE
-{
-  vin IA5String(SIZE(17)),
-  name OCTET STRING(SIZE(1..128)) OPTIONAL,
-  series IA5String(SIZE(1..10)),
-  brandName OCTET STRING(SIZE(1..24)),
-  modelName OCTET STRING(SIZE(1..100)),
-  vehiclePhoto IA5String(SIZE(1..128)) OPTIONAL,
-  isAcivate BOOLEAN,
-  isCurrentVehicle INTEGER(0..10) OPTIONAL,
-  modelYear IA5String(SIZE(4)) OPTIONAL,
-  colorName OCTET STRING(SIZE(1..50)) OPTIONAL,
-  modelConfigurationJsonStr IA5String(SIZE(1..1024)) OPTIONAL,
-  bindTime Timestamp OPTIONAL,
-  tboxSimNo IA5String(SIZE(19)) OPTIONAL
+  alarmSettingType MP_AlarmSettingType,
+  alarmSwitch BOOLEAN,
+  functionSwitch BOOLEAN
 }
 LanguageType ::= ENUMERATED
 {
@@ -211,6 +227,26 @@ LanguageType ::= ENUMERATED
   arabic(15),
   hindi(16)
 }
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
+VinInfo ::= SEQUENCE
+{
+  vin IA5String(SIZE(17)),
+  name OCTET STRING(SIZE(1..128)) OPTIONAL,
+  series IA5String(SIZE(1..10)),
+  brandName OCTET STRING(SIZE(1..24)),
+  modelName OCTET STRING(SIZE(1..100)),
+  vehiclePhoto IA5String(SIZE(1..128)) OPTIONAL,
+  isAcivate BOOLEAN,
+  isCurrentVehicle INTEGER(0..10) OPTIONAL,
+  modelYear IA5String(SIZE(4)) OPTIONAL,
+  colorName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  modelConfigurationJsonStr IA5String(SIZE(1..1024)) OPTIONAL,
+  bindTime Timestamp OPTIONAL,
+  tboxSimNo IA5String(SIZE(19)) OPTIONAL
+}
 APPType ::= ENUMERATED
 {
   ios(0),
@@ -224,6 +260,17 @@ Advertise ::= SEQUENCE
   detailsUrl IA5String(SIZE(1..255)) OPTIONAL,
   startTime Timestamp OPTIONAL,
   endTime Timestamp OPTIONAL
+}
+Message ::= SEQUENCE
+{
+  messageId INTEGER(0..281474976710655),
+  messageType IA5String(SIZE(3)),
+  title OCTET STRING(SIZE(1..128)),
+  messageTime Timestamp,
+  sender OCTET STRING(SIZE(1..64)),
+  contentId SEQUENCE SIZE(1..256) OF ContentId OPTIONAL,
+  content OCTET STRING(SIZE(1..2048)) OPTIONAL,
+  readStatus INTEGER(-128..128) OPTIONAL
 }
 StartEndNumber ::= SEQUENCE
 {
@@ -242,21 +289,23 @@ Message ::= SEQUENCE
   readStatus INTEGER(-128..128) OPTIONAL,
   vin IA5String(SIZE(17)) OPTIONAL
 }
-Timestamp ::= SEQUENCE
+MP_AlarmSettingType ::= ENUMERATED
 {
-  seconds INTEGER(0..4294967295)
+  abnormal(0),
+  moving(1),
+  region(2),
+  engineStart(3),
+  startVehicleStatus(4),
+  offCar(5),
+  speeding(6)
 }
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
 }
-Timestamp ::= SEQUENCE
+ContentId ::= SEQUENCE
 {
-  seconds INTEGER(0..4294967295)
-}
-Timestamp ::= SEQUENCE
-{
-  seconds INTEGER(0..4294967295)
+  contentId INTEGER(0..281474976710655)
 }
 ContentId ::= SEQUENCE
 {
@@ -959,6 +1008,327 @@ The error message is a byte array, containing the UTF-8 String "The account is n
 :leveloffset: 1
 :leveloffset: 1
 
+= Get Userinfo
+
+== Request
+
+[source,hexdump]
+----
+00F7111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB06CC6EA5C8C020200468ACF134468ACF1342468ACF1342468ACF1342000000000100A0
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"506",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668623942,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+0125111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB06CC6EA5C8C040202468ACF134468ACF1342468ACF1342468ACF13420000002A0100A000000082352C58B162C588162C58B162C58B161758B160
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"MPUserInfoResp",
+    "address":null,
+    "addressPresent":false,
+    "birthday":null,
+    "birthdayPresent":false,
+    "email":"XXXXXX@XXXXXXXXX.XXX",
+    "emailPresent":true,
+    "emergencyMobile":null,
+    "emergencyMobilePresent":false,
+    "emergencyName":null,
+    "emergencyNamePresent":false,
+    "gender":null,
+    "genderPresent":false,
+    "languageType":"de",
+    "languageTypePresent":true,
+    "mobilePhone":null,
+    "mobilePhonePresent":false,
+    "nickName":null,
+    "nickNamePresent":false,
+    "realName":null,
+    "realNamePresent":false,
+    "theSecondLevelCountryCode":null,
+    "theSecondLevelCountryCodePresent":false,
+    "theSecondLevelCountryName":null,
+    "theSecondLevelCountryNamePresent":false,
+    "theThirdLevelCountryCode":null,
+    "theThirdLevelCountryCodePresent":false,
+    "theThirdLevelCountryName":null,
+    "theThirdLevelCountryNamePresent":false,
+    "userPhoto":null,
+    "userPhotoPresent":false
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":21,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"506",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668623942,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Set CarAlarm
+
+== Request
+
+pin is hardcoded to md5sum("123456")
+
+[source,hexdump]
+----
+0151111008800E82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB26362C58B0E5CB072E6C5860E5CB972E58DD4B8C80404008D159E2688D159E26848D159E26848D159E2684000000780201406562C30E4C6CDCB4738B0B57387162CAD5B6560D5BE664C333870CF283C0
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"AlarmSwitchReq",
+    "alarmSwitchList":[
+      {
+        "@ASN1Type":"AlarmSwitch",
+        "alarmSettingType":"engineStart",
+        "alarmSwitch":true,
+        "functionSwitch":true
+      }
+    ],
+    "description":null,
+    "descriptionPresent":false,
+    "pin":"e10adc3949ba59abbe56e057f20f883e"
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":30,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"521",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668623922,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":"XXXX99099XX099999",
+    "vinPresent":true
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":136,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+0119111008A00E82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB26362C58B0E5CB072E6C5860E5CB972E58DD4B8C80804048D159E2688D159E26848D159E26848D159E2684000000000201400000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"521",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668623922,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":"XXXX99099XX099999",
+    "vinPresent":true
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":138,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
 = Get Messages
 
 == Request
@@ -1397,6 +1767,154 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "testFlag":2,
     "testFlagPresent":true,
     "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= DeleteMessage
+
+== Request
+if a messageId is set, actionType can be DELETE to delete this message or READ, to mark it read.
+
+if no messageId is set actionType can be DELETE_ALARM to delete all alarm messages
+
+[source,hexdump]
+----
+0111111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161B316AC6EA5C34020200468ACF134468ACF1342468ACF1342468ACF13420000001A0100A0600000035CC7A58916645A9140
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"AbortSendMessageReq",
+    "actionType":"DELETE",
+    "actionTypePresent":true,
+    "messageId":1762877,
+    "messageIdPresent":true,
+    "messages":null,
+    "messagesPresent":false
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":13,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"615",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668623898,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+00FB111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161B316AC6EA5C34040202468ACF134468ACF1342468ACF1342468ACF1342000000000100A00000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"615",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668623898,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
     "tokenPresent":true,
     "uid":"00000000000000000000000000000000000090000000099999",
     "uidPresent":true,
