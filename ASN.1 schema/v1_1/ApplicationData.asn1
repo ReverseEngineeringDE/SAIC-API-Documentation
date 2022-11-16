@@ -65,6 +65,12 @@ AdvertiseResp ::= SEQUENCE
   advertiseVersion INTEGER(0..281474976710655) OPTIONAL,
   advertises SEQUENCE SIZE(0..255) OF Advertise OPTIONAL
 }
+AbortSendMessageReq ::= SEQUENCE
+{
+  messages SEQUENCE SIZE(1..256) OF Message OPTIONAL,
+  messageId INTEGER(0..281474976710655) OPTIONAL,
+  actionType IA5String(SIZE(1..20)) OPTIONAL
+}
 MessageListReq ::= SEQUENCE
 {
   startEndNumber StartEndNumber,
@@ -146,6 +152,17 @@ Advertise ::= SEQUENCE
   startTime Timestamp OPTIONAL,
   endTime Timestamp OPTIONAL
 }
+Message ::= SEQUENCE
+{
+  messageId INTEGER(0..281474976710655),
+  messageType IA5String(SIZE(3)),
+  title OCTET STRING(SIZE(1..128)),
+  messageTime Timestamp,
+  sender OCTET STRING(SIZE(1..64)),
+  contentId SEQUENCE SIZE(1..256) OF ContentId OPTIONAL,
+  content OCTET STRING(SIZE(1..2048)) OPTIONAL,
+  readStatus INTEGER(-128..128) OPTIONAL
+}
 StartEndNumber ::= SEQUENCE
 {
   startNumber INTEGER(0..281474976710655),
@@ -176,6 +193,10 @@ MP_AlarmSettingType ::= ENUMERATED
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
+}
+ContentId ::= SEQUENCE
+{
+  contentId INTEGER(0..281474976710655)
 }
 ContentId ::= SEQUENCE
 {

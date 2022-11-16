@@ -20,6 +20,7 @@ asn1extractor/asn1extractor.sh ApplicationDataModule \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.software.APPUpgradeInfoResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.software.MPAppAttributeResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.advertise.AdvertiseResp \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.message.AbortSendMessageReq \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.message.MessageListReq \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.message.MessageListResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.message.GetUnreadMessageCountResp \
