@@ -1,0 +1,25 @@
+= Get Userinfo
+
+== Request
+
+[source,hexdump]
+----
+include::506_513_request.per[]
+----
+
+[source,json]
+----
+include::506_513_request.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::506_513_response.per[]
+----
+
+[source,json]
+----
+include::506_513_response.json[]
+----

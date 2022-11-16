@@ -5,6 +5,7 @@ import net.heberling.ismart.asn1.v1_1.entity.APPUpgradeInfoResp;
 import net.heberling.ismart.asn1.v1_1.entity.AdvertiseResp;
 import net.heberling.ismart.asn1.v1_1.entity.GetUnreadMessageCountResp;
 import net.heberling.ismart.asn1.v1_1.entity.MPAppAttributeResp;
+import net.heberling.ismart.asn1.v1_1.entity.MPUserInfoResp;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInReq;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInResp;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListReq;
@@ -130,5 +131,21 @@ class MessageCoderTest extends net.heberling.ismart.asn1.AbstractMessageCoderTes
         decodeEncode(
                 "00FB111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB36AC6A82C7A040202468ACF134468ACF1342468ACF1342468ACF1342000000000100A00000",
                 new MessageCoder<>(IASN1PreparedElement.class));
+    }
+
+    @Test
+    void decodeEncodeRequest_506() {
+        // https://tap-eu.soimt.com/TAP.Web/ota.mp
+        decodeEncode(
+                "00F7111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB06CC6EA5C8C020200468ACF134468ACF1342468ACF1342468ACF1342000000000100A0",
+                new MessageCoder<>(IASN1PreparedElement.class));
+    }
+
+    @Test
+    void decodeEncodeResponse_506() {
+        // https://tap-eu.soimt.com/TAP.Web/ota.mp
+        decodeEncode(
+                "0125111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB06CC6EA5C8C040202468ACF134468ACF1342468ACF1342468ACF13420000002A0100A000000082352C58B162C588162C58B162C58B161758B160",
+                new MessageCoder<>(MPUserInfoResp.class));
     }
 }

@@ -3,6 +3,24 @@ ApplicationDataModule
 DEFINITIONS
 AUTOMATIC TAGS ::= 
 BEGIN
+MPUserInfoResp ::= SEQUENCE
+{
+  nickName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  address OCTET STRING(SIZE(1..500)) OPTIONAL,
+  mobilePhone IA5String(SIZE(1..19)) OPTIONAL,
+  emergencyName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  emergencyMobile IA5String(SIZE(1..19)) OPTIONAL,
+  userPhoto IA5String(SIZE(1..128)) OPTIONAL,
+  gender OCTET STRING(SIZE(1)) OPTIONAL,
+  birthday IA5String(SIZE(8)) OPTIONAL,
+  languageType LanguageType OPTIONAL,
+  realName OCTET STRING(SIZE(1..150)) OPTIONAL,
+  theSecondLevelCountryCode IA5String(SIZE(1..100)) OPTIONAL,
+  theThirdLevelCountryCode IA5String(SIZE(1..100)) OPTIONAL,
+  theSecondLevelCountryName OCTET STRING(SIZE(1..200)) OPTIONAL,
+  theThirdLevelCountryName OCTET STRING(SIZE(1..200)) OPTIONAL,
+  email IA5String(SIZE(0..50)) OPTIONAL
+}
 MP_UserLoggingInReq ::= SEQUENCE
 {
   password IA5String(SIZE(6..30)),
@@ -62,26 +80,6 @@ SetNotificationCountReq ::= SEQUENCE
 {
   notificationCount INTEGER(0..255)
 }
-Timestamp ::= SEQUENCE
-{
-  seconds INTEGER(0..4294967295)
-}
-VinInfo ::= SEQUENCE
-{
-  vin IA5String(SIZE(17)),
-  name OCTET STRING(SIZE(1..128)) OPTIONAL,
-  series IA5String(SIZE(1..10)),
-  brandName OCTET STRING(SIZE(1..24)),
-  modelName OCTET STRING(SIZE(1..100)),
-  vehiclePhoto IA5String(SIZE(1..128)) OPTIONAL,
-  isAcivate BOOLEAN,
-  isCurrentVehicle INTEGER(0..10) OPTIONAL,
-  modelYear IA5String(SIZE(4)) OPTIONAL,
-  colorName OCTET STRING(SIZE(1..50)) OPTIONAL,
-  modelConfigurationJsonStr IA5String(SIZE(1..1024)) OPTIONAL,
-  bindTime Timestamp OPTIONAL,
-  tboxSimNo IA5String(SIZE(19)) OPTIONAL
-}
 LanguageType ::= ENUMERATED
 {
   thai(0),
@@ -101,6 +99,26 @@ LanguageType ::= ENUMERATED
   fi(14),
   arabic(15),
   hindi(16)
+}
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
+VinInfo ::= SEQUENCE
+{
+  vin IA5String(SIZE(17)),
+  name OCTET STRING(SIZE(1..128)) OPTIONAL,
+  series IA5String(SIZE(1..10)),
+  brandName OCTET STRING(SIZE(1..24)),
+  modelName OCTET STRING(SIZE(1..100)),
+  vehiclePhoto IA5String(SIZE(1..128)) OPTIONAL,
+  isAcivate BOOLEAN,
+  isCurrentVehicle INTEGER(0..10) OPTIONAL,
+  modelYear IA5String(SIZE(4)) OPTIONAL,
+  colorName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  modelConfigurationJsonStr IA5String(SIZE(1..1024)) OPTIONAL,
+  bindTime Timestamp OPTIONAL,
+  tboxSimNo IA5String(SIZE(19)) OPTIONAL
 }
 APPType ::= ENUMERATED
 {

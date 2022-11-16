@@ -47,6 +47,7 @@ public class Anonymizer {
                 } else {
                     // replace identifying values
                     switch (field.getName()) {
+                        case "email":
                         case "uid":
                         case "token":
                         case "refreshToken":
