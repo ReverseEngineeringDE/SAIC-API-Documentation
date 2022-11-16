@@ -1,0 +1,27 @@
+= Set CarAlarm
+
+== Request
+
+pin is hardcoded to md5sum("123456")
+
+[source,hexdump]
+----
+include::521_513_request.per[]
+----
+
+[source,json]
+----
+include::521_513_request.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::521_513_response.per[]
+----
+
+[source,json]
+----
+include::521_513_response.json[]
+----

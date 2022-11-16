@@ -3,6 +3,7 @@ package net.heberling.ismart.asn1.v1_1;
 import net.heberling.ismart.asn1.v1_1.entity.APPUpgradeInfoReq;
 import net.heberling.ismart.asn1.v1_1.entity.APPUpgradeInfoResp;
 import net.heberling.ismart.asn1.v1_1.entity.AdvertiseResp;
+import net.heberling.ismart.asn1.v1_1.entity.AlarmSwitchReq;
 import net.heberling.ismart.asn1.v1_1.entity.GetUnreadMessageCountResp;
 import net.heberling.ismart.asn1.v1_1.entity.MPAppAttributeResp;
 import net.heberling.ismart.asn1.v1_1.entity.MPUserInfoResp;
@@ -147,5 +148,21 @@ class MessageCoderTest extends net.heberling.ismart.asn1.AbstractMessageCoderTes
         decodeEncode(
                 "0125111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB06CC6EA5C8C040202468ACF134468ACF1342468ACF1342468ACF13420000002A0100A000000082352C58B162C588162C58B162C58B161758B160",
                 new MessageCoder<>(MPUserInfoResp.class));
+    }
+
+    @Test
+    void decodeEncodeRequest_521() {
+        // https://tap-eu.soimt.com/TAP.Web/ota.mp
+        decodeEncode(
+                "0151111008800E82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB26362C58B0E5CB072E6C5860E5CB972E58DD4B8C80404008D159E2688D159E26848D159E26848D159E2684000000780201406562C30E4C6CDCB4738B0B57387162CAD5B6560D5BE664C333870CF283C0",
+                new MessageCoder<>(AlarmSwitchReq.class));
+    }
+
+    @Test
+    void decodeEncodeResponse_521() {
+        // https://tap-eu.soimt.com/TAP.Web/ota.mp
+        decodeEncode(
+                "0119111008A00E82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB26362C58B0E5CB072E6C5860E5CB972E58DD4B8C80804048D159E2688D159E26848D159E26848D159E2684000000000201400000",
+                new MessageCoder<>(IASN1PreparedElement.class));
     }
 }

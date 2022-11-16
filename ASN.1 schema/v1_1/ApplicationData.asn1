@@ -3,6 +3,12 @@ ApplicationDataModule
 DEFINITIONS
 AUTOMATIC TAGS ::= 
 BEGIN
+AlarmSwitchReq ::= SEQUENCE
+{
+  pin IA5String(SIZE(32)),
+  alarmSwitchList SEQUENCE SIZE(1..16) OF AlarmSwitch,
+  description OCTET STRING(SIZE(0..500)) OPTIONAL
+}
 MPUserInfoResp ::= SEQUENCE
 {
   nickName OCTET STRING(SIZE(1..50)) OPTIONAL,
@@ -80,6 +86,12 @@ SetNotificationCountReq ::= SEQUENCE
 {
   notificationCount INTEGER(0..255)
 }
+AlarmSwitch ::= SEQUENCE
+{
+  alarmSettingType MP_AlarmSettingType,
+  alarmSwitch BOOLEAN,
+  functionSwitch BOOLEAN
+}
 LanguageType ::= ENUMERATED
 {
   thai(0),
@@ -150,6 +162,16 @@ Message ::= SEQUENCE
   content OCTET STRING(SIZE(1..2048)) OPTIONAL,
   readStatus INTEGER(-128..128) OPTIONAL,
   vin IA5String(SIZE(17)) OPTIONAL
+}
+MP_AlarmSettingType ::= ENUMERATED
+{
+  abnormal(0),
+  moving(1),
+  region(2),
+  engineStart(3),
+  startVehicleStatus(4),
+  offCar(5),
+  speeding(6)
 }
 Timestamp ::= SEQUENCE
 {
