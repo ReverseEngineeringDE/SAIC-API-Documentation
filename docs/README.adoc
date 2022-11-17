@@ -112,6 +112,30 @@ ApplicationDataModule
 DEFINITIONS
 AUTOMATIC TAGS ::= 
 BEGIN
+AlarmSwitchReq ::= SEQUENCE
+{
+  pin IA5String(SIZE(32)),
+  alarmSwitchList SEQUENCE SIZE(1..16) OF AlarmSwitch,
+  description OCTET STRING(SIZE(0..500)) OPTIONAL
+}
+MPUserInfoResp ::= SEQUENCE
+{
+  nickName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  address OCTET STRING(SIZE(1..500)) OPTIONAL,
+  mobilePhone IA5String(SIZE(1..19)) OPTIONAL,
+  emergencyName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  emergencyMobile IA5String(SIZE(1..19)) OPTIONAL,
+  userPhoto IA5String(SIZE(1..128)) OPTIONAL,
+  gender OCTET STRING(SIZE(1)) OPTIONAL,
+  birthday IA5String(SIZE(8)) OPTIONAL,
+  languageType LanguageType OPTIONAL,
+  realName OCTET STRING(SIZE(1..150)) OPTIONAL,
+  theSecondLevelCountryCode IA5String(SIZE(1..100)) OPTIONAL,
+  theThirdLevelCountryCode IA5String(SIZE(1..100)) OPTIONAL,
+  theSecondLevelCountryName OCTET STRING(SIZE(1..200)) OPTIONAL,
+  theThirdLevelCountryName OCTET STRING(SIZE(1..200)) OPTIONAL,
+  email IA5String(SIZE(0..50)) OPTIONAL
+}
 MP_UserLoggingInReq ::= SEQUENCE
 {
   password IA5String(SIZE(6..30)),
@@ -150,25 +174,38 @@ AdvertiseResp ::= SEQUENCE
   advertiseVersion INTEGER(0..281474976710655) OPTIONAL,
   advertises SEQUENCE SIZE(0..255) OF Advertise OPTIONAL
 }
-Timestamp ::= SEQUENCE
+AbortSendMessageReq ::= SEQUENCE
 {
-  seconds INTEGER(0..4294967295)
+  messages SEQUENCE SIZE(1..256) OF Message OPTIONAL,
+  messageId INTEGER(0..281474976710655) OPTIONAL,
+  actionType IA5String(SIZE(1..20)) OPTIONAL
 }
-VinInfo ::= SEQUENCE
+MessageListReq ::= SEQUENCE
 {
-  vin IA5String(SIZE(17)),
-  name OCTET STRING(SIZE(1..128)) OPTIONAL,
-  series IA5String(SIZE(1..10)),
-  brandName OCTET STRING(SIZE(1..24)),
-  modelName OCTET STRING(SIZE(1..100)),
-  vehiclePhoto IA5String(SIZE(1..128)) OPTIONAL,
-  isAcivate BOOLEAN,
-  isCurrentVehicle INTEGER(0..10) OPTIONAL,
-  modelYear IA5String(SIZE(4)) OPTIONAL,
-  colorName OCTET STRING(SIZE(1..50)) OPTIONAL,
-  modelConfigurationJsonStr IA5String(SIZE(1..1024)) OPTIONAL,
-  bindTime Timestamp OPTIONAL,
-  tboxSimNo IA5String(SIZE(19)) OPTIONAL
+  startEndNumber StartEndNumber,
+  messageGroup IA5String(SIZE(1..20)) OPTIONAL
+}
+MessageListResp ::= SEQUENCE
+{
+  recordsNumber INTEGER(0..281474976710655),
+  messages SEQUENCE SIZE(1..256) OF Message OPTIONAL
+}
+GetUnreadMessageCountResp ::= SEQUENCE
+{
+  totalNumber INTEGER(0..281474976710655),
+  newsNumber INTEGER(0..281474976710655),
+  commandNumber INTEGER(0..281474976710655),
+  alarmNumber INTEGER(0..281474976710655)
+}
+SetNotificationCountReq ::= SEQUENCE
+{
+  notificationCount INTEGER(0..255)
+}
+AlarmSwitch ::= SEQUENCE
+{
+  alarmSettingType MP_AlarmSettingType,
+  alarmSwitch BOOLEAN,
+  functionSwitch BOOLEAN
 }
 LanguageType ::= ENUMERATED
 {
@@ -190,6 +227,26 @@ LanguageType ::= ENUMERATED
   arabic(15),
   hindi(16)
 }
+Timestamp ::= SEQUENCE
+{
+  seconds INTEGER(0..4294967295)
+}
+VinInfo ::= SEQUENCE
+{
+  vin IA5String(SIZE(17)),
+  name OCTET STRING(SIZE(1..128)) OPTIONAL,
+  series IA5String(SIZE(1..10)),
+  brandName OCTET STRING(SIZE(1..24)),
+  modelName OCTET STRING(SIZE(1..100)),
+  vehiclePhoto IA5String(SIZE(1..128)) OPTIONAL,
+  isAcivate BOOLEAN,
+  isCurrentVehicle INTEGER(0..10) OPTIONAL,
+  modelYear IA5String(SIZE(4)) OPTIONAL,
+  colorName OCTET STRING(SIZE(1..50)) OPTIONAL,
+  modelConfigurationJsonStr IA5String(SIZE(1..1024)) OPTIONAL,
+  bindTime Timestamp OPTIONAL,
+  tboxSimNo IA5String(SIZE(19)) OPTIONAL
+}
 APPType ::= ENUMERATED
 {
   ios(0),
@@ -204,17 +261,56 @@ Advertise ::= SEQUENCE
   startTime Timestamp OPTIONAL,
   endTime Timestamp OPTIONAL
 }
-Timestamp ::= SEQUENCE
+Message ::= SEQUENCE
 {
-  seconds INTEGER(0..4294967295)
+  messageId INTEGER(0..281474976710655),
+  messageType IA5String(SIZE(3)),
+  title OCTET STRING(SIZE(1..128)),
+  messageTime Timestamp,
+  sender OCTET STRING(SIZE(1..64)),
+  contentId SEQUENCE SIZE(1..256) OF ContentId OPTIONAL,
+  content OCTET STRING(SIZE(1..2048)) OPTIONAL,
+  readStatus INTEGER(-128..128) OPTIONAL
+}
+StartEndNumber ::= SEQUENCE
+{
+  startNumber INTEGER(0..281474976710655),
+  endNumber INTEGER(0..281474976710655)
+}
+Message ::= SEQUENCE
+{
+  messageId INTEGER(0..281474976710655),
+  messageType IA5String(SIZE(3)),
+  title OCTET STRING(SIZE(1..128)),
+  messageTime Timestamp,
+  sender OCTET STRING(SIZE(1..64)),
+  contentId SEQUENCE SIZE(1..256) OF ContentId OPTIONAL,
+  content OCTET STRING(SIZE(1..2048)) OPTIONAL,
+  readStatus INTEGER(-128..128) OPTIONAL,
+  vin IA5String(SIZE(17)) OPTIONAL
+}
+MP_AlarmSettingType ::= ENUMERATED
+{
+  abnormal(0),
+  moving(1),
+  region(2),
+  engineStart(3),
+  startVehicleStatus(4),
+  offCar(5),
+  speeding(6)
 }
 Timestamp ::= SEQUENCE
 {
   seconds INTEGER(0..4294967295)
 }
-Timestamp ::= SEQUENCE
+ContentId ::= SEQUENCE
 {
-  seconds INTEGER(0..4294967295)
+  contentId INTEGER(0..281474976710655)
+}
+ContentId ::= SEQUENCE
+{
+  contentId INTEGER(0..281474976710655),
+  description OCTET STRING(SIZE(1..255)) OPTIONAL
 }
 
 END
@@ -230,17 +326,19 @@ END
 
 [source,hexdump]
 ----
-0065111002A00082C6B11AB19B4BB580808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D08000000300402888C57315CD80
+0065111002A00082C6B11AB19B209000808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D08000000300402888C57315CD80
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
+    "@ASN1Type":"APPUpgradeInfoReq",
     "appType":"android",
     "appVersion":"1.1.6"
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -254,13 +352,14 @@ END
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1664522091,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -284,6 +383,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":42,
     "protocolVersion":17,
@@ -296,13 +396,14 @@ END
 
 [source,hexdump]
 ----
-00A5111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11AB19B4BB581008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000804028000040
+00A5111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11AB19B209001008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000804028000040
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
+    "@ASN1Type":"APPUpgradeInfoResp",
     "appVersion":null,
     "appVersionPresent":false,
     "forcedUpdate":false,
@@ -316,6 +417,7 @@ END
     "updateUrlPresent":false
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -329,13 +431,14 @@ END
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1664522091,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -359,6 +462,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":79,
     "protocolVersion":17,
@@ -376,7 +480,7 @@ END
 
 [source,hexdump]
 ----
-0059111002A00082C6B11B319B4BB380808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000004028
+0059111002A00082C6B11B319B209000808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000004028
 ----
 
 [source,json]
@@ -384,6 +488,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -397,13 +502,14 @@ END
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1664522087,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -427,6 +533,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":42,
     "protocolVersion":17,
@@ -439,17 +546,19 @@ END
 
 [source,hexdump]
 ----
-00BD111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11B319B4BB381008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D08000000680402800008005E3C74346FDD95D3164D9B8
+00BD111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11B319B209001008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D08000000680402800008005E3C74346FDD95D3164D9B8
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
+    "@ASN1Type":"MPAppAttributeResp",
     "dataAppAttribute":"ccPhone:1267",
     "dataAppAttributePresent":true
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -463,13 +572,14 @@ END
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1664522087,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -493,6 +603,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":79,
     "protocolVersion":17,
@@ -510,7 +621,7 @@ END
 
 [source,hexdump]
 ----
-0059111002A00082C6B11BB19B4BB980808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000004028
+0059111002A00082C6B11BB19B209000808011A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D080000000004028
 ----
 
 [source,json]
@@ -518,6 +629,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -531,13 +643,14 @@ END
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1664522099,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -561,6 +674,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":42,
     "protocolVersion":17,
@@ -573,7 +687,7 @@ END
 
 [source,hexdump]
 ----
-00A3111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11BB19B4BB981008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D0800000000040280000
+00A3111004F00482EB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B11BB19B209001008091A2B3C4D0D4C3B2A1911A2B3C4D091A2B3C4D0800000000040280000
 ----
 
 [source,json]
@@ -581,6 +695,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -594,13 +709,14 @@ END
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1664522099,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -624,6 +740,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":79,
     "protocolVersion":17,
@@ -641,18 +758,20 @@ END
 
 [source,hexdump]
 ----
-01F5111005600882CB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B161AB062C66DA9E4020200468ACF1343530ECA864468ACF1342468ACF1342000001440100A08BA65E7D18B266D2BAC30B162C586162C58B161858B162C30B162C587562C5860C2C58B162FD8B162C58B0C1858B162C58B162C58BF62C586162C58B162C58B0B6C306161858B161830B162C30B162C58B162C586162C58B162C58617EFD8B162C586162C58B162C30B162C30B161830B162C58B162C58B162C58B162C306161858B162C58B162C58B161858B162C58B162C586162C58B08D1A3CBD796FE1971E1E4
+01F5111005600882CB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B161AB062C66C8240020200468ACF1343530ECA864468ACF1342468ACF1342000001440100A08952A54A952A54AABAC30B162C586162C58B161858B162C30B162C587562C5860C2C58B162FD8B162C58B0C1858B162C58B162C58BF62C586162C58B162C58B0B6C306161858B161830B162C30B162C58B162C586162C58B162C58617EFD8B162C586162C58B162C30B162C30B161830B162C58B162C58B162C58B162C306161858B162C58B162C58B161858B162C58B162C586162C58B08D1A3CBD796FE1971E1E4
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
+    "@ASN1Type":"MP_UserLoggingInReq",
     "deviceId":"X0XXXX0XXXXX0XXXX0XXXX:XXX00XXXX_XXXXXX00XXXXXXXXX_XXX0XXXXXXXX-X00X0XXX00XXX0XXXXXXXX0XXXXXXX0__XXXXX0XXXXXX0XXX0XX00XXXXXXXXXXXXXXX00X0XXXXXXXXXXX0XXXXXXXXX0XXXX###europecar",
     "deviceIdPresent":true,
-    "password":"test1234"
+    "password":"********"
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -666,13 +785,14 @@ END
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1664537842,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -696,6 +816,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":86,
     "protocolVersion":17,
@@ -708,7 +829,7 @@ END
 
 [source,hexdump]
 ----
-0139111009A00C82FB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B161AB062C66DA9E4040202468ACF1343530ECA864468ACF1342468ACF1342000000000100A75460EAA34329030B1B1B7BAB73A1034B9903737BA103932B3B4B9BA32B932B2170
+0139111009A00C82FB162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B161AB062C66C8240040202468ACF1343530ECA864468ACF1342468ACF1342000000000100A75460EAA34329030B1B1B7BAB73A1034B9903737BA103932B3B4B9BA32B932B2170
 ----
 
 [source,json]
@@ -716,6 +837,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -728,14 +850,16 @@ END
     "crqmRequest":null,
     "crqmRequestPresent":false,
     "errorMessage":"VGhlIGFjY291bnQgaXMgbm90IHJlZ2lzdGVyZWQu",
+    "@errorMessageUTF8":"The account is not registered.",
     "errorMessagePresent":true,
-    "eventCreationTime":1664537842,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -759,6 +883,7 @@ END
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":154,
     "protocolVersion":17,
@@ -772,20 +897,22 @@ The error message is a byte array, containing the UTF-8 String "The account is n
 
 [source,hexdump]
 ----
-0915111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E6C39B161CD8B0C1CD860E5CB07362C397361CB97361CD8B16183972E5CD872E6C5872E5AB062C68D7068040202468ACF1343530ECA864468ACF1342468ACF13420000081A0100A00000F6C39B161CD8B0E56B9B0E5CAD72C18395B62C5872B5CD872E6C3960E5CD860E6C3972E6C39B161CD8B0E56B9B0E5CAD72C18395B62C5872B5CD872E6C3960E5CD860E6C3972E58DB94D1800FAC58B161CB960E5CD8B0C1CB972E5CAC5A0CA2506614D47169A8E6A408AD8CAC6E8E4D2C6164C19312D0931050D2F0A814115054933FADD876E575534F2CA83872CBCF9F5E59506DDFBB4F4DFCB4EECE839F9E7D32ED598F7E4CAEA5316EB3B61D9D72BA62EF761DB95D52CB9FAECC3C9061D3CB161CFCD663DF932BAA2C182CED87675CAE98BBDD876E5751B96FDDD16F3CB87A20C3A7962C39F9ACC7BF265754583159DB0ECEB95D3177BB0EDCAEA0E9E58B0E741CFBE9E98F42CC7BF265754583959DB0ECEB95D3177BB0EDCAEA9F5DC8296FDF99663DF932BAA6CDAACED87675CAE983BDD876E5754B2EDDFD32A0C7BF774E5BF62CC7BF265754DB3159DB0ECEB95D3177BB0EDCAEA0E9E4831EFDD934F4D3BF769DD9D663DF932BAA8C58ACED87675CAE98BBDD876E57517665C7D3969C68286FEF97920A7D32E5E5A7767598F7E4CAEA2D0A6B3B61D9D72BA62EF761DB95D53CB8FAF2D3D3CA0C3B32F2E8B31EFC995D5382D9A2CED87675CAE983162C58B160C183060C183060C183062C183060C183160C18B062C183060C183062C18B060C183060C183060C183060C183060C183162C1DEEC3B72BA85BF76EEBD1053E987A75E6B31EFC995D429F3A755A8B3B61D9D72BA62EF761DB95D44DFBF920A7D30F4EBCD663DF932BA893E7D259DB0ECEB95D3162C58BBDD876E5750B7EFE8829F4C3D3AF3598F7E4CAEA14F9F51676C3B3AE574C5DEEC3B72BA8BBB3E9DD95053E987A75E6B31EFC995D459D1E4CE8AB3B61D9D72BA62EF761DB95D45D9971F4E5A71A0AD97469C7B32ACC7BF2657516B2CED87675CAE983BDD876E575232E1E997253CB87A2CC7BF26575232E1E997253CB87A2CED87675CAE983BDD876E5752F2F941437F3D3D34EFDCB31EFC995D4B8B6684FA6B3B61D9D72BA62EF761DB95D45DD97967F2839F4C3D32ACC7BF2657516745A51ECACED87675CAE983BDD876E5750B0F4E997979415B7ECE9873E5598F7E4CAEA141A9522D2B2B3B61D9D72BA62EF761DB95D49DDD32F2D3BF920A9976F0CBCB0F4EBCB2ACC7BF26575267548B3682CED87675CAE98BBDD876E57517C74CBCB4EFE482A65DBC32F2C3D3AF2CAB31EFC995D45B1522CDA0B3B61D9D72BA62EF761DB95D57D3BB26FEE829F4C3D3AF3598F7E4CAEABC99D127D759DB0ECEB95D3060C183BDD876E575332E6E8B6969CFA3A2089CB4F6D3BB3ACC7BF265753294459DB0ECEB95D3077BB0EDCAEA16CEB97A6FDFD34209797CACC7BF265750AA4B8B65676C3B3AE574C1DEEC3B72BA8587A74CBCBCA0A9E7865598F7E4CAEA154F3C32ACED87675CAE993191A023A62C99B46AD9BB872C060
+0915111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E6C39B161CD8B0C1CD860E5CB07362C397361CB97361CD8B16183972E5CD872E6C5872E5AB062C68B06C0040202468ACF1343530ECA864468ACF1342468ACF13420000081A0100A00000F6C39B161CD8B0E56B9B0E5CAD72C18395B62C5872B5CD872E6C3960E5CD860E6C3972E6C39B161CD8B0E56B9B0E5CAD72C18395B62C5872B5CD872E6C3960E5CD860E6C3972E58DB4BE8000FAC58B161CB960E5CD8B0C1CB972E5CAC5A0CA2506614D47169A8E6A408AD8CAC6E8E4D2C6164C19312D0931050D2F0A814115054933FADD876E575534F2CA83872CBCF9F5E59506DDFBB4F4DFCB4EECE839F9E7D32ED598F7E4CAEA5316EB3B61D9D72BA62EF761DB95D52CB9FAECC3C9061D3CB161CFCD663DF932BAA2C182CED87675CAE98BBDD876E5751B96FDDD16F3CB87A20C3A7962C39F9ACC7BF265754583159DB0ECEB95D3177BB0EDCAEA0E9E58B0E741CFBE9E98F42CC7BF265754583959DB0ECEB95D3177BB0EDCAEA9F5DC8296FDF99663DF932BAA6CDAACED87675CAE983BDD876E5754B2EDDFD32A0C7BF774E5BF62CC7BF265754DB3159DB0ECEB95D3177BB0EDCAEA0E9E4831EFDD934F4D3BF769DD9D663DF932BAA8C58ACED87675CAE98BBDD876E57517665C7D3969C68286FEF97920A7D32E5E5A7767598F7E4CAEA2D0A6B3B61D9D72BA62EF761DB95D53CB8FAF2D3D3CA0C3B32F2E8B31EFC995D5382D9A2CED87675CAE983162C58B160C183060C183060C183062C183060C183160C18B062C183060C183062C18B060C183060C183060C183060C183060C183162C1DEEC3B72BA85BF76EEBD1053E987A75E6B31EFC995D429F3A755A8B3B61D9D72BA62EF761DB95D44DFBF920A7D30F4EBCD663DF932BA893E7D259DB0ECEB95D3162C58BBDD876E5750B7EFE8829F4C3D3AF3598F7E4CAEA14F9F51676C3B3AE574C5DEEC3B72BA8BBB3E9DD95053E987A75E6B31EFC995D459D1E4CE8AB3B61D9D72BA62EF761DB95D45D9971F4E5A71A0AD97469C7B32ACC7BF2657516B2CED87675CAE983BDD876E575232E1E997253CB87A2CC7BF26575232E1E997253CB87A2CED87675CAE983BDD876E5752F2F941437F3D3D34EFDCB31EFC995D4B8B6684FA6B3B61D9D72BA62EF761DB95D45DD97967F2839F4C3D32ACC7BF2657516745A51ECACED87675CAE983BDD876E5750B0F4E997979415B7ECE9873E5598F7E4CAEA141A9522D2B2B3B61D9D72BA62EF761DB95D49DDD32F2D3BF920A9976F0CBCB0F4EBCB2ACC7BF26575267548B3682CED87675CAE98BBDD876E57517C74CBCB4EFE482A65DBC32F2C3D3AF2CAB31EFC995D45B1522CDA0B3B61D9D72BA62EF761DB95D57D3BB26FEE829F4C3D3AF3598F7E4CAEABC99D127D759DB0ECEB95D3060C183BDD876E575332E6E8B6969CFA3A2089CB4F6D3BB3ACC7BF265753294459DB0ECEB95D3077BB0EDCAEA16CEB97A6FDFD34209797CACC7BF265750AA4B8B65676C3B3AE574C1DEEC3B72BA8587A74CBCBCA0A9E7865598F7E4CAEA154F3C32ACED87675CAE9931913580262C99B46AD9BB872C060
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
+    "@ASN1Type":"MP_UserLoggingInResp",
     "languageType":"de",
     "languageTypePresent":true,
     "refreshToken":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
     "refreshTokenPresent":true,
     "token":"X9XX9XX9-9X99-9009-XXX9-9X99X9099X09X999",
     "tokenExpiration":{
-      "seconds":1668174662
+      "@ASN1Type":"Timestamp",
+      "seconds":1668100000
     },
     "tokenExpirationPresent":true,
     "tokenPresent":true,
@@ -794,12 +921,16 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "userPhotoPresent":false,
     "vinList":[
       {
+        "@ASN1Type":"VinInfo",
         "bindTime":{
-          "seconds":1663254599
+          "@ASN1Type":"Timestamp",
+          "seconds":1663200000
         },
         "bindTimePresent":true,
         "brandName":"TUc=",
+        "@brandNameUTF8":"MG",
         "colorName":"QkxBQ0vCoFBFQVJM",
+        "@colorNameUTF8":"BLACK PEARL",
         "colorNamePresent":true,
         "isAcivate":false,
         "isCurrentVehicle":1,
@@ -807,6 +938,7 @@ The error message is a byte array, containing the UTF-8 String "The account is n
         "modelConfigurationJsonStr":"name:Tire pressure monitoring system,code:J17,value:1;name:Regular airbags,code:Q00,value:1;name:Front-seat airbags,code:Q01,value:1;name:Airbag switch,code:Q09,value:1;name:Sun Roof,code:S35,value:0;name:Remote control,code:S61,value:1;name:Air conditioning,code:T11,value:1;name:Electric Power Steering,code:EPS,value:1;name:Security alert,code:SA64,value:0111110000000000001000000100101000000010100000000000000000000110;name:Bonnut Status,code:BONNUT,value:1;name:Door Status,code:DOOR,value:1111;name:Boot Status,code:BOOT,value:1;name:Engine Status,code:ENGINE,value:1;name:Electric Vehicle,code:EV,value:0;name:HeatedSeat,code:HeatedSeat,value:0;name:Key Position,code:KEYPOS,value:1;name:Energy state,code:ENERGY,value:0;name:Battery Voltage,code:BATTERY,value:1;name:Interior Temperature,code:INTEMP,value:1;name:Exterior Temperature,code:EXTEMP,value:1;name:Window Status,code:WINDOW,value:0000;name:Left-Right Driving,code:LRD,value:0;name:Bluetooth Key,code:BTKEY,value:0;name:Battery Type,code:BType,value:2",
         "modelConfigurationJsonStrPresent":true,
         "modelName":"TUc1IEVsZWN0cmlj",
+        "@modelNameUTF8":"MG5 Electric",
         "modelYear":"2021",
         "modelYearPresent":true,
         "name":null,
@@ -822,6 +954,7 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "vinListPresent":true
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -835,13 +968,14 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665579060,
+    "eventCreationTime":1665500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":1,
       "uplinkCounter":1
     },
@@ -865,6 +999,933 @@ The error message is a byte array, containing the UTF-8 String "The account is n
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Get Userinfo
+
+== Request
+
+[source,hexdump]
+----
+00F7111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB06CC6E9A180020200468ACF134468ACF1342468ACF1342468ACF1342000000000100A0
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"506",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668600000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+0125111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB06CC6E9A180040202468ACF134468ACF1342468ACF1342468ACF13420000002A0100A000000082352C58B162C588162C58B162C58B161758B160
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"MPUserInfoResp",
+    "address":null,
+    "addressPresent":false,
+    "birthday":null,
+    "birthdayPresent":false,
+    "email":"XXXXXX@XXXXXXXXX.XXX",
+    "emailPresent":true,
+    "emergencyMobile":null,
+    "emergencyMobilePresent":false,
+    "emergencyName":null,
+    "emergencyNamePresent":false,
+    "gender":null,
+    "genderPresent":false,
+    "languageType":"de",
+    "languageTypePresent":true,
+    "mobilePhone":null,
+    "mobilePhonePresent":false,
+    "nickName":null,
+    "nickNamePresent":false,
+    "realName":null,
+    "realNamePresent":false,
+    "theSecondLevelCountryCode":null,
+    "theSecondLevelCountryCodePresent":false,
+    "theSecondLevelCountryName":null,
+    "theSecondLevelCountryNamePresent":false,
+    "theThirdLevelCountryCode":null,
+    "theThirdLevelCountryCodePresent":false,
+    "theThirdLevelCountryName":null,
+    "theThirdLevelCountryNamePresent":false,
+    "userPhoto":null,
+    "userPhotoPresent":false
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":21,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"506",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668600000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Set CarAlarm
+
+== Request
+
+pin is hardcoded to md5sum("123456")
+
+[source,hexdump]
+----
+0151111008800E82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB26362C58B0E5CB072E6C5860E5CB972E58DD343000404008D159E2688D159E26848D159E26848D159E2684000000780201406562C30E4C6CDCB4738B0B57387162CAD5B6560D5BE664C333870CF283C0
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"AlarmSwitchReq",
+    "alarmSwitchList":[
+      {
+        "@ASN1Type":"AlarmSwitch",
+        "alarmSettingType":"engineStart",
+        "alarmSwitch":true,
+        "functionSwitch":true
+      }
+    ],
+    "description":null,
+    "descriptionPresent":false,
+    "pin":"e10adc3949ba59abbe56e057f20f883e"
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":30,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"521",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668600000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":"XXXX99099XX099999",
+    "vinPresent":true
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":136,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+0119111008A00E82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161AB26362C58B0E5CB072E6C5860E5CB972E58DD343000804048D159E2688D159E26848D159E26848D159E2684000000000201400000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"521",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668600000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":"XXXX99099XX099999",
+    "vinPresent":true
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":138,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Get Messages
+
+== Request
+
+[source,hexdump]
+----
+011B112007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB362C6A67E00020200468ACF134468ACF1342468ACF1342468ACF1342000000240100A080000000000080000000000A120CC834A680
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"MessageListReq",
+    "messageGroup":"ALARM",
+    "messageGroupPresent":true,
+    "startEndNumber":{
+      "@ASN1Type":"StartEndNumber",
+      "endNumber":20,
+      "startNumber":1
+    }
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":18,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"531",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666400000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":18,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+022F112007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB362C6A67E00040202468ACF134468ACF1342468ACF1342468ACF1342000001340100A000008000000000008038000000A31A0B364CC4A6B7BA37B939BA30B93A31A99F8006A8849EB018D1185CC811985A1C9E995D59C80A0A8A8A9616160A481CDD185C9D195D08185B480C8C8B4C4C0B4C8C0C8C880C4CCE8D4C8E8C0DC811D3550ACC0C8E8C0C0B08189A5D1D19481E9D5C8812D95B9B9D1B9A5CDB985A1B594818995CDD30E91D1A59D95B8B90162C58B0E5CB072E6C5860E5CB972E40
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"MessageListResp",
+    "messages":[
+      {
+        "@ASN1Type":"Message",
+        "content":"RGFzIEZhaHJ6ZXVnICgqKipYWFgpIHN0YXJ0ZXQgYW0gMjItMTAtMjAyMiAxMzo1MjowNyBHTVQrMDI6MDAsIGJpdHRlIHp1ciBLZW5udG5pc25haG1lIGJlc3TDpHRpZ2VuLg==",
+        "@contentUTF8":"Das Fahrzeug (***XXX) startet am 22-10-2022 13:52:07 GMT+02:00, bitte zur Kenntnisnahme bestätigen.",
+        "contentId":null,
+        "contentIdPresent":false,
+        "contentPresent":true,
+        "messageId":1336129,
+        "messageTime":{
+          "@ASN1Type":"Timestamp",
+          "seconds":1666400000
+        },
+        "messageType":"323",
+        "readStatus":0,
+        "readStatusPresent":true,
+        "sender":"VEJPWA==",
+        "@senderUTF8":"TBOX",
+        "title":"TW90b3JzdGFydA==",
+        "@titleUTF8":"Motorstart",
+        "vin":"XXXX99099XX099999",
+        "vinPresent":true
+      }
+    ],
+    "messagesPresent":true,
+    "recordsNumber":1
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":154,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"531",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666400000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":18,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Get Unread Message Count
+
+== Request
+
+[source,hexdump]
+----
+00F7111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB366C6A67E00020200468ACF134468ACF1342468ACF1342468ACF1342000000000100A0
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"533",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666400000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+012B111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB366C6A67E00040202468ACF134468ACF1342468ACF1342468ACF1342000000300100A00000000000000001000000000000000000000000000000000001
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"GetUnreadMessageCountResp",
+    "alarmNumber":1,
+    "commandNumber":0,
+    "newsNumber":0,
+    "totalNumber":1
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":24,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"533",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666400000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Set Notification Count
+
+== Request
+
+[source,hexdump]
+----
+00F9111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB36AC6A67E00020200468ACF134468ACF1342468ACF1342468ACF1342000000020100A000
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"SetNotificationCountReq",
+    "notificationCount":0
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":1,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"535",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666400000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+00FB111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CB9B0E5CB973616B96162C2D72E6C395AE5CD872B5CD8B0E6C586161CD87362C587361AB36AC6A67E00040202468ACF134468ACF1342468ACF1342468ACF1342000000000100A00000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"535",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1666400000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"99X9999X-90XX-99X9-99X9-9XX9XX0X9X9XXX9X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= DeleteMessage
+
+== Request
+if a messageId is set, actionType can be DELETE to delete this message or READ, to mark it read.
+
+if no messageId is set actionType can be DELETE_ALARM to delete all alarm messages
+
+[source,hexdump]
+----
+0111111007900C82C60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161B316AC6E9A180020200468ACF134468ACF1342468ACF1342468ACF13420000001A0100A0600000035CC7A58916645A9140
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"AbortSendMessageReq",
+    "actionType":"DELETE",
+    "actionTypePresent":true,
+    "messageId":1762877,
+    "messageIdPresent":true,
+    "messages":null,
+    "messagesPresent":false
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":13,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"615",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668600000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":0,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":1,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":null,
+    "resultPresent":false,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+== Response
+
+[source,hexdump]
+----
+00FB111007B00C82E60C183060C183060C183060C183060C183060C183060C183060C183060C183072C183060C183060E5CB972E5CD8B161CB9B0C16B9B0E5CAD7362C585B61CB972B6C58B0E5CB9B0E5CD87361CB0B161B316AC6E9A180040202468ACF134468ACF1342468ACF1342468ACF1342000000000100A00000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"615",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668600000,
+    "eventID":null,
+    "eventIDPresent":false,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":0,
+    "resultPresent":true,
+    "simInfo":"1234567891234567890",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9XXX99X0-9X99-9XXX-X999-XXX999X99X9X90XX",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":123,
     "protocolVersion":17,
@@ -1083,7 +2144,7 @@ END
 
 [source,hexdump]
 ----
-1008621730000000000000000000000000000000000F0F2C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B0A258B162C58B162C58B162C58B162C5801C67CBA14000000000000650140
+1008621730000000000000000000000000000000000F0F2C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B0A258B162C58B162C58B162C58B162C5801C67BC48000009C3C0000650140
 ----
 
 [source,json]
@@ -1091,6 +2152,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1106,8 +2168,8 @@ END
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031434,
-    "eventID":0,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":1,
     "result":null,
@@ -1124,6 +2186,7 @@ END
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":33
@@ -1136,7 +2199,7 @@ END
 
 [source,hexdump]
 ----
-1008821750000000000000000000000000000000000F0FAC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B0A258B162C58B162C58B162C58B162C5802C67CBA140000000000006501400000
+1008821750000000000000000000000000000000000F0FAC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586B0A258B162C58B162C58B162C58B162C5802C67BC48000009C3C00006501400000
 ----
 
 [source,json]
@@ -1144,6 +2207,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1159,8 +2223,8 @@ END
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031434,
-    "eventID":0,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":2,
     "result":0,
@@ -1177,6 +2241,7 @@ END
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":33
@@ -1194,16 +2259,18 @@ END
 
 [source,hexdump]
 ----
-1008721730000000000000000000000000000000000F0F2C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5801C67CBA2200000000000465014002
+1008721730000000000000000000000000000000000F0F2C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5801C67BC48000009C3C000465014002
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
+    "@ASN1Type":"OTA_RVMVehicleStatusReq",
     "vehStatusReqType":2
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1219,8 +2286,8 @@ END
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031441,
-    "eventID":0,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":1,
     "result":null,
@@ -1237,6 +2304,7 @@ END
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":33
@@ -1251,7 +2319,7 @@ END
 
 [source,hexdump]
 ----
-100C721B40000000000000000000000000000000000F0FEC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5802C67CBA29F34144FC00006501400103D5468652072656D6F746520636F6E74726F6C20696E737472756374696F6E206661696C65642C20706C656173652074727920616761696E206C617465722E0
+100C721B40000000000000000000000000000000000F0FEC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5802C67BC48000009C3C00006501400103D5468652072656D6F746520636F6E74726F6C20696E737472756374696F6E206661696C65642C20706C656173652074727920616761696E206C617465722E0
 ----
 
 [source,json]
@@ -1259,6 +2327,7 @@ END
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1273,9 +2342,10 @@ END
     "dlMessageCounter":null,
     "dlMessageCounterPresent":false,
     "errorMessage":"VGhlIHJlbW90ZSBjb250cm9sIGluc3RydWN0aW9uIGZhaWxlZCwgcGxlYXNlIHRyeSBhZ2FpbiBsYXRlci4=",
+    "@errorMessageUTF8":"The remote control instruction failed, please try again later.",
     "errorMessagePresent":true,
-    "eventCreationTime":1665031444,
-    "eventID":2094027071,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":2,
     "result":4,
@@ -1292,6 +2362,7 @@ END
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":180,
     "protocolVersion":33
@@ -1304,14 +2375,16 @@ Error message: The remote control instruction failed, please try again later.
 
 [source,hexdump]
 ----
-1014F21750000000000000000000000000000000000F0FAC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5802C67CBA31F34144FC031C6501400000E33E5D1786A8A8059BDA2003B2001F4012AC67CBA2B7FF38101A999999000020000270F003C0000024200000012FC01C67CBA2C0000012DE001F80012FC00000001500000000400100020003000400050006000700080009000A000B000C000D000E000F0010001100120013001400150016001700180019001A001B001C001D001E001F0020002100220023002400250026002700280029002A002B002C002D002E002F0030003100320033003400350036003700380039003A003B003C003D003E003F004000
+1014F21750000000000000000000000000000000000F0FAC58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C58B162C586AC58D8B162C58B162C58B162C58B162C5802C67BC48000009C3C031C6501400000E33E5D1786A8A8059BDA2003B2001F4012AC67BC4817FF38101A999999000020000270F003C0000024200000012FC01C67CBA2C0000012DE001F80012FC00000001500000000400100020003000400050006000700080009000A000B000C000D000E000F0010001100120013001400150016001700180019001A001B001C001D001E001F0020002100220023002400250026002700280029002A002B002C002D002E002F0030003100320033003400350036003700380039003A003B003C003D003E003F004000
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
+    "@ASN1Type":"OTA_RVMVehicleStatusResp25857",
     "basicVehicleStatus":{
+      "@ASN1Type":"RvsBasicStatus25857",
       "batteryVoltage":126,
       "bonnetStatus":false,
       "bootStatus":false,
@@ -1374,260 +2447,325 @@ Error message: The remote control instruction failed, please try again later.
       "wheelTyreMonitorStatusPresent":true
     },
     "extendedVehicleStatus":{
+      "@ASN1Type":"RvsExtStatus",
       "vehicleAlerts":[
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":1,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":2,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":3,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":4,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":5,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":6,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":7,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":8,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":9,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":10,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":11,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":12,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":13,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":14,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":15,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":16,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":17,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":18,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":19,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":20,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":21,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":22,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":23,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":24,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":25,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":26,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":27,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":28,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":29,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":30,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":31,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":32,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":33,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":34,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":35,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":36,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":37,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":38,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":39,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":40,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":41,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":42,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":43,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":44,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":45,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":46,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":47,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":48,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":49,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":50,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":51,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":52,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":53,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":54,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":55,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":56,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":57,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":58,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":59,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":60,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":61,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":62,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":63,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":64,
           "value":0
         }
@@ -1635,14 +2773,18 @@ Error message: The remote control instruction failed, please try again later.
     },
     "extendedVehicleStatusPresent":true,
     "gpsPosition":{
+      "@ASN1Type":"RvsPosition",
       "gpsStatus":"fix2D",
       "timestamp4Short":{
-        "seconds":1665031445
+        "@ASN1Type":"Timestamp4Short",
+        "seconds":1665000000
       },
       "wayPoint":{
+        "@ASN1Type":"RvsWayPoint",
         "hdop":9,
         "heading":0,
         "position":{
+          "@ASN1Type":"RvsWGS84Point",
           "altitude":373,
           "latitude":51200000,
           "longitude":8200000
@@ -1654,6 +2796,7 @@ Error message: The remote control instruction failed, please try again later.
     "statusTime":1665031447
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1669,8 +2812,8 @@ Error message: The remote control instruction failed, please try again later.
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031448,
-    "eventID":2094027071,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":2,
     "result":0,
@@ -1687,6 +2830,7 @@ Error message: The remote control instruction failed, please try again later.
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":33
@@ -1873,7 +3017,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 
 [source,hexdump]
 ----
-1008630730000000000000000000000000000000000F0F183060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB905C67CBA86000000000000030040
+1008630730000000000000000000000000000000000F0F183060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB905C67BC48000009C3C0000030040
 ----
 
 [source,json]
@@ -1881,6 +3025,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1896,8 +3041,8 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031491,
-    "eventID":0,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":5,
     "result":null,
@@ -1914,6 +3059,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":48
@@ -1926,7 +3072,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 
 [source,hexdump]
 ----
-1008830750000000000000000000000000000000000F0F983060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB906C67CBA8754037DDC00000300400000
+1008830750000000000000000000000000000000000F0F983060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB906C67BC48000009C3C00000300400000
 ----
 
 [source,json]
@@ -1934,6 +3080,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -1949,8 +3096,8 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031491,
-    "eventID":1426120567,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":6,
     "result":0,
@@ -1967,6 +3114,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":48
@@ -1979,7 +3127,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 
 [source,hexdump]
 ----
-1008630730000000000000000000000000000000000F0F183060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB905C67CBA9154037DDC0000030040
+1008630730000000000000000000000000000000000F0F183060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB905C67BC48000009C3C0000030040
 ----
 
 [source,json]
@@ -1987,6 +3135,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -2002,8 +3151,8 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031496,
-    "eventID":1426120567,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":5,
     "result":null,
@@ -2020,6 +3169,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":48
@@ -2032,13 +3182,14 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
 
 [source,hexdump]
 ----
-100CF30750000000000000000000000000000000000F0F983060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB906C67CBA9154037DDC011C03004000000800000000000000070122000203FF0103FF4E2006420349000000F30000CFCE0026204BF00633D509CC67AFD5C9C400C8400F0002A000000000000000009DC0B5400025BC0000
+100CF30750000000000000000000000000000000000F0F983060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB972E5CB95AC2C39B0B5CB073616B972E5CAD72E6C5872E6C39B0E6C5872E5CB96AC5B58B162C3972C1CB9B16183972E5CB906C67BC48000009C3C011C03004000000800000000000000070122000203FF0103FF4E2006420349000000F30000CFCE0026204BF00633D509CC67AFD5C9C400C8400F0002A000000000000000009DC0B5400025BC0000
 ----
 
 [source,json]
 ----
 {
   "applicationData":{
+    "@ASN1Type":"OTA_ChrgMangDataResp",
     "bmsAdpPubChrgSttnDspCmd":0,
     "bmsAltngChrgCrntDspCmd":0,
     "bmsChrgCtrlDspCmd":2,
@@ -2073,6 +3224,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "ccuOnbdChrgrPlugOn":null,
     "ccuOnbdChrgrPlugOnPresent":false,
     "chargeStatus":{
+      "@ASN1Type":"RvsChargingStatus",
       "chargingDuration":0,
       "chargingDurationPresent":true,
       "chargingElectricityPhase":null,
@@ -2156,6 +3308,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "onBdChrgrAltrCrntInptVolPresent":false
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -2171,8 +3324,8 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031496,
-    "eventID":1426120567,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":6,
     "result":0,
@@ -2189,6 +3342,7 @@ To get the charging status, send a messeage with eventId=0 to the API endpoint. 
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":48

@@ -12,12 +12,19 @@ asn1extractor/asn1extractor.sh MP_DispatcherBodyModule \
   > "ASN.1 schema/v1_1/MP_DispatcherBody.asn1"
 
 asn1extractor/asn1extractor.sh ApplicationDataModule \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.alarm.AlarmSwitchReq \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.login.MPUserInfoResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.login.v2_1.MP_UserLoggingInReq \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.login.v2_1.MP_UserLoggingInResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.software.APPUpgradeInfoReq \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.software.APPUpgradeInfoResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.software.MPAppAttributeResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.advertise.AdvertiseResp \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.message.AbortSendMessageReq \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.message.MessageListReq \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.message.MessageListResp \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.message.GetUnreadMessageCountResp \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.message.v2_0.SetNotificationCountReq \
            > "ASN.1 schema/v1_1/ApplicationData.asn1"
 
 rm -rf "ASN.1 schema/v2_1"

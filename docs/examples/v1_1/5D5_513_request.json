@@ -1,9 +1,11 @@
 {
   "applicationData":{
+    "@ASN1Type":"APPUpgradeInfoReq",
     "appType":"android",
     "appVersion":"1.1.6"
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackRequired":null,
     "ackRequiredPresent":false,
     "applicationDataEncoding":"perUnaligned",
@@ -17,13 +19,14 @@
     "crqmRequestPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1664522091,
+    "eventCreationTime":1664500000,
     "eventID":null,
     "eventIDPresent":false,
     "hmiLanguage":null,
     "hmiLanguagePresent":false,
     "iccID":"12345678901234567890",
     "messageCounter":{
+      "@ASN1Type":"MessageCounter",
       "downlinkCounter":0,
       "uplinkCounter":1
     },
@@ -47,6 +50,7 @@
     "vinPresent":false
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":42,
     "protocolVersion":17,

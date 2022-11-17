@@ -1,0 +1,25 @@
+= Get Messages
+
+== Request
+
+[source,hexdump]
+----
+include::531_513_request.per[]
+----
+
+[source,json]
+----
+include::531_513_request.json[]
+----
+
+== Response
+
+[source,hexdump]
+----
+include::531_513_response.per[]
+----
+
+[source,json]
+----
+include::531_513_response.json[]
+----

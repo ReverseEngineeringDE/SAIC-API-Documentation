@@ -166,11 +166,11 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1</argument>
+                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1/entity</argument>
                 <argument>-f</argument>
                 <argument>../ASN.1 schema/v1_1/ApplicationData.asn1</argument>
                 <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v1_1</argument>
+                <argument>net.heberling.ismart.asn1.v1_1.entity</argument>
               </arguments>
             </configuration>
           </execution>
@@ -226,11 +226,11 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1</argument>
+                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1/entity</argument>
                 <argument>-f</argument>
                 <argument>../ASN.1 schema/v2_1/ApplicationData.asn1</argument>
                 <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v2_1</argument>
+                <argument>net.heberling.ismart.asn1.v2_1.entity</argument>
               </arguments>
             </configuration>
           </execution>
@@ -286,11 +286,11 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
+                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0/entity</argument>
                 <argument>-f</argument>
                 <argument>../ASN.1 schema/v3_0/ApplicationData.asn1</argument>
                 <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v3_0</argument>
+                <argument>net.heberling.ismart.asn1.v3_0.entity</argument>
               </arguments>
             </configuration>
           </execution>

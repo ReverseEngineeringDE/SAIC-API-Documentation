@@ -1,6 +1,7 @@
 {
   "applicationData":null,
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -16,8 +17,8 @@
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031496,
-    "eventID":1426120567,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":5,
     "result":null,
@@ -34,6 +35,7 @@
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":48

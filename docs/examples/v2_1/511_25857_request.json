@@ -1,8 +1,10 @@
 {
   "applicationData":{
+    "@ASN1Type":"OTA_RVMVehicleStatusReq",
     "vehStatusReqType":2
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -18,8 +20,8 @@
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031441,
-    "eventID":0,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":1,
     "result":null,
@@ -36,6 +38,7 @@
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":115,
     "protocolVersion":33

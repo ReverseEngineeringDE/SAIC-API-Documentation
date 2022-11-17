@@ -1,6 +1,9 @@
 package net.heberling.ismart.asn1.v2_1;
 
 import net.heberling.ismart.asn1.AbstractMessageCoderTest;
+import net.heberling.ismart.asn1.v2_1.entity.MP_SecurityAlarmResp;
+import net.heberling.ismart.asn1.v2_1.entity.OTA_RVMVehicleStatusReq;
+import net.heberling.ismart.asn1.v2_1.entity.OTA_RVMVehicleStatusResp25857;
 import org.bn.coders.IASN1PreparedElement;
 import org.junit.jupiter.api.Test;
 

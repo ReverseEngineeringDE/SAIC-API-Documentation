@@ -1,6 +1,8 @@
 {
   "applicationData":{
+    "@ASN1Type":"OTA_RVMVehicleStatusResp25857",
     "basicVehicleStatus":{
+      "@ASN1Type":"RvsBasicStatus25857",
       "batteryVoltage":126,
       "bonnetStatus":false,
       "bootStatus":false,
@@ -63,260 +65,325 @@
       "wheelTyreMonitorStatusPresent":true
     },
     "extendedVehicleStatus":{
+      "@ASN1Type":"RvsExtStatus",
       "vehicleAlerts":[
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":1,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":2,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":3,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":4,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":5,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":6,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":7,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":8,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":9,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":10,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":11,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":12,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":13,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":14,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":15,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":16,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":17,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":18,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":19,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":20,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":21,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":22,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":23,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":24,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":25,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":26,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":27,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":28,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":29,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":30,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":31,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":32,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":33,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":34,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":35,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":36,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":37,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":38,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":39,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":40,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":41,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":42,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":43,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":44,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":45,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":46,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":47,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":48,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":49,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":50,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":51,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":52,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":53,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":54,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":55,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":56,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":57,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":58,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":59,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":60,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":61,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":62,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":63,
           "value":0
         },
         {
+          "@ASN1Type":"VehicleAlertInfo",
           "id":64,
           "value":0
         }
@@ -324,14 +391,18 @@
     },
     "extendedVehicleStatusPresent":true,
     "gpsPosition":{
+      "@ASN1Type":"RvsPosition",
       "gpsStatus":"fix2D",
       "timestamp4Short":{
-        "seconds":1665031445
+        "@ASN1Type":"Timestamp4Short",
+        "seconds":1665000000
       },
       "wayPoint":{
+        "@ASN1Type":"RvsWayPoint",
         "hdop":9,
         "heading":0,
         "position":{
+          "@ASN1Type":"RvsWGS84Point",
           "altitude":373,
           "latitude":51200000,
           "longitude":8200000
@@ -343,6 +414,7 @@
     "statusTime":1665031447
   },
   "body":{
+    "@ASN1Type":"MP_DispatcherBody",
     "ackMessageCounter":null,
     "ackMessageCounterPresent":false,
     "ackRequired":null,
@@ -358,8 +430,8 @@
     "dlMessageCounterPresent":false,
     "errorMessage":null,
     "errorMessagePresent":false,
-    "eventCreationTime":1665031448,
-    "eventID":2094027071,
+    "eventCreationTime":1665000000,
+    "eventID":9999,
     "eventIDPresent":true,
     "messageID":2,
     "result":0,
@@ -376,6 +448,7 @@
     "vinPresent":true
   },
   "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
     "protocolVersion":33
