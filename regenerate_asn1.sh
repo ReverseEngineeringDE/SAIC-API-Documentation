@@ -42,6 +42,8 @@ asn1extractor/asn1extractor.sh ApplicationDataModule \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v2_1.entity.alarm.MP_SecurityAlarmResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v2_1.entity.vehicle.OTA_RVMVehicleStatusReq \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v2_1.entity.vehicle.OTA_RVMVehicleStatusResp25857 \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v2_1.entity.remoteControl.OTA_RVCReq \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v2_1.entity.remoteControl.OTA_RVCStatus25857 \
            > "ASN.1 schema/v2_1/ApplicationData.asn1"
 
 rm -rf "ASN.1 schema/v3_0"

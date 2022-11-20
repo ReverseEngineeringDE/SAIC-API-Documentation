@@ -1,0 +1,26 @@
+= Vehicle Control Commands
+
+== Request
+
+[source,hexdump]
+----
+include::510_25857_request.per[]
+----
+
+[source,json]
+----
+include::510_25857_request.json[]
+----
+
+
+== Response
+
+[source,hexdump]
+----
+include::510_25857_response.per[]
+----
+
+[source,json]
+----
+include::510_25857_response.json[]
+----
