@@ -18,6 +18,19 @@ OTA_RVMVehicleStatusResp25857 ::= SEQUENCE
   basicVehicleStatus RvsBasicStatus25857(1),
   extendedVehicleStatus RvsExtStatus(1) OPTIONAL
 }
+OTA_RVCReq ::= SEQUENCE
+{
+  rvcReqType OCTET STRING(SIZE(1)),
+  rvcParams SEQUENCE SIZE(1..10) OF RvcReqParam OPTIONAL
+}
+OTA_RVCStatus25857 ::= SEQUENCE
+{
+  rvcReqType OCTET STRING(SIZE(1)),
+  rvcReqSts OCTET STRING(SIZE(1)),
+  failureType INTEGER(0..255) OPTIONAL,
+  gpsPosition RvsPosition(1),
+  basicVehicleStatus RvsBasicStatus25857(1)
+}
 SecurityAlarm ::= SEQUENCE
 {
   title OCTET STRING(SIZE(1..128)) OPTIONAL,
@@ -85,6 +98,11 @@ RvsBasicStatus25857 ::= SEQUENCE
 RvsExtStatus ::= SEQUENCE
 {
   vehicleAlerts SEQUENCE SIZE(0..64) OF VehicleAlertInfo
+}
+RvcReqParam ::= SEQUENCE
+{
+  paramId INTEGER(0..65535),
+  paramValue OCTET STRING(SIZE(1..255))
 }
 RvsWayPoint ::= SEQUENCE
 {

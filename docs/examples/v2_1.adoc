@@ -33,4 +33,5 @@ include::../../ASN.1 schema/v2_1/ApplicationData.asn1[]
 == Message Types
 
 include::v2_1/5BD_25857.adoc[leveloffset=1]
+include::v2_1/510_25857.adoc[leveloffset=1]
 include::v2_1/511_25857.adoc[leveloffset=1]
