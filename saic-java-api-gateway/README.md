@@ -17,12 +17,11 @@ You can run this locally in your network to integrate it with other third party 
 
 
 ## Installation / build by yourself
-1. Change directory to /src
-2. Type ```mvn clean install``` in your IDE or terminal
-3. .jar file will be outputted to target folder
-4. Execute .jar (e.g. on windows "java -jar .\ismart-api-1.0-SNAPSHOT-full.jar"
-5. Access API gateway with "http://localhost:42042/getData"
-6. Send a POST request with your SAIC API login data (email and password) to the /getData endpoint
+1. Type ```mvn clean install``` in your IDE or terminal (in this directory)
+2. .jar file will be outputted to target folder
+3. Execute .jar (e.g. on windows "java -jar .\ismart-api-1.0-SNAPSHOT-full.jar"
+4. Access API gateway with "http://localhost:42042/getData"
+5. Send a POST request with your SAIC API login data (email and password) to the /getData endpoint
 
 ## /getData endpoint
 - endpoints: http://localhost:42042/getData
