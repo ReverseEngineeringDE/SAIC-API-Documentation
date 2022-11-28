@@ -2032,6 +2032,19 @@ OTA_RVMVehicleStatusResp25857 ::= SEQUENCE
   basicVehicleStatus RvsBasicStatus25857(1),
   extendedVehicleStatus RvsExtStatus(1) OPTIONAL
 }
+OTA_RVCReq ::= SEQUENCE
+{
+  rvcReqType OCTET STRING(SIZE(1)),
+  rvcParams SEQUENCE SIZE(1..10) OF RvcReqParam OPTIONAL
+}
+OTA_RVCStatus25857 ::= SEQUENCE
+{
+  rvcReqType OCTET STRING(SIZE(1)),
+  rvcReqSts OCTET STRING(SIZE(1)),
+  failureType INTEGER(0..255) OPTIONAL,
+  gpsPosition RvsPosition(1),
+  basicVehicleStatus RvsBasicStatus25857(1)
+}
 SecurityAlarm ::= SEQUENCE
 {
   title OCTET STRING(SIZE(1..128)) OPTIONAL,
@@ -2099,6 +2112,11 @@ RvsBasicStatus25857 ::= SEQUENCE
 RvsExtStatus ::= SEQUENCE
 {
   vehicleAlerts SEQUENCE SIZE(0..64) OF VehicleAlertInfo
+}
+RvcReqParam ::= SEQUENCE
+{
+  paramId INTEGER(0..65535),
+  paramValue OCTET STRING(SIZE(1..255))
 }
 RvsWayPoint ::= SEQUENCE
 {
@@ -2244,6 +2262,153 @@ END
     "@ASN1Type":"MP_DispatcherHeader",
     "dispatcherBodyEncoding":0,
     "dispatcherMessageLength":117,
+    "protocolVersion":33
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+:leveloffset: 1
+:leveloffset: 1
+
+= Vehicle Control Commands
+
+== Request
+
+[source,hexdump]
+----
+1009E21790000000000000000000000000000000000FFF183060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB9B0E5CD85B62C39B0B5CB9B1616B9B16182D72E5CD8B161CB97362C5872C1CB96AC5858B162C3972C1CB9B16183972E5CB901C6F2C94000009C3C00000000000000243280A0801800080008001000080018000807F80000
+----
+
+[source,json]
+----
+{
+  "applicationData":{
+    "@ASN1Type":"OTA_RVCReq",
+    "rvcParams":[
+      {
+        "@ASN1Type":"RvcReqParam",
+        "paramId":1,
+        "paramValue":"AQ==",
+        "@paramValueUTF8":"\u0001"
+      },
+      {
+        "@ASN1Type":"RvcReqParam",
+        "paramId":2,
+        "paramValue":"AQ==",
+        "@paramValueUTF8":"\u0001"
+      },
+      {
+        "@ASN1Type":"RvcReqParam",
+        "paramId":3,
+        "paramValue":"AQ==",
+        "@paramValueUTF8":"\u0001"
+      },
+      {
+        "@ASN1Type":"RvcReqParam",
+        "paramId":255,
+        "paramValue":"AA==",
+        "@paramValueUTF8":"\u0000"
+      }
+    ],
+    "rvcParamsPresent":true,
+    "rvcReqType":"AA==",
+    "@rvcReqTypeUTF8":"\u0000"
+  },
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackMessageCounter":0,
+    "ackMessageCounterPresent":true,
+    "ackRequired":false,
+    "ackRequiredPresent":true,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":18,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":25857,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"510",
+    "dlMessageCounter":0,
+    "dlMessageCounterPresent":true,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668900000,
+    "eventID":9999,
+    "eventIDPresent":true,
+    "messageID":1,
+    "result":null,
+    "resultPresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9X99X99X-XX9X-99XX-9XX0-999XXX999XXX9099",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "ulMessageCounter":0,
+    "ulMessageCounterPresent":true,
+    "vin":"XXXX99099XX099999",
+    "vinPresent":true
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":121,
+    "protocolVersion":33
+  },
+  "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
+}
+----
+
+
+== Response
+
+[source,hexdump]
+----
+1008E217B0000000000000000000000000000000000FFF983060C183060C183060C183060C183060C183060C183060C183060C183060C1CB060C183060C183972E5CB97361CB9B0E5CD85B62C39B0B5CB9B1616B9B16182D72E5CD8B161CB97362C5872C1CB96AC5858B162C3972C1CB9B16183972E5CB903C6F2C94000009C3C00000004000000003280A00000
+----
+
+[source,json]
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackMessageCounter":0,
+    "ackMessageCounterPresent":true,
+    "ackRequired":false,
+    "ackRequiredPresent":true,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataLengthPresent":true,
+    "applicationDataProtocolVersion":25857,
+    "applicationDataProtocolVersionPresent":true,
+    "applicationID":"510",
+    "dlMessageCounter":1,
+    "dlMessageCounterPresent":true,
+    "errorMessage":null,
+    "errorMessagePresent":false,
+    "eventCreationTime":1668900000,
+    "eventID":9999,
+    "eventIDPresent":true,
+    "messageID":3,
+    "result":0,
+    "resultPresent":true,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"9X99X99X-XX9X-99XX-9XX0-999XXX999XXX9099",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000090000000099999",
+    "uidPresent":true,
+    "ulMessageCounter":0,
+    "ulMessageCounterPresent":true,
+    "vin":"XXXX99099XX099999",
+    "vinPresent":true
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":123,
     "protocolVersion":33
   },
   "reserved":"AAAAAAAAAAAAAAAAAAAAAA=="
