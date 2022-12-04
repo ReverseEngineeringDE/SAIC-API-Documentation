@@ -1,4 +1,4 @@
-package net.heberling.ismart;
+package net.heberling.ismart.gateway;
 
 import com.owlike.genson.Context;
 import com.owlike.genson.Converter;

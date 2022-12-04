@@ -2,15 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>net.heberling.ismart</groupId>
+    <artifactId>ismart-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
   <groupId>net.heberling.ismart</groupId>
-  <artifactId>ismart-api</artifactId>
+  <artifactId>ismart-api-gateway</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>org.nanohttpd</groupId>
@@ -19,25 +20,15 @@
       <version>2.2.0</version>
     </dependency>
     <dependency>
-      <groupId>net.heberling.binarynotes</groupId>
-      <artifactId>binarynotes</artifactId>
-      <version>1.7.0</version>
+      <groupId>net.heberling.ismart</groupId>
+      <artifactId>ismart-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>5.9.0</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.owlike</groupId>
-      <artifactId>genson</artifactId>
-      <version>1.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents.client5</groupId>
-      <artifactId>httpclient5</artifactId>
-      <version>5.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -50,266 +41,12 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.27.1</version>
-        <configuration>
-          <pom>
-            <sortPom></sortPom>
-          </pom>
-          <java>
-            <googleJavaFormat>
-              <style>AOSP</style>
-              <reflowLongStrings>true</reflowLongStrings>
-            </googleJavaFormat>
-          </java>
-        </configuration>
-        <executions>
-          <execution>
-            <id>format</id>
-            <goals>
-              <goal>apply</goal>
-            </goals>
-            <phase>initialize</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.2.0</version>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <sources>
-                <source>target/generated-sources/asn1-java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.1.0</version>
-        <configuration>
-          <includePluginDependencies>true</includePluginDependencies>
-          <includeProjectDependencies>false</includeProjectDependencies>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>net.heberling.binarynotes</groupId>
-            <artifactId>bncompiler</artifactId>
-            <version>1.7.0</version>
-          </dependency>
-          <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>2.3.3</version>
-          </dependency>
-          <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.3.3</version>
-            <scope>runtime</scope>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>generate-dispatcher-header-v1_1</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v1_1/MP_DispatcherHeader.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v1_1</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-dispatcher-body-mp-v1_1</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v1_1/MP_DispatcherBody.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v1_1</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-application-data-mp-v1_1</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1/entity</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v1_1/ApplicationData.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v1_1.entity</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-dispatcher-header-v2_1</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v2_1/MP_DispatcherHeader.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v2_1</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-dispatcher-body-mp-v2_1</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v2_1/MP_DispatcherBody.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v2_1</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-application-data-mp-v2_1</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1/entity</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v2_1/ApplicationData.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v2_1.entity</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-dispatcher-header-v3_0</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v3_0/MP_DispatcherHeader.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v3_0</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-dispatcher-body-mp-v3_0</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v3_0/MP_DispatcherBody.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v3_0</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-application-data-mp-v3_0</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <mainClass>org.bn.compiler.Main</mainClass>
-              <arguments>
-                <argument>-m</argument>
-                <argument>java</argument>
-                <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0/entity</argument>
-                <argument>-f</argument>
-                <argument>../ASN.1 schema/v3_0/ApplicationData.asn1</argument>
-                <argument>-ns</argument>
-                <argument>net.heberling.ismart.asn1.v3_0.entity</argument>
-              </arguments>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.3.0</version>
         <configuration>
           <archive>
             <manifest>
-              <mainClass>net.heberling.ismart.App</mainClass>
+              <mainClass>net.heberling.ismart.gateway.App</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -317,7 +54,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.4.0</version>
         <configuration>
           <shadedArtifactAttached>true</shadedArtifactAttached>
           <shadedClassifierName>full</shadedClassifierName>

@@ -1,4 +1,4 @@
-package net.heberling.ismart;
+package net.heberling.ismart.gateway;
 
 import fi.iki.elonen.NanoHTTPD;
 import java.io.IOException;

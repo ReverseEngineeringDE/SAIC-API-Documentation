@@ -1,0 +1,19 @@
+<configuration xmlns="https://github.com/qoomon/maven-git-versioning-extension"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="https://github.com/qoomon/maven-git-versioning-extension https://qoomon.github.io/maven-git-versioning-extension/configuration-9.1.0.xsd">
+    <!-- Will be enabled in github action -->
+    <disable>true</disable>
+    <refs>
+        <ref type="branch">
+            <pattern>.+</pattern>
+            <version>${ref}-SNAPSHOT</version>
+        </ref>
+        <ref type="tag">
+            <pattern><![CDATA[v(?<version>.*)]]></pattern>
+            <version>${ref.version}</version>
+        </ref>
+    </refs>
+    <rev>
+        <version>${commit}-SNAPSHOT</version>
+    </rev>
+</configuration>

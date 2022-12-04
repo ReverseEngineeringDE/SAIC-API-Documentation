@@ -1,0 +1,44 @@
+name: Java CI with Maven - Deploy Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    # deploy keys are only setup in this repo
+    if: github.repository == 'tisoft/SAIC-API-Documentation'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Import GPG Owner Trust
+        run: echo ${{secrets.GPG_OWNERTRUST}} | base64 --decode | gpg --import-ownertrust
+
+      - name: Import GPG key
+        run: echo ${{secrets.GPG_SECRET_KEYS}} | base64 --decode | gpg --import --no-tty --batch --yes
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Build with Maven
+        run: ./mvnw --no-transfer-progress -B deploy -Dversioning.disable=false -Dgpg.keyname=${{secrets.GPG_KEYNAME}} -Dgpg.passphrase=${{secrets.GPG_PASSPHRASE}} --file pom.xml
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+      - name: Extract release notes
+        id: extract-release-notes
+        uses: ffurrer2/extract-release-notes@v1
+        with:
+          prerelease: true
+      - name: Prerelease
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.extract-release-notes.outputs.release_notes }}
+          files: saic-java-api-gateway/target/ismart-api-gateway-*-full.jar
