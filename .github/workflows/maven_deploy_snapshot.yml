@@ -2,7 +2,8 @@ name: Java CI with Maven - Deploy Snapshot
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - '**'
 
 jobs:
   build:
@@ -32,15 +33,19 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
       - name: tag as latest
+        if: github.ref_name == 'main'
         run: git tag -f latest
       - name: push latest tag
+        if: github.ref_name == 'main'
         run: git push -f origin latest
       - name: Extract release notes
+        if: github.ref_name == 'main'
         id: extract-release-notes
         uses: ffurrer2/extract-release-notes@v1
         with:
           prerelease: true
       - name: Prerelease
+        if: github.ref_name == 'main'
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.extract-release-notes.outputs.release_notes }}
