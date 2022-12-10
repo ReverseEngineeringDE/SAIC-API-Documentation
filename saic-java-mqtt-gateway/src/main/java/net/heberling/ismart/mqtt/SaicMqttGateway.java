@@ -344,6 +344,34 @@ public class SaicMqttGateway implements Callable<Integer> {
         msg.setRetained(true);
         publisher.publish("saic/vehicle/" + vin + "/charging", msg);
 
+        Integer interiorTemperature =
+                chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getInteriorTemperature();
+        if (interiorTemperature > -128) {
+            msg =
+                    new MqttMessage(
+                            String.valueOf(interiorTemperature).getBytes(StandardCharsets.UTF_8));
+            msg.setQos(0);
+            msg.setRetained(true);
+            publisher.publish("saic/vehicle/" + vin + "/temperature/interior", msg);
+        }
+
+        Integer exteriorTemperature =
+                chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getExteriorTemperature();
+        if (exteriorTemperature > -128) {
+            msg =
+                    new MqttMessage(
+                            String.valueOf(exteriorTemperature).getBytes(StandardCharsets.UTF_8));
+            msg.setQos(0);
+            msg.setRetained(true);
+            publisher.publish("saic/vehicle/" + vin + "/temperature/exterior", msg);
+        }
+
         msg =
                 new MqttMessage(
                         String.valueOf(
