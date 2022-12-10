@@ -109,8 +109,12 @@ public class SaicMqttGateway implements Callable<Integer> {
             options.setAutomaticReconnect(true);
             options.setCleanSession(true);
             options.setConnectionTimeout(10);
-            options.setUserName(mqttUser);
-            options.setPassword(mqttPassword);
+            if (mqttUser != null) {
+                options.setUserName(mqttUser);
+            }
+            if (mqttPassword != null) {
+                options.setPassword(mqttPassword);
+            }
             publisher.connect(options);
 
             Message<MP_UserLoggingInReq> loginRequestMessage =
