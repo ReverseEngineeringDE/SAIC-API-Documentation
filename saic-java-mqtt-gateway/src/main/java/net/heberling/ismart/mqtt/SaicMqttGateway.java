@@ -5,6 +5,7 @@ import com.owlike.genson.Converter;
 import com.owlike.genson.Genson;
 import com.owlike.genson.GensonBuilder;
 import com.owlike.genson.convert.ChainedFactory;
+import com.owlike.genson.ext.javadatetime.JavaDateTimeBundle;
 import com.owlike.genson.reflect.TypeUtil;
 import com.owlike.genson.stream.JsonType;
 import com.owlike.genson.stream.ObjectReader;
@@ -14,6 +15,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -278,17 +281,25 @@ public class SaicMqttGateway implements Callable<Integer> {
                                             messageListResponseMessage
                                                     .getApplicationData()
                                                     .getMessages()) {
-                                        MqttMessage msg = new MqttMessage(message.getContent());
+                                        MqttMessage msg =
+                                                new MqttMessage(
+                                                        toJSON(convert(message))
+                                                                .getBytes(StandardCharsets.UTF_8));
                                         msg.setQos(0);
                                         // Don't retain, so deleted messages are removed
-                                        // autmatically
+                                        // automatically from the broker
                                         msg.setRetained(false);
                                         publisher.publish(
                                                 "saic/message/" + message.getMessageId(), msg);
 
                                         if (message.isVinPresent()) {
                                             String vin = message.getVin();
-                                            msg = new MqttMessage(message.getContent());
+                                            msg =
+                                                    new MqttMessage(
+                                                            toJSON(convert(message))
+                                                                    .getBytes(
+                                                                            StandardCharsets
+                                                                                    .UTF_8));
                                             msg.setQos(0);
                                             msg.setRetained(true);
                                             publisher.publish(
@@ -305,6 +316,20 @@ public class SaicMqttGateway implements Callable<Integer> {
                         1,
                         1,
                         TimeUnit.SECONDS);
+    }
+
+    private static SaicMessage convert(net.heberling.ismart.asn1.v1_1.entity.Message message) {
+        return new SaicMessage(
+                message.getMessageId(),
+                message.getMessageType(),
+                new String(message.getTitle(), StandardCharsets.UTF_8),
+                ZonedDateTime.ofInstant(
+                        Instant.ofEpochSecond(message.getMessageTime().getSeconds()),
+                        ZoneId.systemDefault()),
+                new String(message.getSender(), StandardCharsets.UTF_8),
+                new String(message.getContent(), StandardCharsets.UTF_8),
+                message.getReadStatus(),
+                message.getVin());
     }
 
     private static void handleVehicle(
@@ -834,6 +859,8 @@ public class SaicMqttGateway implements Callable<Integer> {
                     }
                 });
         return new GensonBuilder()
+                .useDateAsTimestamp(false)
+                .withBundle(new JavaDateTimeBundle())
                 .useIndentation(true)
                 .useRuntimeType(true)
                 .exclude("preparedData")

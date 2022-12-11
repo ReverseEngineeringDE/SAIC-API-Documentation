@@ -30,6 +30,11 @@
       <version>1.2.5</version>
     </dependency>
     <dependency>
+      <groupId>com.owlike</groupId>
+      <artifactId>genson-java-datetime</artifactId>
+      <version>1.6</version>
+    </dependency>
+    <dependency>
       <groupId>net.heberling.ismart</groupId>
       <artifactId>ismart-api</artifactId>
       <version>${project.version}</version>
