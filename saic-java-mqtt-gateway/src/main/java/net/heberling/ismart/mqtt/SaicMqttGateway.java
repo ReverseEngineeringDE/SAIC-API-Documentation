@@ -19,7 +19,9 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import net.heberling.ismart.asn1.AbstractMessage;
@@ -32,6 +34,9 @@ import net.heberling.ismart.asn1.v1_1.MessageCoder;
 import net.heberling.ismart.asn1.v1_1.MessageCounter;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInReq;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInResp;
+import net.heberling.ismart.asn1.v1_1.entity.MessageListReq;
+import net.heberling.ismart.asn1.v1_1.entity.MessageListResp;
+import net.heberling.ismart.asn1.v1_1.entity.StartEndNumber;
 import net.heberling.ismart.asn1.v1_1.entity.VinInfo;
 import net.heberling.ismart.asn1.v2_1.entity.OTA_RVMVehicleStatusReq;
 import net.heberling.ismart.asn1.v2_1.entity.OTA_RVMVehicleStatusResp25857;
@@ -166,27 +171,140 @@ public class SaicMqttGateway implements Callable<Integer> {
                             anonymized(
                                     new MessageCoder<>(MP_UserLoggingInResp.class),
                                     loginResponseMessage)));
-            List<Future<Object>> futures =
+            List<Future<?>> futures =
                     loginResponseMessage.getApplicationData().getVinList().stream()
                             .map(
                                     vin ->
-                                            new Callable<Object>() {
-                                                @Override
-                                                public Object call() throws Exception {
-                                                    handleVehicle(
-                                                            publisher, loginResponseMessage, vin);
-                                                    return null;
-                                                }
-                                            })
+                                            (Callable<Object>)
+                                                    () -> {
+                                                        handleVehicle(
+                                                                publisher,
+                                                                loginResponseMessage,
+                                                                vin);
+                                                        return null;
+                                                    })
                             .map(Executors.newSingleThreadExecutor()::submit)
                             .collect(Collectors.toList());
 
-            for (Future<Object> future : futures) {
+            ScheduledFuture<?> pollingJob =
+                    createMessagePoller(
+                            publisher,
+                            loginResponseMessage.getBody().getUid(),
+                            loginResponseMessage.getApplicationData().getToken());
+
+            futures.add(pollingJob);
+
+            for (Future<?> future : futures) {
                 // make sure we wait on all futures before exiting
                 future.get();
             }
             return 0;
         }
+    }
+
+    private static ScheduledFuture<?> createMessagePoller(
+            IMqttClient publisher, String uid, String token) {
+        return Executors.newSingleThreadScheduledExecutor()
+                .scheduleWithFixedDelay(
+                        () -> {
+                            Message<MessageListReq> messageListRequestMessage =
+                                    new Message<>(
+                                            new MP_DispatcherHeader(),
+                                            new MP_DispatcherBody(),
+                                            new MessageListReq());
+
+                            messageListRequestMessage.getHeader().setProtocolVersion(18);
+
+                            MessageCounter messageCounter = new MessageCounter();
+                            messageCounter.setDownlinkCounter(0);
+                            messageCounter.setUplinkCounter(1);
+                            messageListRequestMessage.getBody().setMessageCounter(messageCounter);
+
+                            messageListRequestMessage.getBody().setMessageID(1);
+                            messageListRequestMessage.getBody().setIccID("12345678901234567890");
+                            messageListRequestMessage.getBody().setSimInfo("1234567890987654321");
+                            messageListRequestMessage
+                                    .getBody()
+                                    .setEventCreationTime(Instant.now().getEpochSecond());
+                            messageListRequestMessage.getBody().setApplicationID("531");
+                            messageListRequestMessage
+                                    .getBody()
+                                    .setApplicationDataProtocolVersion(513);
+                            messageListRequestMessage.getBody().setTestFlag(2);
+
+                            messageListRequestMessage.getBody().setUid(uid);
+                            messageListRequestMessage.getBody().setToken(token);
+
+                            // We currently assume that the newest message is the first.
+                            // TODO: get all messages
+                            // TODO: delete old messages
+                            // TODO: handle case when no messages are there
+                            // TODO: automatically subscribe for engine start messages
+                            messageListRequestMessage
+                                    .getApplicationData()
+                                    .setStartEndNumber(new StartEndNumber());
+                            messageListRequestMessage
+                                    .getApplicationData()
+                                    .getStartEndNumber()
+                                    .setStartNumber(1L);
+                            messageListRequestMessage
+                                    .getApplicationData()
+                                    .getStartEndNumber()
+                                    .setEndNumber(5L);
+                            messageListRequestMessage.getApplicationData().setMessageGroup("ALARM");
+
+                            String messageListRequest =
+                                    new MessageCoder<>(MessageListReq.class)
+                                            .encodeRequest(messageListRequestMessage);
+
+                            try {
+                                String messageListResponse =
+                                        sendRequest(
+                                                messageListRequest,
+                                                "https://tap-eu.soimt.com/TAP.Web/ota.mp");
+
+                                Message<MessageListResp> messageListResponseMessage =
+                                        new MessageCoder<>(MessageListResp.class)
+                                                .decodeResponse(messageListResponse);
+
+                                System.out.println(
+                                        toJSON(
+                                                anonymized(
+                                                        new MessageCoder<>(MessageListResp.class),
+                                                        messageListResponseMessage)));
+
+                                if (messageListResponseMessage.getApplicationData() != null) {
+                                    for (net.heberling.ismart.asn1.v1_1.entity.Message message :
+                                            messageListResponseMessage
+                                                    .getApplicationData()
+                                                    .getMessages()) {
+                                        MqttMessage msg = new MqttMessage(message.getContent());
+                                        msg.setQos(0);
+                                        // Don't retain, so deleted messages are removed
+                                        // autmatically
+                                        msg.setRetained(false);
+                                        publisher.publish(
+                                                "saic/message/" + message.getMessageId(), msg);
+
+                                        if (message.isVinPresent()) {
+                                            String vin = message.getVin();
+                                            msg = new MqttMessage(message.getContent());
+                                            msg.setQos(0);
+                                            msg.setRetained(true);
+                                            publisher.publish(
+                                                    "saic/vehicle/" + vin + "/message", msg);
+                                        }
+                                    }
+                                } else {
+                                    // logger.warn("No application data found!");
+                                }
+                            } catch (IOException | MqttException e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
+                        1,
+                        1,
+                        TimeUnit.SECONDS);
     }
 
     private static void handleVehicle(
