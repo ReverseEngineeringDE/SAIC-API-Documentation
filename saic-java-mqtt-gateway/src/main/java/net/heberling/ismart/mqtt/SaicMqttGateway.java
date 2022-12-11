@@ -563,6 +563,43 @@ public class SaicMqttGateway implements Callable<Integer> {
         msg.setRetained(true);
         publisher.publish("saic/vehicle/" + vin + "/speed", msg);
 
+
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getBasicVehicleStatus()
+                                                .getLockStatus())
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/locked", msg);
+
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getBasicVehicleStatus()
+                                                .getRemoteClimateStatus())
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/remoteClimate", msg);
+
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getBasicVehicleStatus()
+                                                .getRmtHtdRrWndSt())
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/remoteRearWindowHeater", msg);
+
         if (chargingStatusResponseMessage.getApplicationData().getBasicVehicleStatus().getMileage()
                 > 0) {
             // sometimes milage is 0, ignore such values
@@ -725,6 +762,82 @@ public class SaicMqttGateway implements Callable<Integer> {
         msg.setQos(0);
         msg.setRetained(true);
         publisher.publish("saic/vehicle/" + vin + "/power", msg);
+
+        msg =
+                new MqttMessage(
+                        (String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getChargeStatus()
+                                                .getChargingType()))
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/charge/type", msg);
+
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getBmsChrgCtrlDspCmd())
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/bms/bmsChrgCtrlDspCmd", msg);
+
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getBmsChrgOtptCrntReq())
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/bms/bmsChrgOtptCrntReq", msg);
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getBmsChrgSts())
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/bms/bmsChrgSts", msg);
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getBmsPackCrnt())
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/bms/bmsPackCrnt", msg);
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                        .getApplicationData()
+                                                        .getBmsPackVol()
+                                                / 4)
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/bms/bmsPackVol", msg);
+
+        msg =
+                new MqttMessage(
+                        String.valueOf(
+                                        chargingStatusResponseMessage
+                                                .getApplicationData()
+                                                .getBmsPTCHeatReqDspCmd())
+                                .getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/bms/bmsPTCHeatReqDspCmd", msg);
 
         msg =
                 new MqttMessage(
