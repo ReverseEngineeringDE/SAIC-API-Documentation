@@ -17,7 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -340,7 +342,18 @@ public class SaicMqttGateway implements Callable<Integer> {
                         vin.getModelConfigurationJsonStr().getBytes(StandardCharsets.UTF_8));
         msg.setQos(0);
         msg.setRetained(true);
-        publisher.publish("saic/vehicle/" + vin.getVin() + "/configuration", msg);
+        publisher.publish("saic/vehicle/" + vin.getVin() + "/configuration/raw", msg);
+        for (String c : vin.getModelConfigurationJsonStr().split(";")) {
+            Map<String, String> map = new HashMap<>();
+            for (String e : c.split(",")) {
+                map.put(e.split(":")[0], e.split(":")[1]);
+            }
+            msg = new MqttMessage(toJSON(map).getBytes(StandardCharsets.UTF_8));
+            msg.setQos(0);
+            msg.setRetained(true);
+            publisher.publish(
+                    "saic/vehicle/" + vin.getVin() + "/configuration/" + map.get("code"), msg);
+        }
         while (true) {
             boolean active =
                     updateVehicleStatus(
