@@ -765,15 +765,22 @@ public class SaicMqttGateway implements Callable<Integer> {
                         + "/json",
                 msg);
 
-        double power =
-                (chargingStatusResponseMessage.getApplicationData().getBmsPackCrnt() * 0.05d
-                                - 1000.0d)
-                        * ((double)
-                                        chargingStatusResponseMessage
-                                                .getApplicationData()
-                                                .getBmsPackVol()
-                                * 0.25d)
-                        / 1000d;
+        double current =
+                chargingStatusResponseMessage.getApplicationData().getBmsPackCrnt() * 0.05d
+                        - 1000.0d;
+        msg = new MqttMessage((String.valueOf(current)).getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/current", msg);
+
+        double voltage =
+                (double) chargingStatusResponseMessage.getApplicationData().getBmsPackVol() * 0.25d;
+        msg = new MqttMessage((String.valueOf(voltage)).getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        msg.setRetained(true);
+        publisher.publish("saic/vehicle/" + vin + "/voltage", msg);
+
+        double power = current * voltage / 1000d;
         msg = new MqttMessage((String.valueOf(power)).getBytes(StandardCharsets.UTF_8));
         msg.setQos(0);
         msg.setRetained(true);
