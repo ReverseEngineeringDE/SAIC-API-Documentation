@@ -57,7 +57,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import picocli.CommandLine;
 
-@CommandLine.Command(mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "ismart-mqtt-gateway", mixinStandardHelpOptions = true)
 public class SaicMqttGateway implements Callable<Integer> {
 
     @CommandLine.Option(
@@ -123,7 +123,7 @@ public class SaicMqttGateway implements Callable<Integer> {
     public Integer call() throws Exception { // your business logic goes here...
         String publisherId = UUID.randomUUID().toString();
         try (IMqttClient client =
-                new MqttClient(mqttUri, publisherId) {
+                new MqttClient(mqttUri, publisherId, null) {
                     @Override
                     public void close() throws MqttException {
                         disconnect();

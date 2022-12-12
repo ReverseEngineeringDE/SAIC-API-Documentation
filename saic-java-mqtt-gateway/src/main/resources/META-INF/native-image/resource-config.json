@@ -1,0 +1,7 @@
+{
+  "bundles" : [
+    {"name":"org.eclipse.paho.client.mqttv3.internal.nls.logcat"}
+  ],
+  "resources" : [
+  ]
+}
