@@ -414,6 +414,14 @@ public class SaicMqttGateway implements Callable<Integer> {
         // TODO: check for real errors (result!=0 and/or errorMessagePresent)
         while (chargingStatusResponseMessage.getApplicationData() == null) {
 
+            if (chargingStatusResponseMessage.getBody().isErrorMessagePresent()) {
+                if (chargingStatusResponseMessage.getBody().getResult() == 2) {
+                    //TODO: relogn
+                }
+                // try again next time
+                return false;
+            }
+
             chargingStatusMessage.getBody().setUid(uid);
             chargingStatusMessage.getBody().setToken(token);
 
@@ -687,6 +695,14 @@ public class SaicMqttGateway implements Callable<Integer> {
         // ... use that to request the data again, until we have it
         // TODO: check for real errors (result!=0 and/or errorMessagePresent)
         while (chargingStatusResponseMessage.getApplicationData() == null) {
+
+            if (chargingStatusResponseMessage.getBody().isErrorMessagePresent()) {
+                if (chargingStatusResponseMessage.getBody().getResult() == 2) {
+                    //TODO: relogn
+                }
+                // try again next time
+                return;
+            }
 
             fillReserved(chargingStatusMessage.getReserved());
 
