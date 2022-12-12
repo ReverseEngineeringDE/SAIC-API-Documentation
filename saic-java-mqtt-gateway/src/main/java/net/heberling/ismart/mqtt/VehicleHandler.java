@@ -32,6 +32,7 @@ public class VehicleHandler {
     private VinInfo vinInfo;
     private SaicMqttGateway saicMqttGateway;
     private IMqttClient client;
+    private ZonedDateTime lastCarActivity;
 
     public VehicleHandler(
             SaicMqttGateway saicMqttGateway,
@@ -65,6 +66,8 @@ public class VehicleHandler {
             client.publish(
                     "saic/vehicle/" + vinInfo.getVin() + "/configuration/" + map.get("code"), msg);
         }
+        // we just got started, force some updates
+        notifyCarActivity(ZonedDateTime.now(), true);
         while (true) {
             if (lastCarActivity.isAfter(ZonedDateTime.now().minus(1, ChronoUnit.MINUTES))) {
                 OTA_RVMVehicleStatusResp25857 vehicleStatus =
@@ -314,6 +317,10 @@ public class VehicleHandler {
                                         .getBasicVehicleStatus()
                                         .getExtendedData2()
                                 >= 1;
+
+        if (isCharging || engineRunning) {
+            notifyCarActivity(ZonedDateTime.now(), false);
+        }
 
         MqttMessage msg = new MqttMessage(chargingStatusResponse.getBytes(StandardCharsets.UTF_8));
         msg.setQos(0);
@@ -728,5 +735,19 @@ public class VehicleHandler {
         publisher.publish("saic/vehicle/" + vin + "/soc", msg);
 
         return chargingStatusResponseMessage.getApplicationData();
+    }
+
+    public void notifyCarActivity(ZonedDateTime now, boolean force) throws MqttException {
+        // if the car activity changed, notify the channel
+        if (lastCarActivity == null || force || lastCarActivity.isBefore(now)) {
+            lastCarActivity = now;
+            MqttMessage msg =
+                    new MqttMessage(
+                            SaicMqttGateway.toJSON(lastCarActivity)
+                                    .getBytes(StandardCharsets.UTF_8));
+            msg.setQos(0);
+            msg.setRetained(true);
+            client.publish("saic/vehicle/" + vinInfo.getVin() + "/last_activity", msg);
+        }
     }
 }
