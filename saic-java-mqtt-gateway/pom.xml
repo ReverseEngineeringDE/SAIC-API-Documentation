@@ -36,7 +36,7 @@
     </dependency>
     <dependency>
       <groupId>net.heberling.ismart</groupId>
-      <artifactId>ismart-api</artifactId>
+      <artifactId>ismart-api-cli</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
