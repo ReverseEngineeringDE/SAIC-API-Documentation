@@ -14,7 +14,6 @@ import net.heberling.ismart.asn1.v1_1.entity.MessageListReq;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListResp;
 import net.heberling.ismart.asn1.v1_1.entity.StartEndNumber;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 class MessageHandler implements Runnable {
     private final String uid;
@@ -81,11 +80,6 @@ class MessageHandler implements Runnable {
             if (messageListResponseMessage.getApplicationData() != null) {
                 for (net.heberling.ismart.asn1.v1_1.entity.Message message :
                         messageListResponseMessage.getApplicationData().getMessages()) {
-                    MqttMessage msg =
-                            new MqttMessage(
-                                    SaicMqttGateway.toJSON(convert(message))
-                                            .getBytes(StandardCharsets.UTF_8));
-
                     gateway.notifyMessage(convert(message));
                 }
             } else {

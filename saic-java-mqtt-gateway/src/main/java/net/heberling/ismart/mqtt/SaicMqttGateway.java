@@ -117,7 +117,7 @@ public class SaicMqttGateway implements Callable<Integer> {
 
     private IMqttClient client;
 
-    private Map<String, VehicleHandler> vehicleHandlerMap = new HashMap<>();
+    private final Map<String, VehicleHandler> vehicleHandlerMap = new HashMap<>();
 
     @Override
     public Integer call() throws Exception { // your business logic goes here...
@@ -360,8 +360,7 @@ public class SaicMqttGateway implements Callable<Integer> {
 
                                 @Override
                                 public Object deserialize(
-                                        ObjectReader objectReader, Context context)
-                                        throws Exception {
+                                        ObjectReader objectReader, Context context) {
                                     throw new UnsupportedOperationException("not implemented yet");
                                 }
                             };
