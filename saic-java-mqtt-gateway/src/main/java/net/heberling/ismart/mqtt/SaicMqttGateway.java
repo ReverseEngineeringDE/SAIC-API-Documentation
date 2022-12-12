@@ -13,6 +13,7 @@ import com.owlike.genson.stream.ObjectWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -47,6 +48,7 @@ import net.heberling.ismart.asn1.v2_1.entity.OTA_RVMVehicleStatusReq;
 import net.heberling.ismart.asn1.v2_1.entity.OTA_RVMVehicleStatusResp25857;
 import net.heberling.ismart.asn1.v3_0.entity.OTA_ChrgMangDataResp;
 import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -102,6 +104,27 @@ public class SaicMqttGateway implements Callable<Integer> {
             description = {"The SAIC password.", "Environment Variable: SAIC_PASSWORD"},
             defaultValue = "${env:SAIC_PASSWORD}")
     private String saicPassword;
+
+    @CommandLine.Option(
+            names = {"-ak", "--abrp-api-key"},
+            description = {
+                "The API key for the A Better Route Planer telemetry API.",
+                "Environment Variable: ABRP_API_KEY"
+            },
+            defaultValue = "${env:ABRP_API_KEY}")
+    private String abrpApiKey;
+
+    @CommandLine.Option(
+            names = {"-at", "--abrp-user-token"},
+            description = {
+                "The mapping of VIN to ABRP User Token.",
+                "Multiple mappings can be provided seperated by ,",
+                "Example: LSJXXXX=12345-abcdef,LSJYYYY=67890-ghijkl",
+                "Environment Variable: ABRP_USER_TOKEN"
+            },
+            defaultValue = "${env:ABRP_USER_TOKEN}",
+            split = ",")
+    private Map<String, String> vinAbrpTokenMap = new HashMap<>();
 
     @Override
     public Integer call() throws Exception { // your business logic goes here...
@@ -332,7 +355,7 @@ public class SaicMqttGateway implements Callable<Integer> {
                 message.getVin());
     }
 
-    private static void handleVehicle(
+    private void handleVehicle(
             IMqttClient publisher, Message<MP_UserLoggingInResp> loginResponseMessage, VinInfo vin)
             throws MqttException, IOException, TimeoutException {
         MqttMessage msg =
@@ -353,21 +376,158 @@ public class SaicMqttGateway implements Callable<Integer> {
                     "saic/vehicle/" + vin.getVin() + "/configuration/" + map.get("code"), msg);
         }
         while (true) {
-            boolean active =
+            OTA_RVMVehicleStatusResp25857 vehicleStatus =
                     updateVehicleStatus(
                             publisher,
                             loginResponseMessage.getBody().getUid(),
                             loginResponseMessage.getApplicationData().getToken(),
                             vin.getVin());
-            updateChargeStatus(
-                    publisher,
-                    loginResponseMessage.getBody().getUid(),
-                    loginResponseMessage.getApplicationData().getToken(),
-                    vin.getVin());
+            OTA_ChrgMangDataResp chargeStatus =
+                    updateChargeStatus(
+                            publisher,
+                            loginResponseMessage.getBody().getUid(),
+                            loginResponseMessage.getApplicationData().getToken(),
+                            vin.getVin());
+            String abrpUserToken = vinAbrpTokenMap.get(vin.getVin());
+            if (abrpApiKey != null
+                    && abrpUserToken != null
+                    && vehicleStatus != null
+                    && chargeStatus != null) {
+                try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+                    // Request parameters and other properties.
+                    HashMap<String, Object> map = new HashMap<>();
+                    // utc [s]: Current UTC timestamp (epoch) in seconds (note, not milliseconds!)
+                    map.put(
+                            "utc",
+                            vehicleStatus.getGpsPosition().getTimestamp4Short().getSeconds());
+                    // soc [SoC %]: State of Charge of the vehicle (what's displayed on the
+                    // dashboard of the vehicle is preferred)
+                    map.put("soc", chargeStatus.getBmsPackSOCDsp() / 10.d);
+                    // power [kW]: Instantaneous power output/input to the vehicle. Power output is
+                    // positive, power input is negative (charging)
+                    double current = chargeStatus.getBmsPackCrnt() * 0.05d - 1000.0d;
+                    double voltage = (double) chargeStatus.getBmsPackVol() * 0.25d;
+                    double power = current * voltage / 1000d;
+                    map.put("power", power);
+                    // speed [km/h]: Vehicle speed
+                    map.put(
+                            "speed",
+                            vehicleStatus.getGpsPosition().getWayPoint().getSpeed() / 10.d);
+                    // lat [°]: Current vehicle latitude
+                    map.put(
+                            "lat",
+                            vehicleStatus.getGpsPosition().getWayPoint().getPosition().getLatitude()
+                                    / 1000000d);
+                    // lon [°]: Current vehicle longitude
+                    map.put(
+                            "lon",
+                            vehicleStatus
+                                            .getGpsPosition()
+                                            .getWayPoint()
+                                            .getPosition()
+                                            .getLongitude()
+                                    / 1000000d);
+                    // is_charging [bool or 1/0]: Determines vehicle state. 0 is not charging, 1 is
+                    // charging
+                    boolean isCharging =
+                            vehicleStatus.getBasicVehicleStatus().isExtendedData2Present()
+                                    && vehicleStatus.getBasicVehicleStatus().getExtendedData2()
+                                            >= 1;
+                    map.put("is_charging", isCharging);
+                    // TODO: is_dcfc [bool or 1/0]: If is_charging, indicate if this is DC fast
+                    // charging
+                    // TODO: is_parked [bool or 1/0]: If the vehicle gear is in P (or the driver has
+                    // left the car)
+                    // TODO: capacity [kWh]: Estimated usable battery capacity (can be given
+                    // together with soh, but usually not)
+                    // TODO: kwh_charged [kWh]: Measured energy input while charging. Typically a
+                    // cumulative total, but also supports individual sessions.
+                    // TODO: soh [%]: State of Health of the battery. 100 = no degradation
+                    // heading [°]: Current heading of the vehicle. This will take priority over
+                    // phone heading, so don't include if not accurate.
+                    map.put("heading", vehicleStatus.getGpsPosition().getWayPoint().getHeading());
+                    // elevation [m]: Vehicle's current elevation. If not given, will be looked up
+                    // from location (but may miss 3D structures)
+                    map.put(
+                            "elevation",
+                            vehicleStatus
+                                    .getGpsPosition()
+                                    .getWayPoint()
+                                    .getPosition()
+                                    .getAltitude());
+                    // TODO: ext_temp [°C]: Outside temperature measured by the vehicle
+                    // TODO: batt_temp [°C]: Battery temperature
+                    // voltage [V]: Battery pack voltage
+                    map.put("voltage", voltage);
+                    // current [A]: Battery pack current (similar to power: output is
+                    // positive, input (charging) is negative.)
+                    map.put("current", current);
+                    // odometer [km]: Current odometer reading in km.
+                    if (vehicleStatus.getBasicVehicleStatus().getMileage() > 0) {
+                        map.put(
+                                "odometer",
+                                vehicleStatus.getBasicVehicleStatus().getMileage() / 10.d);
+                    }
+                    // est_battery_range [km]: Estimated remaining range of the vehicle
+                    // (according to the vehicle)
+                    if (vehicleStatus.getBasicVehicleStatus().getFuelRangeElec() > 0) {
+                        map.put(
+                                "odometer",
+                                vehicleStatus.getBasicVehicleStatus().getFuelRangeElec() / 10.d);
+                    }
+                    String request =
+                            "token="
+                                    + abrpUserToken
+                                    + "&tlm="
+                                    + URLEncoder.encode(toJSON(map), StandardCharsets.UTF_8);
+                    HttpGet httppost =
+                            new HttpGet(
+                                    "https://api.iternio.com/1/tlm/send?api_key="
+                                            + abrpApiKey
+                                            + "&"
+                                            + request);
+
+                    // Execute and get the response.
+                    // Create a custom response handler
+                    HttpClientResponseHandler<String> responseHandler =
+                            response -> {
+                                final int status = response.getCode();
+                                if (status >= HttpStatus.SC_SUCCESS
+                                        && status < HttpStatus.SC_REDIRECTION) {
+                                    final HttpEntity entity = response.getEntity();
+                                    try {
+                                        return entity != null ? EntityUtils.toString(entity) : null;
+                                    } catch (final ParseException ex) {
+                                        throw new ClientProtocolException(ex);
+                                    }
+                                } else {
+                                    final HttpEntity entity = response.getEntity();
+                                    try {
+                                        if (entity != null)
+                                            throw new ClientProtocolException(
+                                                    "Unexpected response status: "
+                                                            + status
+                                                            + " Content: "
+                                                            + EntityUtils.toString(entity));
+                                        else
+                                            throw new ClientProtocolException(
+                                                    "Unexpected response status: " + status);
+                                    } catch (final ParseException ex) {
+                                        throw new ClientProtocolException(ex);
+                                    }
+                                }
+                            };
+                    String execute = httpclient.execute(httppost, responseHandler);
+                    System.out.println("ABRP: " + execute);
+                } catch (Exception e) {
+                    System.out.println("ABRP failed.:");
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    private static boolean updateVehicleStatus(
+    private static OTA_RVMVehicleStatusResp25857 updateVehicleStatus(
             IMqttClient publisher, String uid, String token, String vin)
             throws IOException, MqttException, TimeoutException {
         net.heberling.ismart.asn1.v2_1.Message<OTA_RVMVehicleStatusReq> chargingStatusMessage =
@@ -414,10 +574,10 @@ public class SaicMqttGateway implements Callable<Integer> {
 
             if (chargingStatusResponseMessage.getBody().isErrorMessagePresent()) {
                 if (chargingStatusResponseMessage.getBody().getResult() == 2) {
-                    //TODO: relogn
+                    // TODO: relogn
                 }
                 // try again next time
-                return false;
+                return null;
             }
 
             chargingStatusMessage.getBody().setUid(uid);
@@ -569,7 +729,6 @@ public class SaicMqttGateway implements Callable<Integer> {
         msg.setRetained(true);
         publisher.publish("saic/vehicle/" + vin + "/speed", msg);
 
-
         msg =
                 new MqttMessage(
                         String.valueOf(
@@ -636,10 +795,10 @@ public class SaicMqttGateway implements Callable<Integer> {
             msg.setRetained(true);
             publisher.publish("saic/vehicle/" + vin + "/range/electric", msg);
         }
-        return engineRunning || isCharging;
+        return chargingStatusResponseMessage.getApplicationData();
     }
 
-    private static void updateChargeStatus(
+    private static OTA_ChrgMangDataResp updateChargeStatus(
             IMqttClient publisher, String uid, String token, String vin)
             throws IOException, MqttException {
         net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
@@ -696,10 +855,10 @@ public class SaicMqttGateway implements Callable<Integer> {
 
             if (chargingStatusResponseMessage.getBody().isErrorMessagePresent()) {
                 if (chargingStatusResponseMessage.getBody().getResult() == 2) {
-                    //TODO: relogn
+                    // TODO: relogn
                 }
                 // try again next time
-                return;
+                return null;
             }
 
             fillReserved(chargingStatusMessage.getReserved());
@@ -871,6 +1030,8 @@ public class SaicMqttGateway implements Callable<Integer> {
         msg.setQos(0);
         msg.setRetained(true);
         publisher.publish("saic/vehicle/" + vin + "/soc", msg);
+
+        return chargingStatusResponseMessage.getApplicationData();
     }
 
     public static void main(String... args) {
