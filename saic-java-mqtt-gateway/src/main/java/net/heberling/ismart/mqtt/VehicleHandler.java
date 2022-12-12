@@ -33,6 +33,7 @@ public class VehicleHandler {
     private SaicMqttGateway saicMqttGateway;
     private IMqttClient client;
     private ZonedDateTime lastCarActivity;
+    private ZonedDateTime lastVehicleMessage;
 
     public VehicleHandler(
             SaicMqttGateway saicMqttGateway,
@@ -749,5 +750,20 @@ public class VehicleHandler {
             msg.setRetained(true);
             client.publish("saic/vehicle/" + vinInfo.getVin() + "/last_activity", msg);
         }
+    }
+
+    public void notifyMessage(SaicMessage message) throws MqttException {
+        if (lastVehicleMessage == null || message.getMessageTime().isAfter(lastVehicleMessage)) {
+            // only publish the latest message
+            MqttMessage msg =
+                    new MqttMessage(
+                            SaicMqttGateway.toJSON(message).getBytes(StandardCharsets.UTF_8));
+            msg.setQos(0);
+            msg.setRetained(true);
+            client.publish("saic/vehicle/" + vinInfo.getVin() + "/message", msg);
+            lastVehicleMessage = message.getMessageTime();
+        }
+        // something happened, better check the vehicle state
+        notifyCarActivity(message.getMessageTime(), false);
     }
 }

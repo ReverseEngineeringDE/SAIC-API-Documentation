@@ -54,6 +54,7 @@ import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import picocli.CommandLine;
 
 @CommandLine.Command(mixinStandardHelpOptions = true)
@@ -114,6 +115,10 @@ public class SaicMqttGateway implements Callable<Integer> {
             split = ",")
     private Map<String, String> vinAbrpTokenMap = new HashMap<>();
 
+    private IMqttClient client;
+
+    private Map<String, VehicleHandler> vehicleHandlerMap = new HashMap<>();
+
     @Override
     public Integer call() throws Exception { // your business logic goes here...
         String publisherId = UUID.randomUUID().toString();
@@ -125,7 +130,7 @@ public class SaicMqttGateway implements Callable<Integer> {
                         super.close(true);
                     }
                 }) {
-
+            this.client = client;
             MqttConnectOptions options = new MqttConnectOptions();
             options.setAutomaticReconnect(true);
             options.setCleanSession(true);
@@ -190,20 +195,24 @@ public class SaicMqttGateway implements Callable<Integer> {
             List<Future<?>> futures =
                     loginResponseMessage.getApplicationData().getVinList().stream()
                             .map(
-                                    vin ->
+                                    vin -> {
+                                        VehicleHandler handler =
+                                                new VehicleHandler(
+                                                        this,
+                                                        client,
+                                                        loginResponseMessage.getBody().getUid(),
+                                                        loginResponseMessage
+                                                                .getApplicationData()
+                                                                .getToken(),
+                                                        vin);
+                                        vehicleHandlerMap.put(vin.getVin(), handler);
+                                        return handler;
+                                    })
+                            .map(
+                                    handler ->
                                             (Callable<Object>)
                                                     () -> {
-                                                        new VehicleHandler(
-                                                                        this,
-                                                                        client,
-                                                                        loginResponseMessage
-                                                                                .getBody()
-                                                                                .getUid(),
-                                                                        loginResponseMessage
-                                                                                .getApplicationData()
-                                                                                .getToken(),
-                                                                        vin)
-                                                                .handleVehicle();
+                                                        handler.handleVehicle();
                                                         return null;
                                                     })
                             .map(Executors.newSingleThreadExecutor()::submit)
@@ -211,7 +220,6 @@ public class SaicMqttGateway implements Callable<Integer> {
 
             ScheduledFuture<?> pollingJob =
                     createMessagePoller(
-                            client,
                             loginResponseMessage.getBody().getUid(),
                             loginResponseMessage.getApplicationData().getToken());
 
@@ -225,11 +233,10 @@ public class SaicMqttGateway implements Callable<Integer> {
         }
     }
 
-    private static ScheduledFuture<?> createMessagePoller(
-            IMqttClient publisher, String uid, String token) {
+    private ScheduledFuture<?> createMessagePoller(String uid, String token) {
         return Executors.newSingleThreadScheduledExecutor()
                 .scheduleWithFixedDelay(
-                        new MessageHandler(uid, token, publisher), 1, 1, TimeUnit.SECONDS);
+                        new MessageHandler(uid, token, this), 1, 1, TimeUnit.SECONDS);
     }
 
     public static void main(String... args) {
@@ -381,6 +388,20 @@ public class SaicMqttGateway implements Callable<Integer> {
 
     public String getAbrpUserToken(String vin) {
         return vinAbrpTokenMap.get(vin);
+    }
+
+    public void notifyMessage(SaicMessage message) throws MqttException {
+        MqttMessage msg =
+                new MqttMessage(SaicMqttGateway.toJSON(message).getBytes(StandardCharsets.UTF_8));
+        msg.setQos(0);
+        // Don't retain, so deleted messages are removed
+        // automatically from the broker
+        msg.setRetained(false);
+        client.publish("saic/message/" + message.getMessageId(), msg);
+
+        if (message.getVin() != null) {
+            vehicleHandlerMap.get(message.getVin()).notifyMessage(message);
+        }
     }
 
     private static class MyObjectWriter implements ObjectWriter {

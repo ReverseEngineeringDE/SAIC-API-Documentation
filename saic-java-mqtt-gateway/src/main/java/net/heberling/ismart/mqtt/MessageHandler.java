@@ -13,19 +13,18 @@ import net.heberling.ismart.asn1.v1_1.MessageCounter;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListReq;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListResp;
 import net.heberling.ismart.asn1.v1_1.entity.StartEndNumber;
-import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 class MessageHandler implements Runnable {
     private final String uid;
     private final String token;
-    private final IMqttClient client;
+    private final SaicMqttGateway gateway;
 
-    public MessageHandler(String uid, String token, IMqttClient client) {
+    public MessageHandler(String uid, String token, SaicMqttGateway gateway) {
         this.uid = uid;
         this.token = token;
-        this.client = client;
+        this.gateway = gateway;
     }
 
     @Override
@@ -86,22 +85,8 @@ class MessageHandler implements Runnable {
                             new MqttMessage(
                                     SaicMqttGateway.toJSON(convert(message))
                                             .getBytes(StandardCharsets.UTF_8));
-                    msg.setQos(0);
-                    // Don't retain, so deleted messages are removed
-                    // automatically from the broker
-                    msg.setRetained(false);
-                    client.publish("saic/message/" + message.getMessageId(), msg);
 
-                    if (message.isVinPresent()) {
-                        String vin = message.getVin();
-                        msg =
-                                new MqttMessage(
-                                        SaicMqttGateway.toJSON(convert(message))
-                                                .getBytes(StandardCharsets.UTF_8));
-                        msg.setQos(0);
-                        msg.setRetained(true);
-                        client.publish("saic/vehicle/" + vin + "/message", msg);
-                    }
+                    gateway.notifyMessage(convert(message));
                 }
             } else {
                 // logger.warn("No application data found!");
