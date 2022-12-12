@@ -106,7 +106,7 @@ public class SaicMqttGateway implements Callable<Integer> {
     @Override
     public Integer call() throws Exception { // your business logic goes here...
         String publisherId = UUID.randomUUID().toString();
-        try (IMqttClient publisher =
+        try (IMqttClient client =
                 new MqttClient(mqttUri, publisherId) {
                     @Override
                     public void close() throws MqttException {
@@ -125,7 +125,7 @@ public class SaicMqttGateway implements Callable<Integer> {
             if (mqttPassword != null) {
                 options.setPassword(mqttPassword);
             }
-            publisher.connect(options);
+            client.connect(options);
 
             Message<MP_UserLoggingInReq> loginRequestMessage =
                     new Message<>(
@@ -183,9 +183,7 @@ public class SaicMqttGateway implements Callable<Integer> {
                                             (Callable<Object>)
                                                     () -> {
                                                         handleVehicle(
-                                                                publisher,
-                                                                loginResponseMessage,
-                                                                vin);
+                                                                client, loginResponseMessage, vin);
                                                         return null;
                                                     })
                             .map(Executors.newSingleThreadExecutor()::submit)
@@ -193,7 +191,7 @@ public class SaicMqttGateway implements Callable<Integer> {
 
             ScheduledFuture<?> pollingJob =
                     createMessagePoller(
-                            publisher,
+                            client,
                             loginResponseMessage.getBody().getUid(),
                             loginResponseMessage.getApplicationData().getToken());
 
