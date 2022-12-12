@@ -70,7 +70,7 @@ public class VehicleHandler {
         // we just got started, force some updates
         notifyCarActivity(ZonedDateTime.now(), true);
         while (true) {
-            if (lastCarActivity.isAfter(ZonedDateTime.now().minus(1, ChronoUnit.MINUTES))) {
+            if (lastCarActivity.isAfter(ZonedDateTime.now().minus(15, ChronoUnit.MINUTES))) {
                 OTA_RVMVehicleStatusResp25857 vehicleStatus =
                         updateVehicleStatus(client, uid, token, vinInfo.getVin());
                 OTA_ChrgMangDataResp chargeStatus =
