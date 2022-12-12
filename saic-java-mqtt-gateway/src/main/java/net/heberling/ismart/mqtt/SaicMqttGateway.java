@@ -109,9 +109,10 @@ public class SaicMqttGateway implements Callable<Integer> {
             names = {"-ak", "--abrp-api-key"},
             description = {
                 "The API key for the A Better Route Planer telemetry API.",
+                "Default is the open source telemetry API key 8cfc314b-03cd-4efe-ab7d-4431cd8f2e2d",
                 "Environment Variable: ABRP_API_KEY"
             },
-            defaultValue = "${env:ABRP_API_KEY}")
+            defaultValue = "${env:ABRP_API_KEY:-8cfc314b-03cd-4efe-ab7d-4431cd8f2e2d}")
     private String abrpApiKey;
 
     @CommandLine.Option(
