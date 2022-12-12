@@ -158,7 +158,7 @@ public class VehicleHandler {
                 // the vehicle)
                 if (vehicleStatus.getBasicVehicleStatus().getFuelRangeElec() > 0) {
                     map.put(
-                            "odometer",
+                            "est_battery_range",
                             vehicleStatus.getBasicVehicleStatus().getFuelRangeElec() / 10.d);
                 }
                 String request =
