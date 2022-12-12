@@ -80,13 +80,13 @@ public class SaicMqttGateway implements Callable<Integer> {
     private String mqttUri;
 
     @CommandLine.Option(
-            names = {"-mu", "--mqtt-user"},
+            names = {"--mqtt-user"},
             description = {"The MQTT user name.", "Environment Variable: MQTT_USER"},
             defaultValue = "${env:MQTT_USER}")
     private String mqttUser;
 
     @CommandLine.Option(
-            names = {"-mp", "--mqtt-password"},
+            names = {"--mqtt-password"},
             description = {"The MQTT password.", "Environment Variable: MQTT_PASSWORD"},
             defaultValue = "${env:MQTT_PASSWORD}")
     private char[] mqttPassword;
@@ -106,7 +106,7 @@ public class SaicMqttGateway implements Callable<Integer> {
     private String saicPassword;
 
     @CommandLine.Option(
-            names = {"-ak", "--abrp-api-key"},
+            names = {"--abrp-api-key"},
             description = {
                 "The API key for the A Better Route Planer telemetry API.",
                 "Default is the open source telemetry API key 8cfc314b-03cd-4efe-ab7d-4431cd8f2e2d",
@@ -116,7 +116,7 @@ public class SaicMqttGateway implements Callable<Integer> {
     private String abrpApiKey;
 
     @CommandLine.Option(
-            names = {"-at", "--abrp-user-token"},
+            names = {"--abrp-user-token"},
             description = {
                 "The mapping of VIN to ABRP User Token.",
                 "Multiple mappings can be provided seperated by ,",
