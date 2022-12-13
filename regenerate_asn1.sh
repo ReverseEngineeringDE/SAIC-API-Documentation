@@ -25,6 +25,7 @@ asn1extractor/asn1extractor.sh ApplicationDataModule \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_2.entity.message.MessageListResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.message.GetUnreadMessageCountResp \
   com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.message.v2_0.SetNotificationCountReq \
+  com.saicmotor.telematics.tsgp.otaadapter.mp.v1_1.entity.vehicle.v2_0.PINVerificationReq \
            > "ASN.1 schema/v1_1/ApplicationData.asn1"
 
 rm -rf "ASN.1 schema/v2_1"
