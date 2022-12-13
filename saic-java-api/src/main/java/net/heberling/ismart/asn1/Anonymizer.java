@@ -53,6 +53,7 @@ public class Anonymizer {
                             break;
                         case "email":
                         case "uid":
+                        case "pin":
                         case "token":
                         case "refreshToken":
                         case "vin":
