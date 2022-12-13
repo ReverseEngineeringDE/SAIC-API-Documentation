@@ -129,8 +129,12 @@ public class VehicleHandler {
                                 && vehicleStatus.getBasicVehicleStatus().getExtendedData2() >= 1;
                 map.put("is_charging", isCharging);
                 // TODO: is_dcfc [bool or 1/0]: If is_charging, indicate if this is DC fast charging
-                // TODO: is_parked [bool or 1/0]: If the vehicle gear is in P (or the driver has
-                // left the car)
+                // is_parked [bool or 1/0]: If the vehicle gear is in P (or the driver has left the
+                // car)
+                map.put(
+                        "is_parked",
+                        vehicleStatus.getBasicVehicleStatus().getEngineStatus() != 1
+                                || vehicleStatus.getBasicVehicleStatus().getHandBrake());
                 // TODO: capacity [kWh]: Estimated usable battery capacity (can be given together
                 // with soh, but usually not)
                 // TODO: kwh_charged [kWh]: Measured energy input while charging. Typically a
@@ -144,7 +148,12 @@ public class VehicleHandler {
                 map.put(
                         "elevation",
                         vehicleStatus.getGpsPosition().getWayPoint().getPosition().getAltitude());
-                // TODO: ext_temp [°C]: Outside temperature measured by the vehicle
+                // ext_temp [°C]: Outside temperature measured by the vehicle
+                if (vehicleStatus.getBasicVehicleStatus().getExteriorTemperature() != -128) {
+                    map.put(
+                            "ext_temp",
+                            vehicleStatus.getBasicVehicleStatus().getExteriorTemperature());
+                }
                 // TODO: batt_temp [°C]: Battery temperature
                 // voltage [V]: Battery pack voltage
                 map.put("voltage", voltage);
