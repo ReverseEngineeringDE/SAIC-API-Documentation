@@ -1,4 +1,4 @@
-package net.heberling.ismart;
+package net.heberling.ismart.cli;
 
 import com.owlike.genson.stream.JsonType;
 import com.owlike.genson.stream.ObjectWriter;

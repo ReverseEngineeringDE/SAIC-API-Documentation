@@ -50,7 +50,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>net.heberling.ismart.GetData</mainClass>
+              <mainClass>net.heberling.ismart.cli.GetData</mainClass>
             </manifest>
           </archive>
         </configuration>

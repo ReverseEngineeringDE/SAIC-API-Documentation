@@ -1,6 +1,6 @@
 package net.heberling.ismart.asn1;
 
-import static net.heberling.ismart.GetData.toJSON;
+import static net.heberling.ismart.cli.GetData.toJSON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
