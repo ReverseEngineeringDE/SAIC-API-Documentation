@@ -29,6 +29,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.extract-release-notes.outputs.release_notes }}
-          files: saic-java-api-gateway/target/ismart-api-gateway-*-full.jar
+          files: |
+            saic-java-api-cli/target/ismart-api-cli-*-full.jar
+            saic-java-api-gateway/target/ismart-api-gateway-*-full.jar
+            saic-java-mqtt-gateway/target/ismart-mqtt-gateway-*-full.jar
           prerelease: true
           tag_name: latest
