@@ -1,0 +1,43 @@
+[
+  {
+    "name" : "org.eclipse.paho.client.mqttv3.logging.JSR47Logger",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+    ]
+  },
+  {
+    "name" : "net.heberling.ismart.mqtt.SaicMessage",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true
+  },
+  {
+    "name" : "net.heberling.ismart.asn1.v1_1.Message",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true
+  },
+  {
+    "name" : "net.heberling.ismart.asn1.v2_1.Message",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true
+  },
+  {
+    "name" : "net.heberling.ismart.asn1.v3_0.Message",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true
+  }
+]

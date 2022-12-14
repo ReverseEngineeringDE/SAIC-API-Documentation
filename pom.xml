@@ -10,6 +10,7 @@
     <module>saic-java-api</module>
     <module>saic-java-api-gateway</module>
     <module>saic-java-api-cli</module>
+    <module>saic-java-mqtt-gateway</module>
   </modules>
   <distributionManagement>
     <repository>

@@ -7,3 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Initial support for SAIC API
+- Initial MQTT Gateway
+  - Support for A Better Routeplaner Telemetry update
+- Initial HTTP Gateway
