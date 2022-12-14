@@ -18,6 +18,13 @@ jobs:
           java-version: '11'
       - name: Build with Maven
         run: ./mvnw --no-transfer-progress -B verify -Dversioning.disable=false
+
+      - name: tag as latest
+        if: github.ref_name == 'main'
+        run: git tag -f latest
+      - name: push latest tag
+        if: github.ref_name == 'main'
+        run: git push -f origin latest
       - name: Extract release notes
         if: github.ref_name == 'main'
         id: extract-release-notes

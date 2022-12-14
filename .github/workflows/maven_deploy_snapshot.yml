@@ -32,9 +32,3 @@ jobs:
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-      - name: tag as latest
-        if: github.ref_name == 'main'
-        run: git tag -f latest
-      - name: push latest tag
-        if: github.ref_name == 'main'
-        run: git push -f origin latest
