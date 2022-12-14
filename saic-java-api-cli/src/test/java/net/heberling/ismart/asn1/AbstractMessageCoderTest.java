@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -41,43 +40,26 @@ public class AbstractMessageCoderTest {
                     B extends IASN1PreparedElement,
                     E extends IASN1PreparedElement,
                     M extends AbstractMessage<H, B, E>>
-            M decodeEncode(
-                    String messageString,
-                    AbstractMessageCoder<H, B, E, M> coder,
-                    String... pathComponents) {
-        M message = coder.decodeResponse(messageString);
-
-        // make sure the message stays the same
-        assertEquals(messageString, coder.encodeRequest(message));
-
-        if (forceOverwrite) {
-            Anonymizer.anonymize(message);
-            messageString = coder.encodeRequest(message);
-        }
+            M decodeEncode(String fileName, AbstractMessageCoder<H, B, E, M> coder) {
 
         // make sure we match the stored values
         File e = new File(examplesDirectory, "v" + coder.getVersion().replace(".", "_"));
         e.mkdirs();
         try {
-            B body = message.getBody();
-            String fileName =
-                    body.getClass().getMethod("getApplicationID").invoke(body)
-                            + "_"
-                            + body.getClass()
-                                    .getMethod("getApplicationDataProtocolVersion")
-                                    .invoke(body);
-
-            if ((boolean) body.getClass().getMethod("isResultPresent").invoke(body)) {
-                fileName += "_response";
-            } else {
-                fileName += "_request";
-            }
-
-            for (String pathComponent : pathComponents) {
-                fileName += "_" + pathComponent;
-            }
-
             File perFile = new File(e, fileName + ".per");
+            File jsonFile = new File(e, fileName + ".json");
+
+            String messageString = Files.readString(perFile.toPath());
+            M message = coder.decodeResponse(messageString);
+
+            // make sure the message stays the same
+            assertEquals(messageString, coder.encodeRequest(message));
+
+            if (forceOverwrite) {
+                Anonymizer.anonymize(message);
+                messageString = coder.encodeRequest(message);
+            }
+
             if (!forceOverwrite && perFile.exists()) {
                 Assertions.assertEquals(
                         Files.readString(perFile.toPath(), StandardCharsets.UTF_8), messageString);
@@ -87,24 +69,20 @@ public class AbstractMessageCoderTest {
 
             String json = toJSON(message);
 
-            File jsonFile = new File(e, fileName + ".json");
             if (!forceOverwrite && jsonFile.exists()) {
                 Assertions.assertEquals(
                         Files.readString(jsonFile.toPath(), StandardCharsets.UTF_8), json);
             } else {
                 Files.writeString(jsonFile.toPath(), json);
             }
-        } catch (IOException
-                | NoSuchMethodException
-                | IllegalAccessException
-                | InvocationTargetException ex) {
+
+            // make sure we only have anonymized messages
+            Anonymizer.anonymize(message);
+            assertEquals(messageString, coder.encodeRequest(message));
+
+            return message;
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-
-        // make sure we only have anonymized messages
-        Anonymizer.anonymize(message);
-        assertEquals(messageString, coder.encodeRequest(message));
-
-        return message;
     }
 }
