@@ -2,72 +2,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>net.heberling.ismart</groupId>
+    <artifactId>ismart-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
   <groupId>net.heberling.ismart</groupId>
   <artifactId>ismart-api</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>net.heberling.binarynotes</groupId>
       <artifactId>binarynotes</artifactId>
-      <version>1.7.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.9.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.owlike</groupId>
-      <artifactId>genson</artifactId>
-      <version>1.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents.client5</groupId>
-      <artifactId>httpclient5</artifactId>
-      <version>5.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.36</version>
-      <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
   </dependencies>
   <build>
     <plugins>
-      <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.27.1</version>
-        <configuration>
-          <pom>
-            <sortPom></sortPom>
-          </pom>
-          <java>
-            <googleJavaFormat>
-              <style>AOSP</style>
-              <reflowLongStrings>true</reflowLongStrings>
-            </googleJavaFormat>
-          </java>
-        </configuration>
-        <executions>
-          <execution>
-            <id>format</id>
-            <goals>
-              <goal>apply</goal>
-            </goals>
-            <phase>initialize</phase>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -81,7 +32,7 @@
             <phase>generate-sources</phase>
             <configuration>
               <sources>
-                <source>target/generated-sources/asn1-java</source>
+                <source>${project.build.directory}/generated-sources/asn1-java</source>
               </sources>
             </configuration>
           </execution>
@@ -126,9 +77,9 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v1_1/MP_DispatcherHeader.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v1_1/MP_DispatcherHeader.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v1_1</argument>
               </arguments>
@@ -146,9 +97,9 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v1_1/MP_DispatcherBody.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v1_1/MP_DispatcherBody.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v1_1</argument>
               </arguments>
@@ -166,9 +117,9 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1/entity</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v1_1/entity</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v1_1/ApplicationData.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v1_1/ApplicationData.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v1_1.entity</argument>
               </arguments>
@@ -186,9 +137,9 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v2_1/MP_DispatcherHeader.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v2_1/MP_DispatcherHeader.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v2_1</argument>
               </arguments>
@@ -206,9 +157,9 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v2_1/MP_DispatcherBody.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v2_1/MP_DispatcherBody.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v2_1</argument>
               </arguments>
@@ -226,9 +177,9 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1/entity</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v2_1/entity</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v2_1/ApplicationData.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v2_1/ApplicationData.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v2_1.entity</argument>
               </arguments>
@@ -246,9 +197,9 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v3_0/MP_DispatcherHeader.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v3_0/MP_DispatcherHeader.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v3_0</argument>
               </arguments>
@@ -266,9 +217,9 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v3_0/MP_DispatcherBody.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v3_0/MP_DispatcherBody.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v3_0</argument>
               </arguments>
@@ -286,42 +237,13 @@
                 <argument>-m</argument>
                 <argument>java</argument>
                 <argument>-o</argument>
-                <argument>target/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0/entity</argument>
+                <argument>${project.build.directory}/generated-sources/asn1-java/net/heberling/ismart/asn1/v3_0/entity</argument>
                 <argument>-f</argument>
-                <argument>../ASN.1 schema/v3_0/ApplicationData.asn1</argument>
+                <argument>${project.basedir}/../ASN.1 schema/v3_0/ApplicationData.asn1</argument>
                 <argument>-ns</argument>
                 <argument>net.heberling.ismart.asn1.v3_0.entity</argument>
               </arguments>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.3.0</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>net.heberling.ismart.GetData</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.4.0</version>
-        <configuration>
-          <shadedArtifactAttached>true</shadedArtifactAttached>
-          <shadedClassifierName>full</shadedClassifierName>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <phase>package</phase>
           </execution>
         </executions>
       </plugin>
