@@ -9,6 +9,7 @@
   <modules>
     <module>saic-java-api</module>
     <module>saic-java-api-gateway</module>
+    <module>saic-java-api-cli</module>
   </modules>
   <distributionManagement>
     <repository>
@@ -126,7 +127,6 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
 </project>
