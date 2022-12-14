@@ -12,6 +12,9 @@
   <artifactId>ismart-api-gateway</artifactId>
   <version>1.0-SNAPSHOT</version>
 
+  <name>SAIC Java API - Gateway</name>
+  <description>HTTP Gateway Implementation of the SAIC API in Java</description>
+
   <dependencies>
     <dependency>
       <groupId>org.nanohttpd</groupId>

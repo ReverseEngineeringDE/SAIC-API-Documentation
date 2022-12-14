@@ -11,6 +11,9 @@
   <artifactId>ismart-api</artifactId>
   <version>1.0-SNAPSHOT</version>
 
+  <name>SAIC Java API</name>
+  <description>Implementation of the SAIC API in Java</description>
+
   <dependencies>
     <dependency>
       <groupId>net.heberling.binarynotes</groupId>

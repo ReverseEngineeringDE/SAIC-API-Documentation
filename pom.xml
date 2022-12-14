@@ -6,12 +6,33 @@
   <artifactId>ismart-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <name>SAIC Java API - Parent</name>
+  <description>Implementation of the SAIC API in Java</description>
+  <url>https://github.com/tisoft/SAIC-API-Documentation</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>tisoft</id>
+      <name>Markus Heberling</name>
+      <url>https://markus.heberling.net</url>
+    </developer>
+  </developers>
+
   <modules>
     <module>saic-java-api</module>
     <module>saic-java-api-gateway</module>
     <module>saic-java-api-cli</module>
     <module>saic-java-mqtt-gateway</module>
   </modules>
+  <scm>
+    <connection>scm:git:git:git@github.com:tisoft/SAIC-API-Documentation</connection>
+    <url>https://github.com/tisoft/SAIC-API-Documentation</url>
+  </scm>
   <distributionManagement>
     <repository>
       <id>ossrh</id>
@@ -22,7 +43,6 @@
       <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
-
   <properties>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
@@ -130,4 +150,66 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <configuration>
+              <gpgArguments>
+                <arg>--batch</arg>
+                <arg>--yes</arg>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <phase>verify</phase>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--batch</arg>
+                    <arg>--yes</arg>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

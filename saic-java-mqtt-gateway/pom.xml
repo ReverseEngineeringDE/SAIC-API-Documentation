@@ -12,6 +12,9 @@
   <artifactId>ismart-mqtt-gateway</artifactId>
   <version>1.0-SNAPSHOT</version>
 
+  <name>SAIC Java API - MQTT Gateway</name>
+  <description>MQTT gateway Implementation of the SAIC API in Java</description>
+
   <dependencies>
     <dependency>
       <groupId>info.picocli</groupId>

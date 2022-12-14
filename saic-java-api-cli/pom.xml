@@ -11,6 +11,9 @@
   <artifactId>ismart-api-cli</artifactId>
   <version>1.0-SNAPSHOT</version>
 
+  <name>SAIC Java API - CLI</name>
+  <description>CLI Implementation of the SAIC API in Java</description>
+
   <dependencies>
     <dependency>
       <groupId>net.heberling.ismart</groupId>
