@@ -92,6 +92,10 @@ SetNotificationCountReq ::= SEQUENCE
 {
   notificationCount INTEGER(0..255)
 }
+PINVerificationReq ::= SEQUENCE
+{
+  pin IA5String(SIZE(32))
+}
 AlarmSwitch ::= SEQUENCE
 {
   alarmSettingType MP_AlarmSettingType,

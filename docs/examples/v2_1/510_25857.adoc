@@ -1,0 +1,52 @@
+= Vehicle Control Commands
+
+== Request
+
+[source,hexdump]
+----
+include::510_25857_request.per[]
+----
+
+[source,json]
+----
+include::510_25857_request.json[]
+----
+
+=== A/C
+(See com.saic.cmp.business.home_page.air_conditioner.AirConditionerModel):
+
+==== A/C On
+
+* rcvReqType: 0x06
+* rcvParams:
+** paramId: 19
+** paramValue: 0x02
+*** Start A/C seems to be 0x02
+*** Start Fron/defrost seems to be 0x05
+** paramId: 20
+** paramValue: 0x08
+*** Temperature byte, depends on car model (See com.saic.cmp.business.home_page.air_conditioner.View.AirConditionerAdapter) 0x08 is 22° in MG5
+** paramId: 255
+** paramValue: 0x00
+
+==== A/C Off
+* rcvReqType: 0x06
+* rcvParams:
+** paramId: 19
+** paramValue: 0x00
+** paramId: 20
+** paramValue: 0x00
+** paramId: 255
+** paramValue: 0x00
+
+== Response
+
+[source,hexdump]
+----
+include::510_25857_response.per[]
+----
+
+[source,json]
+----
+include::510_25857_response.json[]
+----

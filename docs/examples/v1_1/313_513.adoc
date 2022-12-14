@@ -1,0 +1,27 @@
+= VerifyPinCode
+
+== Request
+
+[source,hexdump]
+----
+include::313_513_request.per[]
+----
+
+[source,json]
+----
+include::313_513_request.json[]
+----
+
+pin is the MD5 of the 4 digit pin code suffixed with 00: `md5sum(pin+"00")`
+
+== Response
+
+[source,hexdump]
+----
+include::313_513_response.per[]
+----
+
+[source,json]
+----
+include::313_513_response.json[]
+----

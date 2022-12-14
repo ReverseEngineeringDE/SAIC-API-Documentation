@@ -12,6 +12,7 @@ import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInReq;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInResp;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListReq;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListResp;
+import net.heberling.ismart.asn1.v1_1.entity.PINVerificationReq;
 import net.heberling.ismart.asn1.v1_1.entity.SetNotificationCountReq;
 import org.bn.coders.IASN1PreparedElement;
 import org.junit.jupiter.api.Test;
@@ -139,5 +140,17 @@ class MessageCoderTest extends net.heberling.ismart.asn1.AbstractMessageCoderTes
     void decodeEncodeResponse_615() {
         // https://tap-eu.soimt.com/TAP.Web/ota.mp
         decodeEncode("615_513_response", new MessageCoder<>(IASN1PreparedElement.class));
+    }
+
+    @Test
+    void decodeEncodeRequest_313() {
+        // https://tap-eu.soimt.com/TAP.Web/ota.mp
+        decodeEncode("313_513_request", new MessageCoder<>(PINVerificationReq.class));
+    }
+
+    @Test
+    void decodeEncodeResponse_313() {
+        // https://tap-eu.soimt.com/TAP.Web/ota.mp
+        decodeEncode("313_513_response", new MessageCoder<>(IASN1PreparedElement.class));
     }
 }
