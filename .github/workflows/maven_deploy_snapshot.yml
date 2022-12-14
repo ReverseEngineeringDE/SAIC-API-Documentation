@@ -38,17 +38,3 @@ jobs:
       - name: push latest tag
         if: github.ref_name == 'main'
         run: git push -f origin latest
-      - name: Extract release notes
-        if: github.ref_name == 'main'
-        id: extract-release-notes
-        uses: ffurrer2/extract-release-notes@v1
-        with:
-          prerelease: true
-      - name: Prerelease
-        if: github.ref_name == 'main'
-        uses: softprops/action-gh-release@v1
-        with:
-          body: ${{ steps.extract-release-notes.outputs.release_notes }}
-          files: saic-java-api-gateway/target/ismart-api-gateway-*-full.jar
-          prerelease: true
-          tag_name: latest
