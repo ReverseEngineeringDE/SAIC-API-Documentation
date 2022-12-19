@@ -8,7 +8,7 @@ public class Message<E extends IASN1PreparedElement>
 
     private final byte[] reserved;
 
-    public Message(
+    Message(
             MP_DispatcherHeader header,
             byte[] reserved,
             MP_DispatcherBody body,

@@ -82,7 +82,11 @@ public class Anonymizer {
                             break;
                         case "eventID":
                         case "lastKeySeen":
-                            field.set(element, 9999);
+                            if (field.get(element) instanceof Long) {
+                                field.set(element, 9999L);
+                            } else {
+                                field.set(element, 9999);
+                            }
                             break;
                         case "content":
                             field.set(

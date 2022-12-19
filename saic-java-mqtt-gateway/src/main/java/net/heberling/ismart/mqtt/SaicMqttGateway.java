@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +27,8 @@ import java.util.stream.Collectors;
 import net.heberling.ismart.asn1.AbstractMessage;
 import net.heberling.ismart.asn1.AbstractMessageCoder;
 import net.heberling.ismart.asn1.Anonymizer;
-import net.heberling.ismart.asn1.v1_1.MP_DispatcherBody;
-import net.heberling.ismart.asn1.v1_1.MP_DispatcherHeader;
 import net.heberling.ismart.asn1.v1_1.Message;
 import net.heberling.ismart.asn1.v1_1.MessageCoder;
-import net.heberling.ismart.asn1.v1_1.MessageCounter;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInReq;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInResp;
 import net.heberling.ismart.cli.UTF8StringObjectWriter;
@@ -143,43 +139,26 @@ public class SaicMqttGateway implements Callable<Integer> {
             }
             client.connect(options);
 
+            MessageCoder<MP_UserLoggingInReq> loginRequestMessageCoder =
+                    new MessageCoder<>(MP_UserLoggingInReq.class);
+
+            MP_UserLoggingInReq applicationData = new MP_UserLoggingInReq();
+            applicationData.setPassword(saicPassword);
             Message<MP_UserLoggingInReq> loginRequestMessage =
-                    new Message<>(
-                            new MP_DispatcherHeader(),
-                            new MP_DispatcherBody(),
-                            new MP_UserLoggingInReq());
-
-            MessageCounter messageCounter = new MessageCounter();
-            messageCounter.setDownlinkCounter(0);
-            messageCounter.setUplinkCounter(1);
-            loginRequestMessage.getBody().setMessageCounter(messageCounter);
-
-            loginRequestMessage.getBody().setMessageID(1);
-            loginRequestMessage.getBody().setIccID("12345678901234567890");
-            loginRequestMessage.getBody().setSimInfo("1234567890987654321");
-            loginRequestMessage.getBody().setEventCreationTime(Instant.now().getEpochSecond());
-            loginRequestMessage.getBody().setApplicationID("501");
-            loginRequestMessage.getBody().setApplicationDataProtocolVersion(513);
-            loginRequestMessage.getBody().setTestFlag(2);
-
-            loginRequestMessage
-                    .getBody()
-                    .setUid(
+                    loginRequestMessageCoder.initializeMessage(
                             "0000000000000000000000000000000000000000000000000#"
                                             .substring(saicUser.length())
-                                    + saicUser);
+                                    + saicUser,
+                            null,
+                            null,
+                            "501",
+                            513,
+                            1,
+                            applicationData);
 
-            loginRequestMessage.getApplicationData().setPassword(saicPassword);
+            String loginRequest = loginRequestMessageCoder.encodeRequest(loginRequestMessage);
 
-            String loginRequest =
-                    new MessageCoder<>(MP_UserLoggingInReq.class)
-                            .encodeRequest(loginRequestMessage);
-
-            System.out.println(
-                    toJSON(
-                            anonymized(
-                                    new MessageCoder<>(MP_UserLoggingInReq.class),
-                                    loginRequestMessage)));
+            System.out.println(toJSON(anonymized(loginRequestMessageCoder, loginRequestMessage)));
 
             String loginResponse =
                     sendRequest(loginRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");

@@ -59,6 +59,15 @@ public abstract class AbstractMessageCoder<
 
     public abstract M decodeResponse(String message);
 
+    public abstract M initializeMessage(
+            String uid,
+            String token,
+            String vin,
+            String applicationID,
+            int applicationDataProtocolVersion,
+            int messageID,
+            E applicationData);
+
     public abstract String getVersion();
 
     public Class<E> getApplicationDataClass() {

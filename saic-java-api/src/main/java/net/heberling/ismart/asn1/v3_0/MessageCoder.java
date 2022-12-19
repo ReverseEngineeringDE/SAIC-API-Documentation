@@ -3,7 +3,9 @@ package net.heberling.ismart.asn1.v3_0;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.time.Instant;
 import net.heberling.ismart.asn1.AbstractMessageCoder;
+import net.heberling.ismart.asn1.Util;
 import org.bn.coders.IASN1PreparedElement;
 import org.bn.coders.per.PERUnalignedDecoder;
 
@@ -99,6 +101,35 @@ public class MessageCoder<E extends IASN1PreparedElement>
         } catch (Exception e) {
             throw new RuntimeException("Could not decode: " + message, e);
         }
+    }
+
+    @Override
+    public Message<E> initializeMessage(
+            String uid,
+            String token,
+            String vin,
+            String applicationID,
+            int applicationDataProtocolVersion,
+            int messageID,
+            E applicationData) {
+        Message<E> message =
+                new Message<>(
+                        new MP_DispatcherHeader(),
+                        Util.generateReservedBytes(),
+                        new MP_DispatcherBody(),
+                        applicationData);
+
+        message.getBody().setMessageID(messageID);
+        message.getBody().setEventCreationTime((int) Instant.now().getEpochSecond());
+        message.getBody().setApplicationID(applicationID);
+        message.getBody().setApplicationDataProtocolVersion(applicationDataProtocolVersion);
+        message.getBody().setTestFlag(2);
+        message.getBody().setUid(uid);
+        message.getBody().setToken(token);
+        message.getBody().setVin(vin);
+        message.getBody().setEventID(0);
+
+        return message;
     }
 
     @Override

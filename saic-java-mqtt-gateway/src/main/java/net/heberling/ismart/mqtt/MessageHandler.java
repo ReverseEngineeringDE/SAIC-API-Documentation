@@ -5,11 +5,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import net.heberling.ismart.asn1.v1_1.MP_DispatcherBody;
-import net.heberling.ismart.asn1.v1_1.MP_DispatcherHeader;
 import net.heberling.ismart.asn1.v1_1.Message;
 import net.heberling.ismart.asn1.v1_1.MessageCoder;
-import net.heberling.ismart.asn1.v1_1.MessageCounter;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListReq;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListResp;
 import net.heberling.ismart.asn1.v1_1.entity.StartEndNumber;
@@ -28,40 +25,28 @@ class MessageHandler implements Runnable {
 
     @Override
     public void run() {
-        Message<MessageListReq> messageListRequestMessage =
-                new Message<>(
-                        new MP_DispatcherHeader(), new MP_DispatcherBody(), new MessageListReq());
-
-        messageListRequestMessage.getHeader().setProtocolVersion(18);
-
-        MessageCounter messageCounter = new MessageCounter();
-        messageCounter.setDownlinkCounter(0);
-        messageCounter.setUplinkCounter(1);
-        messageListRequestMessage.getBody().setMessageCounter(messageCounter);
-
-        messageListRequestMessage.getBody().setMessageID(1);
-        messageListRequestMessage.getBody().setIccID("12345678901234567890");
-        messageListRequestMessage.getBody().setSimInfo("1234567890987654321");
-        messageListRequestMessage.getBody().setEventCreationTime(Instant.now().getEpochSecond());
-        messageListRequestMessage.getBody().setApplicationID("531");
-        messageListRequestMessage.getBody().setApplicationDataProtocolVersion(513);
-        messageListRequestMessage.getBody().setTestFlag(2);
-
-        messageListRequestMessage.getBody().setUid(uid);
-        messageListRequestMessage.getBody().setToken(token);
+        MessageCoder<MessageListReq> messageListRequestMessageCoder =
+                new MessageCoder<>(MessageListReq.class);
 
         // We currently assume that the newest message is the first.
         // TODO: get all messages
         // TODO: delete old messages
         // TODO: handle case when no messages are there
         // TODO: automatically subscribe for engine start messages
-        messageListRequestMessage.getApplicationData().setStartEndNumber(new StartEndNumber());
-        messageListRequestMessage.getApplicationData().getStartEndNumber().setStartNumber(1L);
-        messageListRequestMessage.getApplicationData().getStartEndNumber().setEndNumber(5L);
-        messageListRequestMessage.getApplicationData().setMessageGroup("ALARM");
+        MessageListReq messageListReq = new MessageListReq();
+        messageListReq.setStartEndNumber(new StartEndNumber());
+        messageListReq.getStartEndNumber().setStartNumber(1L);
+        messageListReq.getStartEndNumber().setEndNumber(5L);
+        messageListReq.setMessageGroup("ALARM");
+
+        Message<MessageListReq> messageListRequestMessage =
+                messageListRequestMessageCoder.initializeMessage(
+                        uid, token, null, "531", 513, 1, messageListReq);
+
+        messageListRequestMessage.getHeader().setProtocolVersion(18);
 
         String messageListRequest =
-                new MessageCoder<>(MessageListReq.class).encodeRequest(messageListRequestMessage);
+                messageListRequestMessageCoder.encodeRequest(messageListRequestMessage);
 
         try {
             String messageListResponse =

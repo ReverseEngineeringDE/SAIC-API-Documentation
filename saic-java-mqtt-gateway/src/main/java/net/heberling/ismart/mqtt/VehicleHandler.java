@@ -3,12 +3,12 @@ package net.heberling.ismart.mqtt;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import net.heberling.ismart.asn1.v1_1.entity.VinInfo;
+import net.heberling.ismart.asn1.v2_1.MessageCoder;
 import net.heberling.ismart.asn1.v2_1.entity.OTA_RVMVehicleStatusReq;
 import net.heberling.ismart.asn1.v2_1.entity.OTA_RVMVehicleStatusResp25857;
 import net.heberling.ismart.asn1.v3_0.entity.OTA_ChrgMangDataResp;
@@ -234,29 +234,17 @@ public class VehicleHandler {
     private OTA_RVMVehicleStatusResp25857 updateVehicleStatus(
             IMqttClient client, String uid, String token, String vin)
             throws IOException, MqttException {
+        MessageCoder<OTA_RVMVehicleStatusReq> otaRvmVehicleStatusReqMessageCoder =
+                new MessageCoder<>(OTA_RVMVehicleStatusReq.class);
+
+        OTA_RVMVehicleStatusReq otaRvmVehicleStatusReq = new OTA_RVMVehicleStatusReq();
+        otaRvmVehicleStatusReq.setVehStatusReqType(2);
         net.heberling.ismart.asn1.v2_1.Message<OTA_RVMVehicleStatusReq> chargingStatusMessage =
-                new net.heberling.ismart.asn1.v2_1.Message<>(
-                        new net.heberling.ismart.asn1.v2_1.MP_DispatcherHeader(),
-                        new byte[16],
-                        new net.heberling.ismart.asn1.v2_1.MP_DispatcherBody(),
-                        new OTA_RVMVehicleStatusReq());
-        SaicMqttGateway.fillReserved(chargingStatusMessage.getReserved());
-
-        chargingStatusMessage.getBody().setApplicationID("511");
-        chargingStatusMessage.getBody().setTestFlag(2);
-        chargingStatusMessage.getBody().setVin(vin);
-        chargingStatusMessage.getBody().setUid(uid);
-        chargingStatusMessage.getBody().setToken(token);
-        chargingStatusMessage.getBody().setMessageID(1);
-        chargingStatusMessage.getBody().setEventCreationTime((int) Instant.now().getEpochSecond());
-        chargingStatusMessage.getBody().setApplicationDataProtocolVersion(25857);
-        chargingStatusMessage.getBody().setEventID(0);
-
-        chargingStatusMessage.getApplicationData().setVehStatusReqType(2);
+                otaRvmVehicleStatusReqMessageCoder.initializeMessage(
+                        uid, token, vin, "511", 25857, 1, otaRvmVehicleStatusReq);
 
         String chargingStatusRequestMessage =
-                new net.heberling.ismart.asn1.v2_1.MessageCoder<>(OTA_RVMVehicleStatusReq.class)
-                        .encodeRequest(chargingStatusMessage);
+                otaRvmVehicleStatusReqMessageCoder.encodeRequest(chargingStatusMessage);
 
         String chargingStatusResponse =
                 SaicMqttGateway.sendRequest(
@@ -290,8 +278,7 @@ public class VehicleHandler {
             SaicMqttGateway.fillReserved(chargingStatusMessage.getReserved());
 
             chargingStatusRequestMessage =
-                    new net.heberling.ismart.asn1.v2_1.MessageCoder<>(OTA_RVMVehicleStatusReq.class)
-                            .encodeRequest(chargingStatusMessage);
+                    otaRvmVehicleStatusReqMessageCoder.encodeRequest(chargingStatusMessage);
 
             chargingStatusResponse =
                     SaicMqttGateway.sendRequest(
@@ -513,34 +500,22 @@ public class VehicleHandler {
     private static OTA_ChrgMangDataResp updateChargeStatus(
             IMqttClient publisher, String uid, String token, String vin)
             throws IOException, MqttException {
-        net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
-                new net.heberling.ismart.asn1.v3_0.Message<>(
-                        new net.heberling.ismart.asn1.v3_0.MP_DispatcherHeader(),
-                        new byte[16],
-                        new net.heberling.ismart.asn1.v3_0.MP_DispatcherBody(),
-                        null);
-        SaicMqttGateway.fillReserved(chargingStatusMessage.getReserved());
+        net.heberling.ismart.asn1.v3_0.MessageCoder<IASN1PreparedElement>
+                chargingStatusRequestMessageEncoder =
+                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                IASN1PreparedElement.class);
 
-        chargingStatusMessage.getBody().setApplicationID("516");
-        chargingStatusMessage.getBody().setTestFlag(2);
-        chargingStatusMessage.getBody().setVin(vin);
-        chargingStatusMessage.getBody().setUid(uid);
-        chargingStatusMessage.getBody().setToken(token);
-        chargingStatusMessage.getBody().setMessageID(5);
-        chargingStatusMessage.getBody().setEventCreationTime((int) Instant.now().getEpochSecond());
-        chargingStatusMessage.getBody().setApplicationDataProtocolVersion(768);
-        chargingStatusMessage.getBody().setEventID(0);
+        net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
+                chargingStatusRequestMessageEncoder.initializeMessage(
+                        uid, token, vin, "516", 768, 5, null);
 
         String chargingStatusRequestMessage =
-                new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class)
-                        .encodeRequest(chargingStatusMessage);
+                chargingStatusRequestMessageEncoder.encodeRequest(chargingStatusMessage);
 
         System.out.println(
                 SaicMqttGateway.toJSON(
                         SaicMqttGateway.anonymized(
-                                new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                        IASN1PreparedElement.class),
-                                chargingStatusMessage)));
+                                chargingStatusRequestMessageEncoder, chargingStatusMessage)));
 
         String chargingStatusResponse =
                 SaicMqttGateway.sendRequest(
@@ -578,13 +553,10 @@ public class VehicleHandler {
             System.out.println(
                     SaicMqttGateway.toJSON(
                             SaicMqttGateway.anonymized(
-                                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                            IASN1PreparedElement.class),
-                                    chargingStatusMessage)));
+                                    chargingStatusRequestMessageEncoder, chargingStatusMessage)));
 
             chargingStatusRequestMessage =
-                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class)
-                            .encodeRequest(chargingStatusMessage);
+                    chargingStatusRequestMessageEncoder.encodeRequest(chargingStatusMessage);
 
             chargingStatusResponse =
                     SaicMqttGateway.sendRequest(

@@ -11,16 +11,12 @@ import com.owlike.genson.stream.ObjectWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.time.Instant;
 import java.util.Random;
 import net.heberling.ismart.asn1.AbstractMessage;
 import net.heberling.ismart.asn1.AbstractMessageCoder;
 import net.heberling.ismart.asn1.Anonymizer;
-import net.heberling.ismart.asn1.v1_1.MP_DispatcherBody;
-import net.heberling.ismart.asn1.v1_1.MP_DispatcherHeader;
 import net.heberling.ismart.asn1.v1_1.Message;
 import net.heberling.ismart.asn1.v1_1.MessageCoder;
-import net.heberling.ismart.asn1.v1_1.MessageCounter;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInReq;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInResp;
 import net.heberling.ismart.asn1.v1_1.entity.VinInfo;
@@ -42,42 +38,26 @@ import org.bn.coders.IASN1PreparedElement;
 
 public class GetData {
     public static void main(String[] args) throws IOException {
+        MessageCoder<MP_UserLoggingInReq> loginRequestMessageCoder =
+                new MessageCoder<>(MP_UserLoggingInReq.class);
+
+        MP_UserLoggingInReq applicationData = new MP_UserLoggingInReq();
+        applicationData.setPassword(args[1]);
         Message<MP_UserLoggingInReq> loginRequestMessage =
-                new Message<>(
-                        new MP_DispatcherHeader(),
-                        new MP_DispatcherBody(),
-                        new MP_UserLoggingInReq());
-
-        MessageCounter messageCounter = new MessageCounter();
-        messageCounter.setDownlinkCounter(0);
-        messageCounter.setUplinkCounter(1);
-        loginRequestMessage.getBody().setMessageCounter(messageCounter);
-
-        loginRequestMessage.getBody().setMessageID(1);
-        loginRequestMessage.getBody().setIccID("12345678901234567890");
-        loginRequestMessage.getBody().setSimInfo("1234567890987654321");
-        loginRequestMessage.getBody().setEventCreationTime(Instant.now().getEpochSecond());
-        loginRequestMessage.getBody().setApplicationID("501");
-        loginRequestMessage.getBody().setApplicationDataProtocolVersion(513);
-        loginRequestMessage.getBody().setTestFlag(2);
-
-        loginRequestMessage
-                .getBody()
-                .setUid(
+                loginRequestMessageCoder.initializeMessage(
                         "0000000000000000000000000000000000000000000000000#"
                                         .substring(args[0].length())
-                                + args[0]);
+                                + args[0],
+                        null,
+                        null,
+                        "501",
+                        513,
+                        1,
+                        applicationData);
 
-        loginRequestMessage.getApplicationData().setPassword(args[1]);
+        String loginRequest = loginRequestMessageCoder.encodeRequest(loginRequestMessage);
 
-        String loginRequest =
-                new MessageCoder<>(MP_UserLoggingInReq.class).encodeRequest(loginRequestMessage);
-
-        System.out.println(
-                toJSON(
-                        anonymized(
-                                new MessageCoder<>(MP_UserLoggingInReq.class),
-                                loginRequestMessage)));
+        System.out.println(toJSON(anonymized(loginRequestMessageCoder, loginRequestMessage)));
 
         String loginResponse = sendRequest(loginRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
 
@@ -90,27 +70,21 @@ public class GetData {
                                 new MessageCoder<>(MP_UserLoggingInResp.class),
                                 loginResponseMessage)));
         for (VinInfo vin : loginResponseMessage.getApplicationData().getVinList()) {
-            net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
-                    new net.heberling.ismart.asn1.v3_0.Message<>(
-                            new net.heberling.ismart.asn1.v3_0.MP_DispatcherHeader(),
-                            new byte[16],
-                            new net.heberling.ismart.asn1.v3_0.MP_DispatcherBody(),
-                            null);
-            fillReserved(chargingStatusMessage);
+            net.heberling.ismart.asn1.v3_0.MessageCoder<IASN1PreparedElement>
+                    chargingStatusRequestMessageEncoder =
+                            new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
+                                    IASN1PreparedElement.class);
 
-            chargingStatusMessage.getBody().setApplicationID("516");
-            chargingStatusMessage.getBody().setTestFlag(2);
-            chargingStatusMessage.getBody().setVin(vin.getVin());
-            chargingStatusMessage.getBody().setUid(loginResponseMessage.getBody().getUid());
-            chargingStatusMessage
-                    .getBody()
-                    .setToken(loginResponseMessage.getApplicationData().getToken());
-            chargingStatusMessage.getBody().setMessageID(5);
-            chargingStatusMessage
-                    .getBody()
-                    .setEventCreationTime((int) Instant.now().getEpochSecond());
-            chargingStatusMessage.getBody().setApplicationDataProtocolVersion(768);
-            chargingStatusMessage.getBody().setEventID(0);
+            net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
+                    chargingStatusRequestMessageEncoder.initializeMessage(
+                            loginResponseMessage.getBody().getUid(),
+                            loginResponseMessage.getApplicationData().getToken(),
+                            vin.getVin(),
+                            "516",
+                            768,
+                            5,
+                            null);
+            ;
 
             String chargingStatusRequestMessage =
                     new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class)
