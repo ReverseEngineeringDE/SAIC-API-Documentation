@@ -5,15 +5,33 @@
     <disable>true</disable>
     <refs>
         <ref type="branch">
+            <pattern>main</pattern>
+            <version>${ref}-SNAPSHOT</version>
+            <properties>
+                <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
+                <dist.oci.tag>latest</dist.oci.tag>
+            </properties>
+        </ref>
+        <ref type="branch">
             <pattern>.+</pattern>
             <version>${ref}-SNAPSHOT</version>
+            <properties>
+                <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
+                <dist.oci.tag>${ref}-latest</dist.oci.tag>
+            </properties>
         </ref>
         <ref type="tag">
             <pattern><![CDATA[v(?<version>.*)]]></pattern>
             <version>${ref.version}</version>
+            <properties>
+                <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
+            </properties>
         </ref>
     </refs>
     <rev>
         <version>${commit}-SNAPSHOT</version>
+        <properties>
+            <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
+        </properties>
     </rev>
 </configuration>

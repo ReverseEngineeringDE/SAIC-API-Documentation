@@ -47,6 +47,8 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Use the same timestamp for all files, will be set to the commit timestamp in CI to support reproducible builds -->
+    <project.build.outputTimestamp>${maven.build.timestamp}</project.build.outputTimestamp>
   </properties>
   <dependencyManagement>
     <dependencies>
