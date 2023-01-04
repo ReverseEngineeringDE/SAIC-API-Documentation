@@ -78,6 +78,8 @@
           <archive>
             <manifest>
               <mainClass>net.heberling.ismart.mqtt.SaicMqttGateway</mainClass>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
             </manifest>
           </archive>
         </configuration>
