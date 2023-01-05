@@ -22,7 +22,6 @@
       <url>https://markus.heberling.net</url>
     </developer>
   </developers>
-
   <modules>
     <module>saic-java-api</module>
     <module>saic-java-api-gateway</module>
@@ -49,6 +48,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Use the same timestamp for all files, will be set to the commit timestamp in CI to support reproducible builds -->
     <project.build.outputTimestamp>${maven.build.timestamp}</project.build.outputTimestamp>
+
+    <github.repository>tisoft</github.repository>
+    <altReleaseDeploymentRepository>github::https://maven.pkg.github.com/${github.repository}</altReleaseDeploymentRepository>
+    <altSnapshotDeploymentRepository>github::https://maven.pkg.github.com/${github.repository}</altSnapshotDeploymentRepository>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -192,4 +195,69 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>deploy-ossrh</id>
+      <activation>
+        <property>
+          <name>env.OSSRH_USERNAME</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-deploy-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>deploy-ossrh</id>
+                  <goals>
+                    <goal>deploy</goal>
+                  </goals>
+                  <configuration>
+                    <altReleaseDeploymentRepository>ossrh::https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</altReleaseDeploymentRepository>
+                    <altSnapshotDeploymentRepository>ossrh::https://s01.oss.sonatype.org/content/repositories/snapshots</altSnapshotDeploymentRepository>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+    <profile>
+      <id>deploy-dockerhub</id>
+      <activation>
+        <property>
+          <name>env.DOCKERHUB_USERNAME</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>com.google.cloud.tools</groupId>
+              <artifactId>jib-maven-plugin</artifactId>
+              <version>3.3.1</version>
+              <executions>
+                <execution>
+                  <id>build-docker-image-dockerhub</id>
+                  <goals>
+                    <goal>${jib.goal}</goal>
+                  </goals>
+                  <phase>${jib.phase}</phase>
+                  <configuration>
+                    <to>
+                      <image>${env.DOCKERHUB_USERNAME}/${dist.oci.name}:${dist.oci.tag}</image>
+                    </to>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>

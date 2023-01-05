@@ -29,8 +29,11 @@
     <!-- docker registry, complete path up to the leading / before the image name-->
     <dist.oci.registry>tisoft/</dist.oci.registry>
 
+    <!-- complete image name inclufing regustry and tag -->
+    <dist.oci.image>${dist.oci.registry}${dist.oci.name}:${dist.oci.tag}</dist.oci.image>
+
+    <!-- Internal -->
     <!-- configure docker image build by jib -->
-    <jib.to.image>${dist.oci.registry}${dist.oci.name}:${dist.oci.tag}</jib.to.image>
     <jib.to.tags>${dist.oci.additional-tags}</jib.to.tags>
     <jib.disableUpdateChecks>true</jib.disableUpdateChecks>
 
@@ -167,6 +170,9 @@
             <artifactId>jib-maven-plugin</artifactId>
             <version>3.3.1</version>
             <configuration>
+              <to>
+                <image>${dist.oci.image}</image>
+              </to>
               <from>
                 <image>ubuntu:22.04@sha256:965fbcae990b0467ed5657caceaec165018ef44a4d2d46c7cdea80a9dff0d1ea</image>
               </from>

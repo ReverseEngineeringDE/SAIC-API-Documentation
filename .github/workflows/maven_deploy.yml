@@ -10,6 +10,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ github.token }}
+      OSSRH_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+      OSSRH_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v3
@@ -23,19 +30,20 @@ jobs:
         with:
           string: ${{ github.repository_owner }}
       - uses: s4u/maven-settings-action@v2.8.0
+        if: env.DOCKERHUB_USERNAME == null
         with:
-          servers: '[{"id": "ossrh", "username": "${env.MAVEN_USERNAME}", "password": "${env.MAVEN_PASSWORD}"}]'
-      - name: Deploy on Github
-        run: SIGN_KEY=${{ secrets.GPG_SECRET_KEYS }} SIGN_KEY_PASS=$(echo ${{ secrets.GPG_PASSPHRASE }} | base64 --decode) ./mvnw -DaltDeploymentRepository=ossrh::https://maven.pkg.github.com/${{ github.repository }} --no-transfer-progress -B deploy -Djib.to.auth.username=${{ github.repository_owner }} -Djib.to.auth.password=${{ github.token }} -Dversioning.disable=false -Ddist.oci.registry=ghcr.io/${{ steps.lowercase-repository-owner.outputs.lowercase }}/ -P native
-        env:
-          MAVEN_USERNAME: ${{ github.actor }}
-          MAVEN_PASSWORD: ${{ github.token }}
-      - name: Deploy on OSSRH / Docker HUB
-        run: SIGN_KEY=${{ secrets.GPG_SECRET_KEYS }} SIGN_KEY_PASS=$(echo ${{ secrets.GPG_PASSPHRASE }} | base64 --decode) ./mvnw --no-transfer-progress -B deploy -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }} -Dversioning.disable=false -P native
-        if: github.repository_owner == 'tisoft'
-        env:
-          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          servers: '[{"id": "ossrh", "username": "${env.OSSRH_USERNAME}", "password": "${env.OSSRH_PASSWORD}"},
+                     {"id": "ghcr.io", "username": "${env.GITHUB_ACTOR}", "password": "${env.GITHUB_TOKEN}"}]'
+      - uses: s4u/maven-settings-action@v2.8.0
+        if: env.DOCKERHUB_USERNAME != null
+        with:
+          servers: '[{"id": "ossrh", "username": "${env.OSSRH_USERNAME}", "password": "${env.OSSRH_PASSWORD}"},
+                     {"id": "ghcr.io", "username": "${env.GITHUB_ACTOR}", "password": "${env.GITHUB_TOKEN}"},
+                     {"id": "registry-1.docker.io", "username": "${env.DOCKERHUB_USERNAME}", "password": "${env.DOCKERHUB_PASSWORD}"}]'
+      - name: Show settings
+        run: cat ~/.m2/settings.xml
+      - name: Deploy
+        run: SIGN_KEY=${{ secrets.GPG_SECRET_KEYS }} SIGN_KEY_PASS=$(echo ${{ secrets.GPG_PASSPHRASE }} | base64 --decode) ./mvnw --no-transfer-progress -B deploy -Dgithub.repository=${{ github.repository }} -Dversioning.disable=false -Ddist.oci.registry=ghcr.io/${{ steps.lowercase-repository-owner.outputs.lowercase }}/ -P native
       - name: tag main branch as latest
         if: github.ref_name == 'main'
         run: git tag -f latest
