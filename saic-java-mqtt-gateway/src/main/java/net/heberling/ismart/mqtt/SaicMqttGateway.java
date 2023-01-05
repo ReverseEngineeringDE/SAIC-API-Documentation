@@ -53,7 +53,10 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "ismart-mqtt-gateway", mixinStandardHelpOptions = true)
+@CommandLine.Command(
+        name = "ismart-mqtt-gateway",
+        mixinStandardHelpOptions = true,
+        versionProvider = SaicMqttGateway.VersionProvider.class)
 public class SaicMqttGateway implements Callable<Integer> {
 
     @CommandLine.Option(
@@ -379,6 +382,14 @@ public class SaicMqttGateway implements Callable<Integer> {
 
         if (message.getVin() != null) {
             vehicleHandlerMap.get(message.getVin()).notifyMessage(message);
+        }
+    }
+
+    static class VersionProvider implements CommandLine.IVersionProvider {
+
+        @Override
+        public String[] getVersion() throws Exception {
+            return new String[] {getClass().getPackage().getImplementationVersion()};
         }
     }
 }

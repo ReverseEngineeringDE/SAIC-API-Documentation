@@ -1,0 +1,56 @@
+name: Java CI with Maven - Deploy Snapshot
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install tools from asdf config
+        uses: ai/asdf-cache-action@v1
+      - name: set java home
+        run: echo "JAVA_HOME=$(dirname $( cd -P "$( dirname "$(asdf which java)" )" && pwd ))" >> $GITHUB_ENV
+      - uses: s4u/maven-settings-action@v2.8.0
+        with:
+          servers: '[{"id": "ossrh", "username": "${env.MAVEN_USERNAME}", "password": "${env.MAVEN_PASSWORD}"}]'
+      - name: Deploy on Github
+        run: SIGN_KEY=${{ secrets.GPG_SECRET_KEYS }} SIGN_KEY_PASS=$(echo ${{ secrets.GPG_PASSPHRASE }} | base64 --decode) ./mvnw -DaltDeploymentRepository=ossrh::https://maven.pkg.github.com/${{ github.repository }} --no-transfer-progress -B deploy -Djib.to.auth.username=${{ github.repository_owner }} -Djib.to.auth.password=${{ github.token }} -Dversioning.disable=false -Ddist.oci.registry=ghcr.io/${{ github.repository_owner }}/ -P native
+        env:
+          MAVEN_USERNAME: ${{ github.actor }}
+          MAVEN_PASSWORD: ${{ github.token }}
+      - name: Deploy on OSSRH / Docker HUB
+        run: SIGN_KEY=${{ secrets.GPG_SECRET_KEYS }} SIGN_KEY_PASS=$(echo ${{ secrets.GPG_PASSPHRASE }} | base64 --decode) ./mvnw --no-transfer-progress -B deploy -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }} -Dversioning.disable=false -P native
+        if: github.repository_owner == 'tisoft'
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+      - name: tag main branch as latest
+        if: github.ref_name == 'main'
+        run: git tag -f latest
+      - name: push latest tag
+        if: github.ref_name == 'main'
+        run: git push -f origin latest
+      - name: Extract release notes
+        if: github.ref_name == 'main' || github.ref_type == 'tag'
+        id: extract-release-notes
+        uses: ffurrer2/extract-release-notes@v1
+        with:
+          prerelease: ${{ github.ref_type != 'tag' }}
+      - name: Release
+        if: github.ref_name == 'main' || github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.extract-release-notes.outputs.release_notes }}
+          files: |
+            saic-java-api-cli/target/ismart-api-cli-*-full.jar
+            saic-java-api-gateway/target/ismart-api-gateway-*-full.jar
+            saic-java-mqtt-gateway/target/ismart-mqtt-gateway-*-full.jar
+          prerelease: ${{ github.ref_type != 'tag' }}
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
