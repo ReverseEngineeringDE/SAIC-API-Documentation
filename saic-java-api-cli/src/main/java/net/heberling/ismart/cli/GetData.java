@@ -37,266 +37,235 @@ import org.bn.annotations.ASN1Sequence;
 import org.bn.coders.IASN1PreparedElement;
 
 public class GetData {
-    public static void main(String[] args) throws IOException {
-        MessageCoder<MP_UserLoggingInReq> loginRequestMessageCoder =
-                new MessageCoder<>(MP_UserLoggingInReq.class);
+  public static void main(String[] args) throws IOException {
+    MessageCoder<MP_UserLoggingInReq> loginRequestMessageCoder =
+        new MessageCoder<>(MP_UserLoggingInReq.class);
 
-        MP_UserLoggingInReq applicationData = new MP_UserLoggingInReq();
-        applicationData.setPassword(args[1]);
-        Message<MP_UserLoggingInReq> loginRequestMessage =
-                loginRequestMessageCoder.initializeMessage(
-                        "0000000000000000000000000000000000000000000000000#"
-                                        .substring(args[0].length())
-                                + args[0],
-                        null,
-                        null,
-                        "501",
-                        513,
-                        1,
-                        applicationData);
+    MP_UserLoggingInReq applicationData = new MP_UserLoggingInReq();
+    applicationData.setPassword(args[1]);
+    Message<MP_UserLoggingInReq> loginRequestMessage =
+        loginRequestMessageCoder.initializeMessage(
+            "0000000000000000000000000000000000000000000000000#".substring(args[0].length())
+                + args[0],
+            null,
+            null,
+            "501",
+            513,
+            1,
+            applicationData);
 
-        String loginRequest = loginRequestMessageCoder.encodeRequest(loginRequestMessage);
+    String loginRequest = loginRequestMessageCoder.encodeRequest(loginRequestMessage);
 
-        System.out.println(toJSON(anonymized(loginRequestMessageCoder, loginRequestMessage)));
+    System.out.println(toJSON(anonymized(loginRequestMessageCoder, loginRequestMessage)));
 
-        String loginResponse = sendRequest(loginRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
+    String loginResponse = sendRequest(loginRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
 
-        Message<MP_UserLoggingInResp> loginResponseMessage =
-                new MessageCoder<>(MP_UserLoggingInResp.class).decodeResponse(loginResponse);
+    Message<MP_UserLoggingInResp> loginResponseMessage =
+        new MessageCoder<>(MP_UserLoggingInResp.class).decodeResponse(loginResponse);
+
+    System.out.println(
+        toJSON(anonymized(new MessageCoder<>(MP_UserLoggingInResp.class), loginResponseMessage)));
+    for (VinInfo vin : loginResponseMessage.getApplicationData().getVinList()) {
+      net.heberling.ismart.asn1.v3_0.MessageCoder<IASN1PreparedElement>
+          chargingStatusRequestMessageEncoder =
+              new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class);
+
+      net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
+          chargingStatusRequestMessageEncoder.initializeMessage(
+              loginResponseMessage.getBody().getUid(),
+              loginResponseMessage.getApplicationData().getToken(),
+              vin.getVin(),
+              "516",
+              768,
+              5,
+              null);
+      ;
+
+      String chargingStatusRequestMessage =
+          new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class)
+              .encodeRequest(chargingStatusMessage);
+
+      System.out.println(
+          toJSON(
+              anonymized(
+                  new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class),
+                  chargingStatusMessage)));
+
+      String chargingStatusResponse =
+          sendRequest(chargingStatusRequestMessage, "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
+
+      net.heberling.ismart.asn1.v3_0.Message<OTA_ChrgMangDataResp> chargingStatusResponseMessage =
+          new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class)
+              .decodeResponse(chargingStatusResponse);
+
+      System.out.println(
+          toJSON(
+              anonymized(
+                  new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class),
+                  chargingStatusResponseMessage)));
+
+      // we get an eventId back...
+      chargingStatusMessage
+          .getBody()
+          .setEventID(chargingStatusResponseMessage.getBody().getEventID());
+      // ... use that to request the data again, until we have it
+      // TODO: check for real errors (result!=0 and/or errorMessagePresent)
+      while (chargingStatusResponseMessage.getApplicationData() == null) {
+
+        fillReserved(chargingStatusMessage);
 
         System.out.println(
-                toJSON(
-                        anonymized(
-                                new MessageCoder<>(MP_UserLoggingInResp.class),
-                                loginResponseMessage)));
-        for (VinInfo vin : loginResponseMessage.getApplicationData().getVinList()) {
-            net.heberling.ismart.asn1.v3_0.MessageCoder<IASN1PreparedElement>
-                    chargingStatusRequestMessageEncoder =
-                            new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                    IASN1PreparedElement.class);
+            toJSON(
+                anonymized(
+                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class),
+                    chargingStatusMessage)));
 
-            net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage =
-                    chargingStatusRequestMessageEncoder.initializeMessage(
-                            loginResponseMessage.getBody().getUid(),
-                            loginResponseMessage.getApplicationData().getToken(),
-                            vin.getVin(),
-                            "516",
-                            768,
-                            5,
-                            null);
-            ;
+        chargingStatusRequestMessage =
+            new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class)
+                .encodeRequest(chargingStatusMessage);
 
-            String chargingStatusRequestMessage =
-                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(IASN1PreparedElement.class)
-                            .encodeRequest(chargingStatusMessage);
+        chargingStatusResponse =
+            sendRequest(chargingStatusRequestMessage, "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
 
-            System.out.println(
-                    toJSON(
-                            anonymized(
-                                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                            IASN1PreparedElement.class),
-                                    chargingStatusMessage)));
+        chargingStatusResponseMessage =
+            new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class)
+                .decodeResponse(chargingStatusResponse);
 
-            String chargingStatusResponse =
-                    sendRequest(
-                            chargingStatusRequestMessage,
-                            "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
+        System.out.println(
+            toJSON(
+                anonymized(
+                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class),
+                    chargingStatusResponseMessage)));
+      }
+    }
+  }
 
-            net.heberling.ismart.asn1.v3_0.Message<OTA_ChrgMangDataResp>
-                    chargingStatusResponseMessage =
-                            new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                            OTA_ChrgMangDataResp.class)
-                                    .decodeResponse(chargingStatusResponse);
+  private static <
+          H extends IASN1PreparedElement,
+          B extends IASN1PreparedElement,
+          E extends IASN1PreparedElement,
+          M extends AbstractMessage<H, B, E>>
+      M anonymized(AbstractMessageCoder<H, B, E, M> coder, M message) {
+    M messageCopy = coder.decodeResponse(coder.encodeRequest(message));
+    Anonymizer.anonymize(messageCopy);
+    return messageCopy;
+  }
 
-            System.out.println(
-                    toJSON(
-                            anonymized(
-                                    new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                            OTA_ChrgMangDataResp.class),
-                                    chargingStatusResponseMessage)));
+  private static void fillReserved(
+      net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage) {
+    System.arraycopy(
+        ((new Random(System.currentTimeMillis())).nextLong() + "1111111111111111").getBytes(),
+        0,
+        chargingStatusMessage.getReserved(),
+        0,
+        16);
+  }
 
-            // we get an eventId back...
-            chargingStatusMessage
-                    .getBody()
-                    .setEventID(chargingStatusResponseMessage.getBody().getEventID());
-            // ... use that to request the data again, until we have it
-            // TODO: check for real errors (result!=0 and/or errorMessagePresent)
-            while (chargingStatusResponseMessage.getApplicationData() == null) {
+  private static String sendRequest(String request, String endpoint) throws IOException {
+    try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+      HttpPost httppost = new HttpPost(endpoint);
+      // Request parameters and other properties.
+      httppost.setEntity(new StringEntity(request, ContentType.TEXT_HTML));
 
-                fillReserved(chargingStatusMessage);
-
-                System.out.println(
-                        toJSON(
-                                anonymized(
-                                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                                IASN1PreparedElement.class),
-                                        chargingStatusMessage)));
-
-                chargingStatusRequestMessage =
-                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                        IASN1PreparedElement.class)
-                                .encodeRequest(chargingStatusMessage);
-
-                chargingStatusResponse =
-                        sendRequest(
-                                chargingStatusRequestMessage,
-                                "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
-
-                chargingStatusResponseMessage =
-                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                        OTA_ChrgMangDataResp.class)
-                                .decodeResponse(chargingStatusResponse);
-
-                System.out.println(
-                        toJSON(
-                                anonymized(
-                                        new net.heberling.ismart.asn1.v3_0.MessageCoder<>(
-                                                OTA_ChrgMangDataResp.class),
-                                        chargingStatusResponseMessage)));
+      // Execute and get the response.
+      // Create a custom response handler
+      HttpClientResponseHandler<String> responseHandler =
+          response -> {
+            final int status = response.getCode();
+            if (status >= HttpStatus.SC_SUCCESS && status < HttpStatus.SC_REDIRECTION) {
+              final HttpEntity entity = response.getEntity();
+              try {
+                return entity != null ? EntityUtils.toString(entity) : null;
+              } catch (final ParseException ex) {
+                throw new ClientProtocolException(ex);
+              }
+            } else {
+              throw new ClientProtocolException("Unexpected response status: " + status);
             }
-        }
+          };
+      return httpclient.execute(httppost, responseHandler);
     }
+  }
 
-    private static <
-                    H extends IASN1PreparedElement,
-                    B extends IASN1PreparedElement,
-                    E extends IASN1PreparedElement,
-                    M extends AbstractMessage<H, B, E>>
-            M anonymized(AbstractMessageCoder<H, B, E, M> coder, M message) {
-        M messageCopy = coder.decodeResponse(coder.encodeRequest(message));
-        Anonymizer.anonymize(messageCopy);
-        return messageCopy;
-    }
+  public static <
+          H extends IASN1PreparedElement,
+          B extends IASN1PreparedElement,
+          E extends IASN1PreparedElement,
+          M extends AbstractMessage<H, B, E>>
+      String toJSON(M message) {
+    // TODO: make sure this corresponds to the JER ASN.1 serialisation format
+    final ChainedFactory chain =
+        new ChainedFactory() {
+          @Override
+          protected Converter<?> create(Type type, Genson genson, Converter<?> nextConverter) {
+            return new Converter<>() {
+              @Override
+              public void serialize(Object object, ObjectWriter writer, Context ctx)
+                  throws Exception {
+                if (object != null) {
+                  writer.beginNextObjectMetadata();
+                  if (object.getClass().isAnnotationPresent(ASN1Enum.class)) {
+                    writer.writeMetadata(
+                        "ASN1Type", object.getClass().getAnnotation(ASN1Enum.class).name());
+                  } else if (object.getClass().isAnnotationPresent(ASN1Sequence.class)) {
+                    writer.writeMetadata(
+                        "ASN1Type", object.getClass().getAnnotation(ASN1Sequence.class).name());
+                  }
+                }
 
-    private static void fillReserved(
-            net.heberling.ismart.asn1.v3_0.Message<IASN1PreparedElement> chargingStatusMessage) {
-        System.arraycopy(
-                ((new Random(System.currentTimeMillis())).nextLong() + "1111111111111111")
-                        .getBytes(),
-                0,
-                chargingStatusMessage.getReserved(),
-                0,
-                16);
-    }
+                @SuppressWarnings("unchecked")
+                Converter<Object> n = (Converter<Object>) nextConverter;
+                if (!(writer instanceof UTF8StringObjectWriter)) {
+                  writer = new UTF8StringObjectWriter(writer);
+                }
+                n.serialize(object, writer, ctx);
+              }
 
-    private static String sendRequest(String request, String endpoint) throws IOException {
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            HttpPost httppost = new HttpPost(endpoint);
-            // Request parameters and other properties.
-            httppost.setEntity(new StringEntity(request, ContentType.TEXT_HTML));
+              @Override
+              public Object deserialize(ObjectReader reader, Context ctx) throws Exception {
+                return nextConverter.deserialize(reader, ctx);
+              }
+            };
+          }
+        };
+    chain.withNext(
+        new ChainedFactory() {
+          @Override
+          protected Converter<?> create(Type type, Genson genson, Converter<?> converter) {
+            final Class<?> clazz = TypeUtil.getRawClass(type);
+            if (clazz.isAnnotationPresent(ASN1Enum.class)) {
 
-            // Execute and get the response.
-            // Create a custom response handler
-            HttpClientResponseHandler<String> responseHandler =
-                    response -> {
-                        final int status = response.getCode();
-                        if (status >= HttpStatus.SC_SUCCESS && status < HttpStatus.SC_REDIRECTION) {
-                            final HttpEntity entity = response.getEntity();
-                            try {
-                                return entity != null ? EntityUtils.toString(entity) : null;
-                            } catch (final ParseException ex) {
-                                throw new ClientProtocolException(ex);
-                            }
-                        } else {
-                            throw new ClientProtocolException(
-                                    "Unexpected response status: " + status);
-                        }
-                    };
-            return httpclient.execute(httppost, responseHandler);
-        }
-    }
+              return new Converter<>() {
+                @Override
+                public void serialize(Object o, ObjectWriter objectWriter, Context context)
+                    throws Exception {
+                  Method getValue = clazz.getMethod("getValue");
+                  Object value = getValue.invoke(o);
+                  if (value == null) {
+                    objectWriter.writeNull();
+                  } else {
+                    objectWriter.writeString(String.valueOf(value));
+                  }
+                }
 
-    public static <
-                    H extends IASN1PreparedElement,
-                    B extends IASN1PreparedElement,
-                    E extends IASN1PreparedElement,
-                    M extends AbstractMessage<H, B, E>>
-            String toJSON(M message) {
-        // TODO: make sure this corresponds to the JER ASN.1 serialisation format
-        final ChainedFactory chain =
-                new ChainedFactory() {
-                    @Override
-                    protected Converter<?> create(
-                            Type type, Genson genson, Converter<?> nextConverter) {
-                        return new Converter<>() {
-                            @Override
-                            public void serialize(Object object, ObjectWriter writer, Context ctx)
-                                    throws Exception {
-                                if (object != null) {
-                                    writer.beginNextObjectMetadata();
-                                    if (object.getClass().isAnnotationPresent(ASN1Enum.class)) {
-                                        writer.writeMetadata(
-                                                "ASN1Type",
-                                                object.getClass()
-                                                        .getAnnotation(ASN1Enum.class)
-                                                        .name());
-                                    } else if (object.getClass()
-                                            .isAnnotationPresent(ASN1Sequence.class)) {
-                                        writer.writeMetadata(
-                                                "ASN1Type",
-                                                object.getClass()
-                                                        .getAnnotation(ASN1Sequence.class)
-                                                        .name());
-                                    }
-                                }
+                @Override
+                public Object deserialize(ObjectReader objectReader, Context context)
+                    throws Exception {
+                  throw new UnsupportedOperationException("not implemented yet");
+                }
+              };
+            } else {
 
-                                @SuppressWarnings("unchecked")
-                                Converter<Object> n = (Converter<Object>) nextConverter;
-                                if (!(writer instanceof UTF8StringObjectWriter)) {
-                                    writer = new UTF8StringObjectWriter(writer);
-                                }
-                                n.serialize(object, writer, ctx);
-                            }
-
-                            @Override
-                            public Object deserialize(ObjectReader reader, Context ctx)
-                                    throws Exception {
-                                return nextConverter.deserialize(reader, ctx);
-                            }
-                        };
-                    }
-                };
-        chain.withNext(
-                new ChainedFactory() {
-                    @Override
-                    protected Converter<?> create(
-                            Type type, Genson genson, Converter<?> converter) {
-                        final Class<?> clazz = TypeUtil.getRawClass(type);
-                        if (clazz.isAnnotationPresent(ASN1Enum.class)) {
-
-                            return new Converter<>() {
-                                @Override
-                                public void serialize(
-                                        Object o, ObjectWriter objectWriter, Context context)
-                                        throws Exception {
-                                    Method getValue = clazz.getMethod("getValue");
-                                    Object value = getValue.invoke(o);
-                                    if (value == null) {
-                                        objectWriter.writeNull();
-                                    } else {
-                                        objectWriter.writeString(String.valueOf(value));
-                                    }
-                                }
-
-                                @Override
-                                public Object deserialize(
-                                        ObjectReader objectReader, Context context)
-                                        throws Exception {
-                                    throw new UnsupportedOperationException("not implemented yet");
-                                }
-                            };
-                        } else {
-
-                            return converter;
-                        }
-                    }
-                });
-        return new GensonBuilder()
-                .useIndentation(true)
-                .useRuntimeType(true)
-                .exclude("preparedData")
-                .withConverterFactory(chain)
-                .create()
-                .serialize(message);
-    }
+              return converter;
+            }
+          }
+        });
+    return new GensonBuilder()
+        .useIndentation(true)
+        .useRuntimeType(true)
+        .exclude("preparedData")
+        .withConverterFactory(chain)
+        .create()
+        .serialize(message);
+  }
 }

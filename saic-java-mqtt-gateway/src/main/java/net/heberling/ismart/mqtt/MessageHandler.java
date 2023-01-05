@@ -13,79 +13,77 @@ import net.heberling.ismart.asn1.v1_1.entity.StartEndNumber;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 class MessageHandler implements Runnable {
-    private final String uid;
-    private final String token;
-    private final SaicMqttGateway gateway;
+  private final String uid;
+  private final String token;
+  private final SaicMqttGateway gateway;
 
-    public MessageHandler(String uid, String token, SaicMqttGateway gateway) {
-        this.uid = uid;
-        this.token = token;
-        this.gateway = gateway;
-    }
+  public MessageHandler(String uid, String token, SaicMqttGateway gateway) {
+    this.uid = uid;
+    this.token = token;
+    this.gateway = gateway;
+  }
 
-    @Override
-    public void run() {
-        MessageCoder<MessageListReq> messageListRequestMessageCoder =
-                new MessageCoder<>(MessageListReq.class);
+  @Override
+  public void run() {
+    MessageCoder<MessageListReq> messageListRequestMessageCoder =
+        new MessageCoder<>(MessageListReq.class);
 
-        // We currently assume that the newest message is the first.
-        // TODO: get all messages
-        // TODO: delete old messages
-        // TODO: handle case when no messages are there
-        // TODO: automatically subscribe for engine start messages
-        MessageListReq messageListReq = new MessageListReq();
-        messageListReq.setStartEndNumber(new StartEndNumber());
-        messageListReq.getStartEndNumber().setStartNumber(1L);
-        messageListReq.getStartEndNumber().setEndNumber(5L);
-        messageListReq.setMessageGroup("ALARM");
+    // We currently assume that the newest message is the first.
+    // TODO: get all messages
+    // TODO: delete old messages
+    // TODO: handle case when no messages are there
+    // TODO: automatically subscribe for engine start messages
+    MessageListReq messageListReq = new MessageListReq();
+    messageListReq.setStartEndNumber(new StartEndNumber());
+    messageListReq.getStartEndNumber().setStartNumber(1L);
+    messageListReq.getStartEndNumber().setEndNumber(5L);
+    messageListReq.setMessageGroup("ALARM");
 
-        Message<MessageListReq> messageListRequestMessage =
-                messageListRequestMessageCoder.initializeMessage(
-                        uid, token, null, "531", 513, 1, messageListReq);
+    Message<MessageListReq> messageListRequestMessage =
+        messageListRequestMessageCoder.initializeMessage(
+            uid, token, null, "531", 513, 1, messageListReq);
 
-        messageListRequestMessage.getHeader().setProtocolVersion(18);
+    messageListRequestMessage.getHeader().setProtocolVersion(18);
 
-        String messageListRequest =
-                messageListRequestMessageCoder.encodeRequest(messageListRequestMessage);
+    String messageListRequest =
+        messageListRequestMessageCoder.encodeRequest(messageListRequestMessage);
 
-        try {
-            String messageListResponse =
-                    SaicMqttGateway.sendRequest(
-                            messageListRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
+    try {
+      String messageListResponse =
+          SaicMqttGateway.sendRequest(
+              messageListRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
 
-            Message<MessageListResp> messageListResponseMessage =
-                    new MessageCoder<>(MessageListResp.class).decodeResponse(messageListResponse);
+      Message<MessageListResp> messageListResponseMessage =
+          new MessageCoder<>(MessageListResp.class).decodeResponse(messageListResponse);
 
-            System.out.println(
-                    SaicMqttGateway.toJSON(
-                            SaicMqttGateway.anonymized(
-                                    new MessageCoder<>(MessageListResp.class),
-                                    messageListResponseMessage)));
+      System.out.println(
+          SaicMqttGateway.toJSON(
+              SaicMqttGateway.anonymized(
+                  new MessageCoder<>(MessageListResp.class), messageListResponseMessage)));
 
-            if (messageListResponseMessage.getApplicationData() != null) {
-                for (net.heberling.ismart.asn1.v1_1.entity.Message message :
-                        messageListResponseMessage.getApplicationData().getMessages()) {
-                    gateway.notifyMessage(convert(message));
-                }
-            } else {
-                // logger.warn("No application data found!");
-            }
-        } catch (IOException | MqttException e) {
-            throw new RuntimeException(e);
+      if (messageListResponseMessage.getApplicationData() != null) {
+        for (net.heberling.ismart.asn1.v1_1.entity.Message message :
+            messageListResponseMessage.getApplicationData().getMessages()) {
+          gateway.notifyMessage(convert(message));
         }
+      } else {
+        // logger.warn("No application data found!");
+      }
+    } catch (IOException | MqttException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    private SaicMessage convert(net.heberling.ismart.asn1.v1_1.entity.Message message) {
-        return new SaicMessage(
-                message.getMessageId(),
-                message.getMessageType(),
-                new String(message.getTitle(), StandardCharsets.UTF_8),
-                ZonedDateTime.ofInstant(
-                        Instant.ofEpochSecond(message.getMessageTime().getSeconds()),
-                        ZoneId.systemDefault()),
-                new String(message.getSender(), StandardCharsets.UTF_8),
-                new String(message.getContent(), StandardCharsets.UTF_8),
-                message.getReadStatus(),
-                message.getVin());
-    }
+  private SaicMessage convert(net.heberling.ismart.asn1.v1_1.entity.Message message) {
+    return new SaicMessage(
+        message.getMessageId(),
+        message.getMessageType(),
+        new String(message.getTitle(), StandardCharsets.UTF_8),
+        ZonedDateTime.ofInstant(
+            Instant.ofEpochSecond(message.getMessageTime().getSeconds()), ZoneId.systemDefault()),
+        new String(message.getSender(), StandardCharsets.UTF_8),
+        new String(message.getContent(), StandardCharsets.UTF_8),
+        message.getReadStatus(),
+        message.getVin());
+  }
 }

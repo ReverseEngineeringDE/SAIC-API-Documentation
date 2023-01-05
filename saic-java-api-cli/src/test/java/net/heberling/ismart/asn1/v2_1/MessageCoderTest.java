@@ -11,49 +11,48 @@ import org.junit.jupiter.api.Test;
 
 class MessageCoderTest extends AbstractMessageCoderTest {
 
-    @Test
-    void decodeEncodeRequest_5BD() {
-        // https://tap-eu.soimt.com/TAP.Web/ota.mpv21
+  @Test
+  void decodeEncodeRequest_5BD() {
+    // https://tap-eu.soimt.com/TAP.Web/ota.mpv21
 
-        decodeEncode("5BD_25857_request", new MessageCoder<>(IASN1PreparedElement.class));
-    }
+    decodeEncode("5BD_25857_request", new MessageCoder<>(IASN1PreparedElement.class));
+  }
 
-    @Test
-    void decodeEncodeResponse_5BD() {
+  @Test
+  void decodeEncodeResponse_5BD() {
 
-        decodeEncode("5BD_25857_response", new MessageCoder<>(MP_SecurityAlarmResp.class));
-    }
+    decodeEncode("5BD_25857_response", new MessageCoder<>(MP_SecurityAlarmResp.class));
+  }
 
-    @Test
-    void decodeEncodeRequest_511() {
-        // https://tap-eu.soimt.com/TAP.Web/ota.mpv21
+  @Test
+  void decodeEncodeRequest_511() {
+    // https://tap-eu.soimt.com/TAP.Web/ota.mpv21
 
-        decodeEncode("511_25857_request", new MessageCoder<>(OTA_RVMVehicleStatusReq.class));
-    }
+    decodeEncode("511_25857_request", new MessageCoder<>(OTA_RVMVehicleStatusReq.class));
+  }
 
-    @Test
-    void decodeEncodeResponse_511_Failed() {
-        // failed!
+  @Test
+  void decodeEncodeResponse_511_Failed() {
+    // failed!
 
-        decodeEncode(
-                "511_25857_response_failed",
-                new MessageCoder<>(OTA_RVMVehicleStatusResp25857.class));
-    }
+    decodeEncode(
+        "511_25857_response_failed", new MessageCoder<>(OTA_RVMVehicleStatusResp25857.class));
+  }
 
-    @Test
-    void decodeEncodeResponse_511() {
+  @Test
+  void decodeEncodeResponse_511() {
 
-        decodeEncode("511_25857_response", new MessageCoder<>(OTA_RVMVehicleStatusResp25857.class));
-    }
+    decodeEncode("511_25857_response", new MessageCoder<>(OTA_RVMVehicleStatusResp25857.class));
+  }
 
-    @Test
-    void decodeEncodeRequest_510() {
-        // https://tap-eu.soimt.com/TAP.Web/ota.mpv21
-        decodeEncode("510_25857_request", new MessageCoder<>(OTA_RVCReq.class));
-    }
+  @Test
+  void decodeEncodeRequest_510() {
+    // https://tap-eu.soimt.com/TAP.Web/ota.mpv21
+    decodeEncode("510_25857_request", new MessageCoder<>(OTA_RVCReq.class));
+  }
 
-    @Test
-    void decodeEncodeResponse_510() {
-        decodeEncode("510_25857_response", new MessageCoder<>(OTA_RVCStatus25857.class));
-    }
+  @Test
+  void decodeEncodeResponse_510() {
+    decodeEncode("510_25857_response", new MessageCoder<>(OTA_RVCStatus25857.class));
+  }
 }
