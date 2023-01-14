@@ -43,7 +43,7 @@ jobs:
       - name: Show settings
         run: cat ~/.m2/settings.xml
       - name: Deploy
-        run: SIGN_KEY=${{ secrets.GPG_SECRET_KEYS }} SIGN_KEY_PASS=$(echo ${{ secrets.GPG_PASSPHRASE }} | base64 --decode) ./mvnw --no-transfer-progress -B deploy -Dgithub.repository=${{ github.repository }} -Dversioning.disable=false -Ddist.oci.registry=ghcr.io/${{ steps.lowercase-repository-owner.outputs.lowercase }}/ -P native
+        run: SIGN_KEY=${{ secrets.GPG_SECRET_KEYS }} SIGN_KEY_PASS=$(echo ${{ secrets.GPG_PASSPHRASE }} | base64 --decode) ./mvnw --no-transfer-progress -B deploy -Dgithub.repository=${{ github.repository }} -Dversioning.disable=false -Ddist.oci.registry=ghcr.io/${{ steps.lowercase-repository-owner.outputs.lowercase }}/
       - name: tag main branch as latest
         if: github.ref_name == 'main'
         run: git tag -f latest
