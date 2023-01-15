@@ -498,7 +498,7 @@ public class SaicMqttGateway implements Callable<Integer> {
   static class VersionProvider implements CommandLine.IVersionProvider {
 
     @Override
-    public String[] getVersion() throws Exception {
+    public String[] getVersion() {
       return new String[] {getClass().getPackage().getImplementationVersion()};
     }
   }

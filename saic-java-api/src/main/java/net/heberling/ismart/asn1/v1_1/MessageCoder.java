@@ -89,7 +89,7 @@ public class MessageCoder<E extends IASN1PreparedElement>
       MP_DispatcherBody body = decoder.decode(new ByteArrayInputStream(b), MP_DispatcherBody.class);
 
       E e = null;
-      if (body.getApplicationDataLength() > 0) {
+      if (getApplicationDataClass() != null && body.getApplicationDataLength() > 0) {
         byte[] appData = new byte[body.getApplicationDataLength().intValue()];
         inputStream.read(appData);
         e = decoder.decode(new ByteArrayInputStream(appData), getApplicationDataClass());
