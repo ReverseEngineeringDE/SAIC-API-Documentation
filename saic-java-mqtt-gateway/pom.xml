@@ -39,6 +39,7 @@
 
     <jib.goal>dockerBuild</jib.goal>
     <jib.phase>package</jib.phase>
+    <dist.oci.src.image>eclipse-temurin:11-jre@sha256:a22c10c5e01a19f85018f5708a1b2a9ac7b20bc93cb85371359db717827e3c87</dist.oci.src.image>
   </properties>
 
   <dependencies>
@@ -145,7 +146,7 @@
             <image>${dist.oci.image}</image>
           </to>
           <from>
-            <image>eclipse-temurin:11-jre@sha256:a22c10c5e01a19f85018f5708a1b2a9ac7b20bc93cb85371359db717827e3c87</image>
+            <image>${dist.oci.src.image}</image>
             <platforms>
               <platform>
                 <architecture>amd64</architecture>
@@ -258,6 +259,27 @@
         <jib.goal>build</jib.goal>
         <jib.phase>deploy</jib.phase>
       </properties>
+    </profile>
+    <profile>
+      <id>not-ci</id>
+      <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-maven-plugin</artifactId>
+            <configuration>
+              <from combine.self="override">
+                <image>${dist.oci.src.image}</image>
+              </from>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
