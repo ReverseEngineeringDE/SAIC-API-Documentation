@@ -9,7 +9,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    # TODO: systemd in docker fails on 22.04, stay on 20.04 for now
+    runs-on: ubuntu-20.04
     env:
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_TOKEN: ${{ github.token }}
@@ -70,5 +71,6 @@ jobs:
             saic-java-api-cli/target/ismart-api-cli-*-full.jar
             saic-java-api-gateway/target/ismart-api-gateway-*-full.jar
             saic-java-mqtt-gateway/target/ismart-mqtt-gateway-*-full.jar
+            saic-java-mqtt-gateway/target/ismart-mqtt-gateway-*.deb
           prerelease: ${{ github.ref_type != 'tag' }}
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}

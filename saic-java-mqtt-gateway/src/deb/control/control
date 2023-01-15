@@ -1,0 +1,8 @@
+Package: [[artifactId]]
+Version: [[version]]
+Section: misc
+Priority: low
+Architecture: all
+Description: [[description]]
+Maintainer: Markus Heberling <markus@tisoft.de>
+Depends: java11-runtime-headless

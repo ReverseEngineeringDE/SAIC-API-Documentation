@@ -1,0 +1,18 @@
+[mqtt]
+uri = "tcp://localhost:1883"
+username = "mqtt_user"
+password = "mqtt_pass"
+
+[saic]
+uri = "https://tap-eu.soimt.com"
+username = "ismart_user"
+password = "ismart_password"
+
+[abrp]
+api-key = "8cfc314b-03cd-4efe-ab7d-4431cd8f2e2d"
+
+[[abrp.token]]
+"vin1" = "token1"
+
+[[abrp.token]]
+"vin2" = "token2"
