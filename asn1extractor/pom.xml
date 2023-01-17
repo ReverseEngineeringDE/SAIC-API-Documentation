@@ -4,7 +4,7 @@
 
   <groupId>net.heberling.ismart.reverseengineering</groupId>
   <artifactId>asn1extractor</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.0.0-SNAPSHOT</version>
 
   <properties>
     <maven.compiler.source>11</maven.compiler.source>

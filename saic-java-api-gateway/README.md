@@ -10,8 +10,8 @@ You can run this locally in your network to integrate it with other third party 
 ![Postman example request](./postman.jpg)
 
 ## Run .jar
-1. [Download latest release](https://github.com/ReverseEngineeringDE/SAIC-API-Documentation/raw/main/saic-java-api-gateway/ismart-api-1.0-SNAPSHOT-full.jar)
-2. Execute .jar (e.g. on windows "java -jar .\ismart-api-1.0-SNAPSHOT-full.jar"
+1. [Download latest release](https://github.com/ReverseEngineeringDE/SAIC-API-Documentation/releases/download/v0.0.3/ismart-api-gateway-0.0.3-full.jar)
+2. Execute .jar (e.g. on windows "java -jar .\ismart-api-0.0.3-full.jar"
 5. Access API gateway with "http://localhost:42042/getData"
 4. Send a POST request with your SAIC API login data (email and password) to the /getData endpoint
 
@@ -19,7 +19,7 @@ You can run this locally in your network to integrate it with other third party 
 ## Installation / build by yourself
 1. Type ```mvn clean install``` in your IDE or terminal (in this directory)
 2. .jar file will be outputted to target folder
-3. Execute .jar (e.g. on windows "java -jar .\ismart-api-1.0-SNAPSHOT-full.jar"
+3. Execute .jar (e.g. on windows "java -jar target/ismart-api-0.0.0-SNAPSHOT-full.jar"
 4. Access API gateway with "http://localhost:42042/getData"
 5. Send a POST request with your SAIC API login data (email and password) to the /getData endpoint
 
