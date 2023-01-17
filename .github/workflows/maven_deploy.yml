@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install tools from asdf config
-        uses: ai/asdf-cache-action@v1
+        uses: asdf-vm/actions/install@v1
       - name: set java home
         run: echo "JAVA_HOME=$(dirname $( cd -P "$( dirname "$(asdf which java)" )" && pwd ))" >> $GITHUB_ENV
       - id: lowercase-repository-owner
