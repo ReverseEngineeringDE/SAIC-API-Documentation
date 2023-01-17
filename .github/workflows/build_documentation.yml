@@ -23,4 +23,4 @@ jobs:
         run: asciidoctor-reducer -o docs/README.adoc docs/index.adoc
 
       - name: Commit documentation
-        uses: EndBug/add-and-commit@v8
+        uses: EndBug/add-and-commit@v9
