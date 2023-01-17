@@ -1,5 +1,6 @@
 package net.heberling.ismart.mqtt;
 
+import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import com.owlike.genson.Context;
 import com.owlike.genson.Converter;
 import com.owlike.genson.Genson;
@@ -9,10 +10,13 @@ import com.owlike.genson.ext.javadatetime.JavaDateTimeBundle;
 import com.owlike.genson.reflect.TypeUtil;
 import com.owlike.genson.stream.ObjectReader;
 import com.owlike.genson.stream.ObjectWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,38 +62,64 @@ import picocli.CommandLine;
     mixinStandardHelpOptions = true,
     versionProvider = SaicMqttGateway.VersionProvider.class)
 public class SaicMqttGateway implements Callable<Integer> {
+  static class ConfigFileConverter implements CommandLine.ITypeConverter<File> {
+
+    @Override
+    public File convert(String value) throws Exception {
+      var file = new File(value);
+      if (file.exists()) {
+        final var tomlMapper = new TomlMapper();
+        final var data = tomlMapper.readValue(file, Map.class);
+        final var data2 = flat("config", data);
+        data2.forEach((k, v) -> System.getProperties().putIfAbsent(k, v));
+      } else {
+        throw new FileNotFoundException(value);
+      }
+      return file;
+    }
+  }
+
+  @CommandLine.Option(
+      order = Integer.MIN_VALUE,
+      converter = ConfigFileConverter.class,
+      names = {"-c", "--config"},
+      description = {
+        "The config file to use. Options can be overridden by cli parameters and environment"
+            + " variables"
+      })
+  private File config;
 
   @CommandLine.Option(
       names = {"-m", "--mqtt-uri"},
       required = true,
       description = {"The URI to the MQTT Server.", "Environment Variable: MQTT_URI"},
-      defaultValue = "${env:MQTT_URI}")
+      defaultValue = "${env:MQTT_URI:-${config.mqtt.uri}}")
   private String mqttUri;
 
   @CommandLine.Option(
       names = {"--mqtt-user"},
       description = {"The MQTT user name.", "Environment Variable: MQTT_USER"},
-      defaultValue = "${env:MQTT_USER}")
+      defaultValue = "${env:MQTT_USER:-${config.mqtt.username}}")
   private String mqttUser;
 
   @CommandLine.Option(
       names = {"--mqtt-password"},
       description = {"The MQTT password.", "Environment Variable: MQTT_PASSWORD"},
-      defaultValue = "${env:MQTT_PASSWORD}")
+      defaultValue = "${env:MQTT_PASSWORD:-${config.mqtt.password}}")
   private char[] mqttPassword;
 
   @CommandLine.Option(
       names = {"-u", "--saic-user"},
       required = true,
       description = {"The SAIC user name.", "Environment Variable: SAIC_USER"},
-      defaultValue = "${env:SAIC_USER}")
+      defaultValue = "${env:SAIC_USER:-${config.saic.username}}")
   private String saicUser;
 
   @CommandLine.Option(
       names = {"-p", "--saic-password"},
       required = true,
       description = {"The SAIC password.", "Environment Variable: SAIC_PASSWORD"},
-      defaultValue = "${env:SAIC_PASSWORD}")
+      defaultValue = "${env:SAIC_PASSWORD:-${config.saic.password}}")
   private String saicPassword;
 
   @CommandLine.Option(
@@ -99,7 +129,8 @@ public class SaicMqttGateway implements Callable<Integer> {
         "Default is the open source telemetry API key 8cfc314b-03cd-4efe-ab7d-4431cd8f2e2d",
         "Environment Variable: ABRP_API_KEY"
       },
-      defaultValue = "${env:ABRP_API_KEY:-8cfc314b-03cd-4efe-ab7d-4431cd8f2e2d}")
+      defaultValue =
+          "${env:ABRP_API_KEY:-${sys:config.abrp.api-key:-8cfc314b-03cd-4efe-ab7d-4431cd8f2e2d}}")
   private String abrpApiKey;
 
   @CommandLine.Option(
@@ -110,7 +141,7 @@ public class SaicMqttGateway implements Callable<Integer> {
         "Example: LSJXXXX=12345-abcdef,LSJYYYY=67890-ghijkl",
         "Environment Variable: ABRP_USER_TOKEN"
       },
-      defaultValue = "${env:ABRP_USER_TOKEN}",
+      defaultValue = "${env:ABRP_USER_TOKEN:-${sys:config.abrp.token:-_NULL_}}",
       split = ",")
   private Map<String, String> vinAbrpTokenMap = new HashMap<>();
 
@@ -216,6 +247,29 @@ public class SaicMqttGateway implements Callable<Integer> {
   public static void main(String... args) {
     int exitCode = new CommandLine(new SaicMqttGateway()).execute(args);
     System.exit(exitCode);
+  }
+
+  private static Map<String, String> flat(String prefix, Map<String, Object> nested) {
+    Map<String, String> map = new HashMap<>();
+    nested.forEach(
+        (key, value) -> {
+          var newPrefix = prefix + "." + key;
+          if (value instanceof Map) {
+            map.putAll(flat(newPrefix, (Map<String, Object>) value));
+          } else if (value instanceof Collection) {
+            map.put(
+                newPrefix,
+                ((Collection<Object>) value)
+                    .stream()
+                        .map(o -> (Map<String, String>) o)
+                        .flatMap(m -> m.entrySet().stream())
+                        .map(e -> e.getKey() + "=" + e.getValue())
+                        .collect(Collectors.joining(",")));
+          } else {
+            map.put(newPrefix, value.toString());
+          }
+        });
+    return map;
   }
 
   static <
