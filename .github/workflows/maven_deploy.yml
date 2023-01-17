@@ -28,7 +28,7 @@ jobs:
         run: echo "JAVA_HOME=$(dirname $( cd -P "$( dirname "$(asdf which java)" )" && pwd ))" >> $GITHUB_ENV
       - id: lowercase-repository-owner
         name: lowercase repository owner
-        uses: ASzc/change-string-case-action@v1
+        uses: ASzc/change-string-case-action@v5
         with:
           string: ${{ github.repository_owner }}
       - uses: s4u/maven-settings-action@v2.8.0
