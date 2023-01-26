@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -28,11 +30,15 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.heberling.ismart.asn1.AbstractMessage;
 import net.heberling.ismart.asn1.AbstractMessageCoder;
 import net.heberling.ismart.asn1.Anonymizer;
 import net.heberling.ismart.asn1.v1_1.Message;
 import net.heberling.ismart.asn1.v1_1.MessageCoder;
+import net.heberling.ismart.asn1.v1_1.entity.AlarmSwitch;
+import net.heberling.ismart.asn1.v1_1.entity.AlarmSwitchReq;
+import net.heberling.ismart.asn1.v1_1.entity.MP_AlarmSettingType;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInReq;
 import net.heberling.ismart.asn1.v1_1.entity.MP_UserLoggingInResp;
 import net.heberling.ismart.cli.UTF8StringObjectWriter;
@@ -198,6 +204,43 @@ public class SaicMqttGateway implements Callable<Integer> {
       Message<MP_UserLoggingInResp> loginResponseMessage =
           new MessageCoder<>(MP_UserLoggingInResp.class).decodeResponse(loginResponse);
 
+      MessageCoder<AlarmSwitchReq> alarmSwitchReqMessageCoder =
+          new MessageCoder<>(AlarmSwitchReq.class);
+
+      // register for all known alarm types (not all might be actually delivered)
+      AlarmSwitchReq alarmSwitchReq = new AlarmSwitchReq();
+      alarmSwitchReq.setAlarmSwitchList(
+          Stream.of(MP_AlarmSettingType.EnumType.values())
+              .map(v -> createAlarmSwitch(v, true))
+              .collect(Collectors.toList()));
+      alarmSwitchReq.setPin(hashMD5("123456"));
+
+      Message<AlarmSwitchReq> alarmSwitchMessage =
+          alarmSwitchReqMessageCoder.initializeMessage(
+              loginResponseMessage.getBody().getUid(),
+              loginResponseMessage.getApplicationData().getToken(),
+              null,
+              "521",
+              513,
+              1,
+              alarmSwitchReq);
+      String alarmSwitchRequest = alarmSwitchReqMessageCoder.encodeRequest(alarmSwitchMessage);
+      String alarmSwitchResponse =
+          sendRequest(alarmSwitchRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
+      final MessageCoder<IASN1PreparedElement> alarmSwitchResMessageCoder =
+          new MessageCoder<>(IASN1PreparedElement.class);
+      Message<IASN1PreparedElement> alarmSwitchResponseMessage =
+          alarmSwitchResMessageCoder.decodeResponse(alarmSwitchResponse);
+
+      System.out.println(
+          toJSON(anonymized(alarmSwitchResMessageCoder, alarmSwitchResponseMessage)));
+
+      if (alarmSwitchResponseMessage.getBody().getErrorMessage() != null) {
+        throw new IllegalStateException(
+            new String(
+                alarmSwitchResponseMessage.getBody().getErrorMessage(), StandardCharsets.UTF_8));
+      }
+
       System.out.println(
           toJSON(anonymized(new MessageCoder<>(MP_UserLoggingInResp.class), loginResponseMessage)));
       List<Future<?>> futures =
@@ -238,6 +281,27 @@ public class SaicMqttGateway implements Callable<Integer> {
       return 0;
     }
   }
+
+  private static AlarmSwitch createAlarmSwitch(MP_AlarmSettingType.EnumType type, boolean enabled) {
+    AlarmSwitch alarmSwitch = new AlarmSwitch();
+    MP_AlarmSettingType alarmSettingType = new MP_AlarmSettingType();
+    alarmSettingType.setValue(type);
+    alarmSettingType.setIntegerForm(type.ordinal());
+    alarmSwitch.setAlarmSettingType(alarmSettingType);
+    alarmSwitch.setAlarmSwitch(enabled);
+    alarmSwitch.setFunctionSwitch(enabled);
+    return alarmSwitch;
+  }
+
+  public String hashMD5(String password) throws NoSuchAlgorithmException {
+
+    MessageDigest md = MessageDigest.getInstance("MD5");
+    md.update(password.getBytes());
+    byte[] digest = md.digest();
+    return AbstractMessageCoder.bytesToHex(digest);
+  }
+
+  private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
   private ScheduledFuture<?> createMessagePoller(String uid, String token) {
     return Executors.newSingleThreadScheduledExecutor()
