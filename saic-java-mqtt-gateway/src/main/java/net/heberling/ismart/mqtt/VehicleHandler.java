@@ -1,6 +1,7 @@
 package net.heberling.ismart.mqtt;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -27,23 +28,26 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class VehicleHandler {
-  private String uid;
-  private String token;
-  private VinInfo vinInfo;
-  private SaicMqttGateway saicMqttGateway;
-  private IMqttClient client;
+  private final URI saicUri;
+  private final String uid;
+  private final String token;
+  private final VinInfo vinInfo;
+  private final SaicMqttGateway saicMqttGateway;
+  private final IMqttClient client;
   private ZonedDateTime lastCarActivity;
   private ZonedDateTime lastVehicleMessage;
 
   public VehicleHandler(
       SaicMqttGateway saicMqttGateway,
       IMqttClient client,
+      URI saicUri,
       String uid,
       String token,
       VinInfo vinInfo) {
 
     this.saicMqttGateway = saicMqttGateway;
     this.client = client;
+    this.saicUri = saicUri;
     this.uid = uid;
     this.token = token;
     this.vinInfo = vinInfo;
@@ -235,7 +239,7 @@ public class VehicleHandler {
 
     String chargingStatusResponse =
         SaicMqttGateway.sendRequest(
-            chargingStatusRequestMessage, "https://tap-eu.soimt.com/TAP.Web/ota.mpv21");
+            chargingStatusRequestMessage, saicUri.resolve("/TAP.Web/ota.mpv21"));
 
     net.heberling.ismart.asn1.v2_1.Message<OTA_RVMVehicleStatusResp25857>
         chargingStatusResponseMessage =
@@ -268,7 +272,7 @@ public class VehicleHandler {
 
       chargingStatusResponse =
           SaicMqttGateway.sendRequest(
-              chargingStatusRequestMessage, "https://tap-eu.soimt.com/TAP.Web/ota.mpv21");
+              chargingStatusRequestMessage, saicUri.resolve("/TAP.Web/ota.mpv21"));
 
       chargingStatusResponseMessage =
           new net.heberling.ismart.asn1.v2_1.MessageCoder<>(OTA_RVMVehicleStatusResp25857.class)
@@ -467,7 +471,7 @@ public class VehicleHandler {
     return chargingStatusResponseMessage.getApplicationData();
   }
 
-  private static OTA_ChrgMangDataResp updateChargeStatus(
+  private OTA_ChrgMangDataResp updateChargeStatus(
       IMqttClient publisher, String uid, String token, String vin)
       throws IOException, MqttException {
     net.heberling.ismart.asn1.v3_0.MessageCoder<IASN1PreparedElement>
@@ -487,7 +491,7 @@ public class VehicleHandler {
 
     String chargingStatusResponse =
         SaicMqttGateway.sendRequest(
-            chargingStatusRequestMessage, "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
+            chargingStatusRequestMessage, saicUri.resolve("/TAP.Web/ota.mpv30"));
 
     net.heberling.ismart.asn1.v3_0.Message<OTA_ChrgMangDataResp> chargingStatusResponseMessage =
         new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class)
@@ -527,7 +531,7 @@ public class VehicleHandler {
 
       chargingStatusResponse =
           SaicMqttGateway.sendRequest(
-              chargingStatusRequestMessage, "https://tap-eu.soimt.com/TAP.Web/ota.mpv30");
+              chargingStatusRequestMessage, saicUri.resolve("/TAP.Web/ota.mpv30"));
 
       chargingStatusResponseMessage =
           new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class)

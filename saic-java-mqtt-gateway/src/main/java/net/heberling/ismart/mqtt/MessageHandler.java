@@ -1,6 +1,7 @@
 package net.heberling.ismart.mqtt;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -16,8 +17,10 @@ class MessageHandler implements Runnable {
   private final String uid;
   private final String token;
   private final SaicMqttGateway gateway;
+  private final URI saicUri;
 
-  public MessageHandler(String uid, String token, SaicMqttGateway gateway) {
+  public MessageHandler(URI saicUri, String uid, String token, SaicMqttGateway gateway) {
+    this.saicUri = saicUri;
     this.uid = uid;
     this.token = token;
     this.gateway = gateway;
@@ -50,8 +53,7 @@ class MessageHandler implements Runnable {
 
     try {
       String messageListResponse =
-          SaicMqttGateway.sendRequest(
-              messageListRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
+          SaicMqttGateway.sendRequest(messageListRequest, saicUri.resolve("/TAP.Web/ota.mp"));
 
       Message<MessageListResp> messageListResponseMessage =
           new MessageCoder<>(MessageListResp.class).decodeResponse(messageListResponse);

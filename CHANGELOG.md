@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - MQTT
+  - added --saic-uri configuration option
   - automatically register for all alarm types
   - create Docker image
 

@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -100,7 +101,7 @@ public class SaicMqttGateway implements Callable<Integer> {
       required = true,
       description = {"The URI to the MQTT Server.", "Environment Variable: MQTT_URI"},
       defaultValue = "${env:MQTT_URI:-${config.mqtt.uri}}")
-  private String mqttUri;
+  private URI mqttUri;
 
   @CommandLine.Option(
       names = {"--mqtt-user"},
@@ -113,6 +114,16 @@ public class SaicMqttGateway implements Callable<Integer> {
       description = {"The MQTT password.", "Environment Variable: MQTT_PASSWORD"},
       defaultValue = "${env:MQTT_PASSWORD:-${config.mqtt.password}}")
   private char[] mqttPassword;
+
+  @CommandLine.Option(
+      names = {"-s", "--saic-uri"},
+      description = {
+        "The SAIC uri.",
+        "Environment Variable: SAIC_URI",
+        "Default is the European Production Endpoint: https://tap-eu.soimt.com"
+      },
+      defaultValue = "${env:SAIC_URI:-${config.saic.uri:-https://tap-eu.soimt.com}}")
+  private URI saicUri;
 
   @CommandLine.Option(
       names = {"-u", "--saic-user"},
@@ -159,7 +170,7 @@ public class SaicMqttGateway implements Callable<Integer> {
   public Integer call() throws Exception { // your business logic goes here...
     String publisherId = UUID.randomUUID().toString();
     try (IMqttClient client =
-        new MqttClient(mqttUri, publisherId, null) {
+        new MqttClient(mqttUri.toString(), publisherId, null) {
           @Override
           public void close() throws MqttException {
             disconnect();
@@ -199,7 +210,7 @@ public class SaicMqttGateway implements Callable<Integer> {
 
       System.out.println(toJSON(anonymized(loginRequestMessageCoder, loginRequestMessage)));
 
-      String loginResponse = sendRequest(loginRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
+      String loginResponse = sendRequest(loginRequest, saicUri.resolve("/TAP.Web/ota.mp"));
 
       Message<MP_UserLoggingInResp> loginResponseMessage =
           new MessageCoder<>(MP_UserLoggingInResp.class).decodeResponse(loginResponse);
@@ -226,7 +237,7 @@ public class SaicMqttGateway implements Callable<Integer> {
               alarmSwitchReq);
       String alarmSwitchRequest = alarmSwitchReqMessageCoder.encodeRequest(alarmSwitchMessage);
       String alarmSwitchResponse =
-          sendRequest(alarmSwitchRequest, "https://tap-eu.soimt.com/TAP.Web/ota.mp");
+          sendRequest(alarmSwitchRequest, saicUri.resolve("/TAP.Web/ota.mp"));
       final MessageCoder<IASN1PreparedElement> alarmSwitchResMessageCoder =
           new MessageCoder<>(IASN1PreparedElement.class);
       Message<IASN1PreparedElement> alarmSwitchResponseMessage =
@@ -251,6 +262,7 @@ public class SaicMqttGateway implements Callable<Integer> {
                         new VehicleHandler(
                             this,
                             client,
+                            saicUri,
                             loginResponseMessage.getBody().getUid(),
                             loginResponseMessage.getApplicationData().getToken(),
                             vin);
@@ -305,7 +317,8 @@ public class SaicMqttGateway implements Callable<Integer> {
 
   private ScheduledFuture<?> createMessagePoller(String uid, String token) {
     return Executors.newSingleThreadScheduledExecutor()
-        .scheduleWithFixedDelay(new MessageHandler(uid, token, this), 1, 1, TimeUnit.SECONDS);
+        .scheduleWithFixedDelay(
+            new MessageHandler(saicUri, uid, token, this), 1, 1, TimeUnit.SECONDS);
   }
 
   public static void main(String... args) {
@@ -356,7 +369,7 @@ public class SaicMqttGateway implements Callable<Integer> {
         16);
   }
 
-  static String sendRequest(String request, String endpoint) throws IOException {
+  static String sendRequest(String request, URI endpoint) throws IOException {
     try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
       HttpPost httppost = new HttpPost(endpoint);
       // Request parameters and other properties.
