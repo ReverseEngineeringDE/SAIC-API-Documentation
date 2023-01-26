@@ -12,6 +12,7 @@
             <properties>
                 <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
                 <dist.oci.tag>latest</dist.oci.tag>
+                <project.build.finalName>${project.artifactId}-latest</project.build.finalName>
             </properties>
         </ref>
         <ref type="branch">
@@ -22,6 +23,7 @@
             <properties>
                 <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
                 <dist.oci.tag>${ref}-latest</dist.oci.tag>
+                <project.build.finalName>${project.artifactId}-${ref}-latest</project.build.finalName>
             </properties>
          </ref>
         <ref type="tag">

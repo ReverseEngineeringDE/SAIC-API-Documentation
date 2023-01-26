@@ -151,8 +151,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <configuration>
-          <shadedArtifactAttached>true</shadedArtifactAttached>
-          <shadedClassifierName>full</shadedClassifierName>
+          <finalName>${project.build.finalName}-full</finalName>
           <filters>
             <filter>
               <artifact>*:*</artifact>
@@ -184,6 +183,8 @@
             </goals>
             <phase>package</phase>
             <configuration>
+              <deb>${project.build.directory}/${project.build.finalName}.deb</deb>
+              <changesOut>${project.build.directory}/${project.build.finalName}.changes</changesOut>
               <dataSet>
                 <data>
                   <src>${project.build.directory}/${project.build.finalName}-full.jar</src>

@@ -52,6 +52,9 @@
     <github.repository>tisoft</github.repository>
     <altReleaseDeploymentRepository>github::https://maven.pkg.github.com/${github.repository}</altReleaseDeploymentRepository>
     <altSnapshotDeploymentRepository>github::https://maven.pkg.github.com/${github.repository}</altSnapshotDeploymentRepository>
+
+    <!-- This is the default, make overridable by git versioning extension-->
+    <project.build.finalName>${project.artifactId}-${project.version}</project.build.finalName>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -81,10 +84,11 @@
         <version>5.9.2</version>
         <scope>test</scope>
       </dependency>
-
     </dependencies>
   </dependencyManagement>
   <build>
+    <!-- This is the default, make overridable by git versioning extension-->
+    <finalName>${project.build.finalName}</finalName>
     <pluginManagement>
       <plugins>
         <plugin>

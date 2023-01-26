@@ -63,8 +63,7 @@
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.4.1</version>
         <configuration>
-          <shadedArtifactAttached>true</shadedArtifactAttached>
-          <shadedClassifierName>full</shadedClassifierName>
+          <finalName>${project.build.finalName}-full</finalName>
         </configuration>
         <executions>
           <execution>
