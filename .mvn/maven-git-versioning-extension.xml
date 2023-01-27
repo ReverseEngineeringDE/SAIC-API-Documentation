@@ -19,11 +19,11 @@
             <pattern>.+</pattern>
             <describeTagPattern><![CDATA[v(?<version>.*)]]></describeTagPattern>
             <describeTagFirstParent>false</describeTagFirstParent>
-            <version>${describe.tag.version.major}.${describe.tag.version.minor}.${describe.tag.version.patch.next}-${ref}-SNAPSHOT</version>
+            <version>${describe.tag.version.major}.${describe.tag.version.minor}.${describe.tag.version.patch.next}-${ref.slug}-SNAPSHOT</version>
             <properties>
                 <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
-                <dist.oci.tag>${ref}-latest</dist.oci.tag>
-                <project.build.finalName>${project.artifactId}-${ref}-latest</project.build.finalName>
+                <dist.oci.tag>${ref.slug}-latest</dist.oci.tag>
+                <project.build.finalName>${project.artifactId}-${ref.slug}-latest</project.build.finalName>
             </properties>
          </ref>
         <ref type="tag">
