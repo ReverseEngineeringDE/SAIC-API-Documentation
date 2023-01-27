@@ -104,13 +104,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.17.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>hivemq</artifactId>
-      <version>1.17.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
