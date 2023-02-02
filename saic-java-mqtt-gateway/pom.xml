@@ -40,18 +40,20 @@
     <jib.goal>dockerBuild</jib.goal>
     <jib.phase>package</jib.phase>
     <dist.oci.src.image>eclipse-temurin:11-jre@sha256:a22c10c5e01a19f85018f5708a1b2a9ac7b20bc93cb85371359db717827e3c87</dist.oci.src.image>
+    <version.picocli>4.7.1</version.picocli>
+    <version.mockserver>5.14.0</version.mockserver>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
-      <version>4.7.1</version>
+      <version>${version.picocli}</version>
     </dependency>
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli-codegen</artifactId>
-      <version>4.7.1</version>
+      <version>${version.picocli}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -114,13 +116,13 @@
     <dependency>
       <groupId>org.mock-server</groupId>
       <artifactId>mockserver-client-java</artifactId>
-      <version>5.14.0</version>
+      <version>${version.mockserver}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mock-server</groupId>
       <artifactId>mockserver-junit-jupiter</artifactId>
-      <version>5.14.0</version>
+      <version>${version.mockserver}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
