@@ -41,7 +41,7 @@
     <jib.phase>package</jib.phase>
     <dist.oci.src.image>eclipse-temurin:11-jre@sha256:a22c10c5e01a19f85018f5708a1b2a9ac7b20bc93cb85371359db717827e3c87</dist.oci.src.image>
     <version.picocli>4.7.1</version.picocli>
-    <version.mockserver>5.14.0</version.mockserver>
+    <version.mockserver>5.15.0</version.mockserver>
   </properties>
 
   <dependencies>
