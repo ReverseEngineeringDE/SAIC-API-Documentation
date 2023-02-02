@@ -65,6 +65,12 @@ class MessageCoderTest extends net.heberling.ismart.asn1.AbstractMessageCoderTes
   }
 
   @Test
+  void decodeEncodeResponse_501_lock_out() {
+    // account locked out
+    decodeEncode("501_513_response_lock_out", new MessageCoder<>(MP_UserLoggingInResp.class));
+  }
+
+  @Test
   void decodeEncodeResponse_501() {
     decodeEncode("501_513_response", new MessageCoder<>(MP_UserLoggingInResp.class));
   }

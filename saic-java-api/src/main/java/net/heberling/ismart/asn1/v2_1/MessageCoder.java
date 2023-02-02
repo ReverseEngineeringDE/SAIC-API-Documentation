@@ -78,6 +78,7 @@ public class MessageCoder<E extends IASN1PreparedElement>
       // not asn.1 encoded
       MP_DispatcherHeader header = new MP_DispatcherHeader();
       header.setProtocolVersion(inputStream.read());
+      // messages can be longer than 256 bytes, so this value can be wrong!
       header.setDispatcherMessageLength(inputStream.read());
       header.setDispatcherBodyEncoding(inputStream.read());
 
@@ -85,17 +86,12 @@ public class MessageCoder<E extends IASN1PreparedElement>
       byte[] reserved = new byte[16];
       inputStream.read(reserved);
 
-      byte[] b = new byte[header.getDispatcherMessageLength() - 3];
-      inputStream.read(b);
-
       final PERUnalignedDecoder decoder = new MyPERUnalignedDecoder();
-      MP_DispatcherBody body = decoder.decode(new ByteArrayInputStream(b), MP_DispatcherBody.class);
+      MP_DispatcherBody body = decoder.decode(inputStream, MP_DispatcherBody.class);
 
       E e = null;
-      if (body.getApplicationDataLength() > 0) {
-        byte[] appData = new byte[body.getApplicationDataLength().intValue()];
-        inputStream.read(appData);
-        e = decoder.decode(new ByteArrayInputStream(appData), getApplicationDataClass());
+      if (getApplicationDataClass() != null && body.getApplicationDataLength() > 0) {
+        e = decoder.decode(inputStream, getApplicationDataClass());
       }
       return new Message<>(header, reserved, body, e);
     } catch (Exception e) {

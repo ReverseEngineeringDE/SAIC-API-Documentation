@@ -26,6 +26,12 @@ include::501_513_response_not_registered.json[]
 
 The error message is a byte array, containing the UTF-8 String "The account is not registered."
 
+----
+include::501_513_response_lock_out.json[]
+----
+
+The error message is a byte array, containing the UTF-8 String "Sorry, the account has been locked, please try again tomorrow or you may reset password by clicking “forget password”if you forget it."
+
 
 [source,hexdump]
 ----
