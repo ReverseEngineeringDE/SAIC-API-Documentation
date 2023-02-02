@@ -1040,6 +1040,67 @@ pin is the MD5 of the 4 digit pin code suffixed with 00: `md5sum(pin+"00")`
 
 The error message is a byte array, containing the UTF-8 String "The account is not registered."
 
+----
+{
+  "applicationData":null,
+  "body":{
+    "@ASN1Type":"MP_DispatcherBody",
+    "ackRequired":null,
+    "ackRequiredPresent":false,
+    "applicationDataEncoding":"perUnaligned",
+    "applicationDataEncodingPresent":true,
+    "applicationDataLength":0,
+    "applicationDataProtocolVersion":513,
+    "applicationID":"501",
+    "basicPosition":null,
+    "basicPositionPresent":false,
+    "crqmRequest":null,
+    "crqmRequestPresent":false,
+    "errorMessage":"U29ycnksIHRoZSBhY2NvdW50IGhhcyBiZWVuIGxvY2tlZCwgcGxlYXNlIHRyeSBhZ2FpbiB0b21vcnJvdyBvciB5b3UgbWF5IHJlc2V0IHBhc3N3b3JkIGJ5IGNsaWNraW5nIOKAnGZvcmdldCBwYXNzd29yZOKAnWlmIHlvdSBmb3JnZXQgaXQu",
+    "@errorMessageUTF8":"Sorry, the account has been locked, please try again tomorrow or you may reset password by clicking “forget password”if you forget it.",
+    "errorMessagePresent":true,
+    "eventCreationTime":1675200000,
+    "eventID":9999,
+    "eventIDPresent":true,
+    "hmiLanguage":null,
+    "hmiLanguagePresent":false,
+    "iccID":"12345678901234567890",
+    "messageCounter":{
+      "@ASN1Type":"MessageCounter",
+      "downlinkCounter":1,
+      "uplinkCounter":1
+    },
+    "messageCounterPresent":true,
+    "messageID":2,
+    "networkInfo":null,
+    "networkInfoPresent":false,
+    "result":15033,
+    "resultPresent":true,
+    "simInfo":"1234567890987654321",
+    "simInfoPresent":true,
+    "statelessDispatcherMessage":null,
+    "statelessDispatcherMessagePresent":false,
+    "testFlag":2,
+    "testFlagPresent":true,
+    "token":"09X09XX999X990X99X99XXX9X9099999X9XX099X",
+    "tokenPresent":true,
+    "uid":"00000000000000000000000000000000000#XX@XXXXXXXX.XX",
+    "uidPresent":true,
+    "vin":null,
+    "vinPresent":false
+  },
+  "header":{
+    "@ASN1Type":"MP_DispatcherHeader",
+    "dispatcherBodyEncoding":0,
+    "dispatcherMessageLength":268,
+    "protocolVersion":17,
+    "securityContext":0
+  }
+}
+----
+
+The error message is a byte array, containing the UTF-8 String "Sorry, the account has been locked, please try again tomorrow or you may reset password by clicking “forget password”if you forget it."
+
 
 [source,hexdump]
 ----
