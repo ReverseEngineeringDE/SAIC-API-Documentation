@@ -38,6 +38,7 @@ public class VehicleHandler {
   private final VinInfo vinInfo;
   private final SaicMqttGateway saicMqttGateway;
   private final IMqttClient client;
+  private final String mqttVINPrefix;
   private ZonedDateTime lastCarActivity;
   private ZonedDateTime lastVehicleMessage;
 
@@ -47,6 +48,7 @@ public class VehicleHandler {
       URI saicUri,
       String uid,
       String token,
+      String mqttAccountPrefix,
       VinInfo vinInfo) {
 
     this.saicMqttGateway = saicMqttGateway;
@@ -54,6 +56,7 @@ public class VehicleHandler {
     this.saicUri = saicUri;
     this.uid = uid;
     this.token = token;
+    this.mqttVINPrefix = mqttAccountPrefix + "/vehicles/" + vinInfo.getVin();
     this.vinInfo = vinInfo;
   }
 
@@ -62,16 +65,16 @@ public class VehicleHandler {
         new MqttMessage(vinInfo.getModelConfigurationJsonStr().getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vinInfo.getVin() + "/configuration/raw", msg);
+    client.publish(mqttVINPrefix + "/_internal/configuration/raw", msg);
     for (String c : vinInfo.getModelConfigurationJsonStr().split(";")) {
       Map<String, String> map = new HashMap<>();
       for (String e : c.split(",")) {
         map.put(e.split(":")[0], e.split(":")[1]);
       }
-      msg = new MqttMessage(SaicMqttGateway.toJSON(map).getBytes(StandardCharsets.UTF_8));
+      msg = new MqttMessage(map.get("value").getBytes(StandardCharsets.UTF_8));
       msg.setQos(0);
       msg.setRetained(true);
-      client.publish("saic/vehicle/" + vinInfo.getVin() + "/configuration/" + map.get("code"), msg);
+      client.publish(mqttVINPrefix + "/info/configuration/" + map.get("code"), msg);
     }
     // we just got started, force some updates
     notifyCarActivity(ZonedDateTime.now(), true);
@@ -215,14 +218,14 @@ public class VehicleHandler {
         msg = new MqttMessage(execute.getBytes(StandardCharsets.UTF_8));
         msg.setQos(0);
         msg.setRetained(true);
-        client.publish("saic/vehicle/" + vinInfo.getVin() + "/abrp", msg);
+        client.publish(mqttVINPrefix + "/_internal/abrp", msg);
       } catch (Exception e) {
         LOGGER.error("ABRP failed.:");
         e.printStackTrace();
         msg = new MqttMessage(e.toString().getBytes(StandardCharsets.UTF_8));
         msg.setQos(0);
         msg.setRetained(true);
-        client.publish("saic/vehicle/" + vinInfo.getVin() + "/abrp", msg);
+        client.publish(mqttVINPrefix + "/_internal/abrp", msg);
       }
     }
   }
@@ -312,9 +315,8 @@ public class VehicleHandler {
     msg.setQos(0);
     msg.setRetained(true);
     client.publish(
-        "saic/vehicle/"
-            + vin
-            + "/"
+        mqttVINPrefix
+            + "/_internal/"
             + chargingStatusResponseMessage.getBody().getApplicationID()
             + "_"
             + chargingStatusResponseMessage.getBody().getApplicationDataProtocolVersion()
@@ -327,9 +329,8 @@ public class VehicleHandler {
     msg.setQos(0);
     msg.setRetained(true);
     client.publish(
-        "saic/vehicle/"
-            + vin
-            + "/"
+        mqttVINPrefix
+            + "/_internal/"
             + chargingStatusResponseMessage.getBody().getApplicationID()
             + "_"
             + chargingStatusResponseMessage.getBody().getApplicationDataProtocolVersion()
@@ -339,12 +340,12 @@ public class VehicleHandler {
     msg = new MqttMessage(String.valueOf(engineRunning).getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vin + "/running", msg);
+    client.publish(mqttVINPrefix + "/drivetrain/running", msg);
 
     msg = new MqttMessage(String.valueOf(isCharging).getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vin + "/charging", msg);
+    client.publish(mqttVINPrefix + "/drivetrain/charging", msg);
 
     Integer interiorTemperature =
         chargingStatusResponseMessage
@@ -355,7 +356,7 @@ public class VehicleHandler {
       msg = new MqttMessage(String.valueOf(interiorTemperature).getBytes(StandardCharsets.UTF_8));
       msg.setQos(0);
       msg.setRetained(true);
-      client.publish("saic/vehicle/" + vin + "/temperature/interior", msg);
+      client.publish(mqttVINPrefix + "/climate/interiorTemperature", msg);
     }
 
     Integer exteriorTemperature =
@@ -367,7 +368,7 @@ public class VehicleHandler {
       msg = new MqttMessage(String.valueOf(exteriorTemperature).getBytes(StandardCharsets.UTF_8));
       msg.setQos(0);
       msg.setRetained(true);
-      client.publish("saic/vehicle/" + vin + "/temperature/exterior", msg);
+      client.publish(mqttVINPrefix + "/climate/exteriorTemperature", msg);
     }
 
     msg =
@@ -381,16 +382,20 @@ public class VehicleHandler {
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vin + "/auxillary_battery", msg);
+    client.publish(mqttVINPrefix + "/drivetrain/auxillaryBatteryVoltage", msg);
 
     msg =
         new MqttMessage(
             SaicMqttGateway.toJSON(
-                    chargingStatusResponseMessage.getApplicationData().getGpsPosition())
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getGpsPosition()
+                        .getWayPoint()
+                        .getPosition())
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vin + "/gps/json", msg);
+    client.publish(mqttVINPrefix + "/location/position", msg);
 
     msg =
         new MqttMessage(
@@ -404,7 +409,21 @@ public class VehicleHandler {
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vin + "/speed", msg);
+    client.publish(mqttVINPrefix + "/location/speed", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                            .getApplicationData()
+                            .getGpsPosition()
+                            .getWayPoint()
+                            .getHeading()
+                        / 10d)
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/location/heading", msg);
 
     msg =
         new MqttMessage(
@@ -416,7 +435,128 @@ public class VehicleHandler {
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vin + "/locked", msg);
+    client.publish(mqttVINPrefix + "/doors/locked", msg);
+
+    // todo check configuration for available doors
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getDriverDoor())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/doors/driver", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getPassengerDoor())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/doors/passenger", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getRearLeftDoor())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/doors/rearLeft", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getRearRightDoor())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/doors/rearRight", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getBootStatus())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/doors/boot", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getBonnetStatus())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/doors/bonnet", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getFrontLeftTyrePressure())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/tyres/frontLeftPressure", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getFrontRrightTyrePressure())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/tyres/frontRightPressure", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getRearLeftTyrePressure())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/tyres/rearLeftPressure", msg);
+
+    msg =
+        new MqttMessage(
+            String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getBasicVehicleStatus()
+                        .getRearRightTyrePressure())
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    client.publish(mqttVINPrefix + "/tyres/rearRightPressure", msg);
 
     msg =
         new MqttMessage(
@@ -428,7 +568,7 @@ public class VehicleHandler {
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vin + "/remoteClimate", msg);
+    client.publish(mqttVINPrefix + "/climate/remoteClimateState", msg);
 
     msg =
         new MqttMessage(
@@ -440,7 +580,7 @@ public class VehicleHandler {
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish("saic/vehicle/" + vin + "/remoteRearWindowHeater", msg);
+    client.publish(mqttVINPrefix + "/climate/backWindowHeat", msg);
 
     if (chargingStatusResponseMessage.getApplicationData().getBasicVehicleStatus().getMileage()
         > 0) {
@@ -456,7 +596,7 @@ public class VehicleHandler {
                   .getBytes(StandardCharsets.UTF_8));
       msg.setQos(0);
       msg.setRetained(true);
-      client.publish("saic/vehicle/" + vin + "/milage", msg);
+      client.publish(mqttVINPrefix + "/drivetrain/milage", msg);
 
       // if the milage is 0, the electric range is also 0
       msg =
@@ -470,7 +610,7 @@ public class VehicleHandler {
                   .getBytes(StandardCharsets.UTF_8));
       msg.setQos(0);
       msg.setRetained(true);
-      client.publish("saic/vehicle/" + vin + "/range/electric", msg);
+      client.publish(mqttVINPrefix + "/drivetrain/range", msg);
     }
     return chargingStatusResponseMessage.getApplicationData();
   }
@@ -551,9 +691,8 @@ public class VehicleHandler {
     msg.setQos(0);
     msg.setRetained(true);
     publisher.publish(
-        "saic/vehicle/"
-            + vin
-            + "/"
+        mqttVINPrefix
+            + "/_internal/"
             + chargingStatusResponseMessage.getBody().getApplicationID()
             + "_"
             + chargingStatusResponseMessage.getBody().getApplicationDataProtocolVersion()
@@ -566,9 +705,8 @@ public class VehicleHandler {
     msg.setQos(0);
     msg.setRetained(true);
     publisher.publish(
-        "saic/vehicle/"
-            + vin
-            + "/"
+        mqttVINPrefix
+            + "/_internal/"
             + chargingStatusResponseMessage.getBody().getApplicationID()
             + "_"
             + chargingStatusResponseMessage.getBody().getApplicationDataProtocolVersion()
@@ -580,20 +718,32 @@ public class VehicleHandler {
     msg = new MqttMessage((String.valueOf(current)).getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/current", msg);
+    publisher.publish(mqttVINPrefix + "/drivetrain/current", msg);
 
     double voltage =
         (double) chargingStatusResponseMessage.getApplicationData().getBmsPackVol() * 0.25d;
     msg = new MqttMessage((String.valueOf(voltage)).getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/voltage", msg);
+    publisher.publish(mqttVINPrefix + "/drivetrain/voltage", msg);
 
     double power = current * voltage / 1000d;
     msg = new MqttMessage((String.valueOf(power)).getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/power", msg);
+    publisher.publish(mqttVINPrefix + "/drivetrain/power", msg);
+
+    msg =
+        new MqttMessage(
+            (String.valueOf(
+                    chargingStatusResponseMessage
+                        .getApplicationData()
+                        .getChargeStatus()
+                        .getChargingGunState()))
+                .getBytes(StandardCharsets.UTF_8));
+    msg.setQos(0);
+    msg.setRetained(true);
+    publisher.publish(mqttVINPrefix + "/drivetrain/chargerConnected", msg);
 
     msg =
         new MqttMessage(
@@ -605,55 +755,7 @@ public class VehicleHandler {
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/charge/type", msg);
-
-    msg =
-        new MqttMessage(
-            String.valueOf(
-                    chargingStatusResponseMessage.getApplicationData().getBmsChrgCtrlDspCmd())
-                .getBytes(StandardCharsets.UTF_8));
-    msg.setQos(0);
-    msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/bms/bmsChrgCtrlDspCmd", msg);
-
-    msg =
-        new MqttMessage(
-            String.valueOf(
-                    chargingStatusResponseMessage.getApplicationData().getBmsChrgOtptCrntReq())
-                .getBytes(StandardCharsets.UTF_8));
-    msg.setQos(0);
-    msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/bms/bmsChrgOtptCrntReq", msg);
-    msg =
-        new MqttMessage(
-            String.valueOf(chargingStatusResponseMessage.getApplicationData().getBmsChrgSts())
-                .getBytes(StandardCharsets.UTF_8));
-    msg.setQos(0);
-    msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/bms/bmsChrgSts", msg);
-    msg =
-        new MqttMessage(
-            String.valueOf(chargingStatusResponseMessage.getApplicationData().getBmsPackCrnt())
-                .getBytes(StandardCharsets.UTF_8));
-    msg.setQos(0);
-    msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/bms/bmsPackCrnt", msg);
-    msg =
-        new MqttMessage(
-            String.valueOf(chargingStatusResponseMessage.getApplicationData().getBmsPackVol() / 4)
-                .getBytes(StandardCharsets.UTF_8));
-    msg.setQos(0);
-    msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/bms/bmsPackVol", msg);
-
-    msg =
-        new MqttMessage(
-            String.valueOf(
-                    chargingStatusResponseMessage.getApplicationData().getBmsPTCHeatReqDspCmd())
-                .getBytes(StandardCharsets.UTF_8));
-    msg.setQos(0);
-    msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/bms/bmsPTCHeatReqDspCmd", msg);
+    publisher.publish(mqttVINPrefix + "/drivetrain/chargingType", msg);
 
     msg =
         new MqttMessage(
@@ -662,7 +764,7 @@ public class VehicleHandler {
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    publisher.publish("saic/vehicle/" + vin + "/soc", msg);
+    publisher.publish(mqttVINPrefix + "/drivetrain/soc", msg);
 
     return chargingStatusResponseMessage.getApplicationData();
   }
@@ -675,7 +777,7 @@ public class VehicleHandler {
           new MqttMessage(SaicMqttGateway.toJSON(lastCarActivity).getBytes(StandardCharsets.UTF_8));
       msg.setQos(0);
       msg.setRetained(true);
-      client.publish("saic/vehicle/" + vinInfo.getVin() + "/last_activity", msg);
+      client.publish(mqttVINPrefix + "/refresh/lastActivity", msg);
     }
   }
 
@@ -686,7 +788,7 @@ public class VehicleHandler {
           new MqttMessage(SaicMqttGateway.toJSON(message).getBytes(StandardCharsets.UTF_8));
       msg.setQos(0);
       msg.setRetained(true);
-      client.publish("saic/vehicle/" + vinInfo.getVin() + "/message", msg);
+      client.publish(mqttVINPrefix + "/info/lastMessage", msg);
       lastVehicleMessage = message.getMessageTime();
     }
     // something happened, better check the vehicle state

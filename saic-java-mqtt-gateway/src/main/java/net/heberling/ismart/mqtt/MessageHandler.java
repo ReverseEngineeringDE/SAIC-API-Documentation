@@ -22,11 +22,14 @@ class MessageHandler implements Runnable {
   private final String token;
   private final SaicMqttGateway gateway;
   private final URI saicUri;
+  private final String mqttMessagePrefix;
 
-  public MessageHandler(URI saicUri, String uid, String token, SaicMqttGateway gateway) {
+  public MessageHandler(
+      URI saicUri, String uid, String token, String mqttAccountPrefix, SaicMqttGateway gateway) {
     this.saicUri = saicUri;
     this.uid = uid;
     this.token = token;
+    this.mqttMessagePrefix = mqttAccountPrefix + "/messages";
     this.gateway = gateway;
   }
 
@@ -70,7 +73,7 @@ class MessageHandler implements Runnable {
       if (messageListResponseMessage.getApplicationData() != null) {
         for (net.heberling.ismart.asn1.v1_1.entity.Message message :
             messageListResponseMessage.getApplicationData().getMessages()) {
-          gateway.notifyMessage(convert(message));
+          gateway.notifyMessage(mqttMessagePrefix, convert(message));
         }
       } else {
         // logger.warn("No application data found!");

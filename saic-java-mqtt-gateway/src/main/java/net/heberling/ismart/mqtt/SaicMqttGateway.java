@@ -220,6 +220,8 @@ public class SaicMqttGateway implements Callable<Integer> {
       Message<MP_UserLoggingInResp> loginResponseMessage =
           new MessageCoder<>(MP_UserLoggingInResp.class).decodeResponse(loginResponse);
 
+      var mqttAccountPrefix = "saic/" + saicUser;
+
       MessageCoder<AlarmSwitchReq> alarmSwitchReqMessageCoder =
           new MessageCoder<>(AlarmSwitchReq.class);
 
@@ -269,6 +271,7 @@ public class SaicMqttGateway implements Callable<Integer> {
                             saicUri,
                             loginResponseMessage.getBody().getUid(),
                             loginResponseMessage.getApplicationData().getToken(),
+                            mqttAccountPrefix,
                             vin);
                     vehicleHandlerMap.put(vin.getVin(), handler);
                     return handler;
@@ -286,7 +289,8 @@ public class SaicMqttGateway implements Callable<Integer> {
       ScheduledFuture<?> pollingJob =
           createMessagePoller(
               loginResponseMessage.getBody().getUid(),
-              loginResponseMessage.getApplicationData().getToken());
+              loginResponseMessage.getApplicationData().getToken(),
+              mqttAccountPrefix);
 
       futures.add(pollingJob);
 
@@ -319,10 +323,14 @@ public class SaicMqttGateway implements Callable<Integer> {
 
   private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
-  private ScheduledFuture<?> createMessagePoller(String uid, String token) {
+  private ScheduledFuture<?> createMessagePoller(
+      String uid, String token, String mqttAccountPrefix) {
     return Executors.newSingleThreadScheduledExecutor()
         .scheduleWithFixedDelay(
-            new MessageHandler(saicUri, uid, token, this), 1, 1, TimeUnit.SECONDS);
+            new MessageHandler(saicUri, uid, token, mqttAccountPrefix, this),
+            1,
+            1,
+            TimeUnit.SECONDS);
   }
 
   public static void main(String... args) {
@@ -485,14 +493,14 @@ public class SaicMqttGateway implements Callable<Integer> {
     return vinAbrpTokenMap.get(vin);
   }
 
-  public void notifyMessage(SaicMessage message) throws MqttException {
+  public void notifyMessage(String mqttMessagePrefix, SaicMessage message) throws MqttException {
     MqttMessage msg =
         new MqttMessage(SaicMqttGateway.toJSON(message).getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     // Don't retain, so deleted messages are removed
     // automatically from the broker
     msg.setRetained(false);
-    client.publish("saic/message/" + message.getMessageId(), msg);
+    client.publish(mqttMessagePrefix + "/" + message.getMessageId(), msg);
 
     if (message.getVin() != null) {
       vehicleHandlerMap.get(message.getVin()).notifyMessage(message);
