@@ -237,71 +237,69 @@ public class VehicleHandler {
 
     OTA_RVMVehicleStatusReq otaRvmVehicleStatusReq = new OTA_RVMVehicleStatusReq();
     otaRvmVehicleStatusReq.setVehStatusReqType(2);
-    net.heberling.ismart.asn1.v2_1.Message<OTA_RVMVehicleStatusReq> chargingStatusMessage =
+    net.heberling.ismart.asn1.v2_1.Message<OTA_RVMVehicleStatusReq> vehicleStatusRequestMessage =
         otaRvmVehicleStatusReqMessageCoder.initializeMessage(
             uid, token, vin, "511", 25857, 1, otaRvmVehicleStatusReq);
 
-    String chargingStatusRequestMessage =
-        otaRvmVehicleStatusReqMessageCoder.encodeRequest(chargingStatusMessage);
+    String vehicleStatusRequest =
+        otaRvmVehicleStatusReqMessageCoder.encodeRequest(vehicleStatusRequestMessage);
 
-    String chargingStatusResponse =
-        SaicMqttGateway.sendRequest(
-            chargingStatusRequestMessage, saicUri.resolve("/TAP.Web/ota.mpv21"));
+    String vehicleStatusResponse =
+        SaicMqttGateway.sendRequest(vehicleStatusRequest, saicUri.resolve("/TAP.Web/ota.mpv21"));
 
     net.heberling.ismart.asn1.v2_1.Message<OTA_RVMVehicleStatusResp25857>
-        chargingStatusResponseMessage =
+        vehicleStatusResponseMessage =
             new net.heberling.ismart.asn1.v2_1.MessageCoder<>(OTA_RVMVehicleStatusResp25857.class)
-                .decodeResponse(chargingStatusResponse);
+                .decodeResponse(vehicleStatusResponse);
 
     // we get an eventId back...
-    chargingStatusMessage
+    vehicleStatusRequestMessage
         .getBody()
-        .setEventID(chargingStatusResponseMessage.getBody().getEventID());
+        .setEventID(vehicleStatusResponseMessage.getBody().getEventID());
     // ... use that to request the data again, until we have it
     // TODO: check for real errors (result!=0 and/or errorMessagePresent)
-    while (chargingStatusResponseMessage.getApplicationData() == null) {
+    while (vehicleStatusResponseMessage.getApplicationData() == null) {
 
-      if (chargingStatusResponseMessage.getBody().isErrorMessagePresent()) {
-        if (chargingStatusResponseMessage.getBody().getResult() == 2) {
+      if (vehicleStatusResponseMessage.getBody().isErrorMessagePresent()) {
+        if (vehicleStatusResponseMessage.getBody().getResult() == 2) {
           // TODO: relogn
         }
         // try again next time
         return null;
       }
 
-      chargingStatusMessage.getBody().setUid(uid);
-      chargingStatusMessage.getBody().setToken(token);
+      vehicleStatusRequestMessage.getBody().setUid(uid);
+      vehicleStatusRequestMessage.getBody().setToken(token);
 
-      SaicMqttGateway.fillReserved(chargingStatusMessage.getReserved());
+      SaicMqttGateway.fillReserved(vehicleStatusRequestMessage.getReserved());
 
-      chargingStatusRequestMessage =
-          otaRvmVehicleStatusReqMessageCoder.encodeRequest(chargingStatusMessage);
+      vehicleStatusRequest =
+          otaRvmVehicleStatusReqMessageCoder.encodeRequest(vehicleStatusRequestMessage);
 
-      chargingStatusResponse =
-          SaicMqttGateway.sendRequest(
-              chargingStatusRequestMessage, saicUri.resolve("/TAP.Web/ota.mpv21"));
+      vehicleStatusResponse =
+          SaicMqttGateway.sendRequest(vehicleStatusRequest, saicUri.resolve("/TAP.Web/ota.mpv21"));
 
-      chargingStatusResponseMessage =
+      vehicleStatusResponseMessage =
           new net.heberling.ismart.asn1.v2_1.MessageCoder<>(OTA_RVMVehicleStatusResp25857.class)
-              .decodeResponse(chargingStatusResponse);
+              .decodeResponse(vehicleStatusResponse);
 
       LOGGER.debug(
           SaicMqttGateway.toJSON(
               SaicMqttGateway.anonymized(
                   new net.heberling.ismart.asn1.v2_1.MessageCoder<>(
                       OTA_RVMVehicleStatusResp25857.class),
-                  chargingStatusResponseMessage)));
+                  vehicleStatusResponseMessage)));
     }
 
     boolean engineRunning =
-        chargingStatusResponseMessage.getApplicationData().getBasicVehicleStatus().getEngineStatus()
+        vehicleStatusResponseMessage.getApplicationData().getBasicVehicleStatus().getEngineStatus()
             == 1;
     boolean isCharging =
-        chargingStatusResponseMessage
+        vehicleStatusResponseMessage
                 .getApplicationData()
                 .getBasicVehicleStatus()
                 .isExtendedData2Present()
-            && chargingStatusResponseMessage
+            && vehicleStatusResponseMessage
                     .getApplicationData()
                     .getBasicVehicleStatus()
                     .getExtendedData2()
@@ -311,29 +309,29 @@ public class VehicleHandler {
       notifyCarActivity(ZonedDateTime.now(), false);
     }
 
-    MqttMessage msg = new MqttMessage(chargingStatusResponse.getBytes(StandardCharsets.UTF_8));
+    MqttMessage msg = new MqttMessage(vehicleStatusResponse.getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
     client.publish(
         mqttVINPrefix
             + "/_internal/"
-            + chargingStatusResponseMessage.getBody().getApplicationID()
+            + vehicleStatusResponseMessage.getBody().getApplicationID()
             + "_"
-            + chargingStatusResponseMessage.getBody().getApplicationDataProtocolVersion()
+            + vehicleStatusResponseMessage.getBody().getApplicationDataProtocolVersion()
             + "/raw",
         msg);
 
     msg =
         new MqttMessage(
-            SaicMqttGateway.toJSON(chargingStatusResponseMessage).getBytes(StandardCharsets.UTF_8));
+            SaicMqttGateway.toJSON(vehicleStatusResponseMessage).getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
     client.publish(
         mqttVINPrefix
             + "/_internal/"
-            + chargingStatusResponseMessage.getBody().getApplicationID()
+            + vehicleStatusResponseMessage.getBody().getApplicationID()
             + "_"
-            + chargingStatusResponseMessage.getBody().getApplicationDataProtocolVersion()
+            + vehicleStatusResponseMessage.getBody().getApplicationDataProtocolVersion()
             + "/json",
         msg);
 
@@ -348,7 +346,7 @@ public class VehicleHandler {
     client.publish(mqttVINPrefix + "/drivetrain/charging", msg);
 
     Integer interiorTemperature =
-        chargingStatusResponseMessage
+        vehicleStatusResponseMessage
             .getApplicationData()
             .getBasicVehicleStatus()
             .getInteriorTemperature();
@@ -360,7 +358,7 @@ public class VehicleHandler {
     }
 
     Integer exteriorTemperature =
-        chargingStatusResponseMessage
+        vehicleStatusResponseMessage
             .getApplicationData()
             .getBasicVehicleStatus()
             .getExteriorTemperature();
@@ -374,7 +372,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                             .getApplicationData()
                             .getBasicVehicleStatus()
                             .getBatteryVoltage()
@@ -387,7 +385,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             SaicMqttGateway.toJSON(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getGpsPosition()
                         .getWayPoint()
@@ -400,7 +398,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                             .getApplicationData()
                             .getGpsPosition()
                             .getWayPoint()
@@ -414,7 +412,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                             .getApplicationData()
                             .getGpsPosition()
                             .getWayPoint()
@@ -428,7 +426,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getLockStatus())
@@ -441,7 +439,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getDriverDoor())
@@ -453,7 +451,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getPassengerDoor())
@@ -465,7 +463,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getRearLeftDoor())
@@ -477,7 +475,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getRearRightDoor())
@@ -489,7 +487,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getBootStatus())
@@ -501,7 +499,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getBonnetStatus())
@@ -513,7 +511,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getFrontLeftTyrePressure())
@@ -525,7 +523,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getFrontRrightTyrePressure())
@@ -537,7 +535,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getRearLeftTyrePressure())
@@ -549,7 +547,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getRearRightTyrePressure())
@@ -561,7 +559,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getRemoteClimateStatus())
@@ -573,7 +571,7 @@ public class VehicleHandler {
     msg =
         new MqttMessage(
             String.valueOf(
-                    chargingStatusResponseMessage
+                    vehicleStatusResponseMessage
                         .getApplicationData()
                         .getBasicVehicleStatus()
                         .getRmtHtdRrWndSt())
@@ -582,13 +580,13 @@ public class VehicleHandler {
     msg.setRetained(true);
     client.publish(mqttVINPrefix + "/climate/backWindowHeat", msg);
 
-    if (chargingStatusResponseMessage.getApplicationData().getBasicVehicleStatus().getMileage()
+    if (vehicleStatusResponseMessage.getApplicationData().getBasicVehicleStatus().getMileage()
         > 0) {
       // sometimes milage is 0, ignore such values
       msg =
           new MqttMessage(
               String.valueOf(
-                      chargingStatusResponseMessage
+                      vehicleStatusResponseMessage
                               .getApplicationData()
                               .getBasicVehicleStatus()
                               .getMileage()
@@ -602,7 +600,7 @@ public class VehicleHandler {
       msg =
           new MqttMessage(
               String.valueOf(
-                      chargingStatusResponseMessage
+                      vehicleStatusResponseMessage
                               .getApplicationData()
                               .getBasicVehicleStatus()
                               .getFuelRangeElec()
@@ -612,7 +610,7 @@ public class VehicleHandler {
       msg.setRetained(true);
       client.publish(mqttVINPrefix + "/drivetrain/range", msg);
     }
-    return chargingStatusResponseMessage.getApplicationData();
+    return vehicleStatusResponseMessage.getApplicationData();
   }
 
   private OTA_ChrgMangDataResp updateChargeStatus(
