@@ -305,7 +305,13 @@ public class VehicleHandler {
                     .getExtendedData2()
                 >= 1;
 
-    if (isCharging || engineRunning) {
+    if (isCharging
+        || engineRunning
+        || vehicleStatusResponseMessage
+                .getApplicationData()
+                .getBasicVehicleStatus()
+                .getRemoteClimateStatus()
+            > 0) {
       notifyCarActivity(ZonedDateTime.now(), false);
     }
 
