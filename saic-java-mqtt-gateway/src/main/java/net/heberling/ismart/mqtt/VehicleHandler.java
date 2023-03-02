@@ -26,8 +26,12 @@ import org.bn.coders.IASN1PreparedElement;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class VehicleHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(VehicleHandler.class);
   private final URI saicUri;
   private final String uid;
   private final String token;
@@ -207,13 +211,13 @@ public class VehicleHandler {
               }
             };
         String execute = httpclient.execute(httppost, responseHandler);
-        System.out.println("ABRP: " + execute);
+        LOGGER.info("ABRP: " + execute);
         msg = new MqttMessage(execute.getBytes(StandardCharsets.UTF_8));
         msg.setQos(0);
         msg.setRetained(true);
         client.publish("saic/vehicle/" + vinInfo.getVin() + "/abrp", msg);
       } catch (Exception e) {
-        System.out.println("ABRP failed.:");
+        LOGGER.error("ABRP failed.:");
         e.printStackTrace();
         msg = new MqttMessage(e.toString().getBytes(StandardCharsets.UTF_8));
         msg.setQos(0);
@@ -278,7 +282,7 @@ public class VehicleHandler {
           new net.heberling.ismart.asn1.v2_1.MessageCoder<>(OTA_RVMVehicleStatusResp25857.class)
               .decodeResponse(chargingStatusResponse);
 
-      System.out.println(
+      LOGGER.debug(
           SaicMqttGateway.toJSON(
               SaicMqttGateway.anonymized(
                   new net.heberling.ismart.asn1.v2_1.MessageCoder<>(
@@ -484,7 +488,7 @@ public class VehicleHandler {
     String chargingStatusRequestMessage =
         chargingStatusRequestMessageEncoder.encodeRequest(chargingStatusMessage);
 
-    System.out.println(
+    LOGGER.debug(
         SaicMqttGateway.toJSON(
             SaicMqttGateway.anonymized(
                 chargingStatusRequestMessageEncoder, chargingStatusMessage)));
@@ -497,7 +501,7 @@ public class VehicleHandler {
         new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class)
             .decodeResponse(chargingStatusResponse);
 
-    System.out.println(
+    LOGGER.debug(
         SaicMqttGateway.toJSON(
             SaicMqttGateway.anonymized(
                 new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class),
@@ -521,7 +525,7 @@ public class VehicleHandler {
 
       SaicMqttGateway.fillReserved(chargingStatusMessage.getReserved());
 
-      System.out.println(
+      LOGGER.debug(
           SaicMqttGateway.toJSON(
               SaicMqttGateway.anonymized(
                   chargingStatusRequestMessageEncoder, chargingStatusMessage)));
@@ -537,7 +541,7 @@ public class VehicleHandler {
           new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class)
               .decodeResponse(chargingStatusResponse);
 
-      System.out.println(
+      LOGGER.debug(
           SaicMqttGateway.toJSON(
               SaicMqttGateway.anonymized(
                   new net.heberling.ismart.asn1.v3_0.MessageCoder<>(OTA_ChrgMangDataResp.class),

@@ -12,8 +12,12 @@ import net.heberling.ismart.asn1.v1_1.entity.MessageListReq;
 import net.heberling.ismart.asn1.v1_1.entity.MessageListResp;
 import net.heberling.ismart.asn1.v1_1.entity.StartEndNumber;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MessageHandler implements Runnable {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MessageHandler.class);
   private final String uid;
   private final String token;
   private final SaicMqttGateway gateway;
@@ -58,7 +62,7 @@ class MessageHandler implements Runnable {
       Message<MessageListResp> messageListResponseMessage =
           new MessageCoder<>(MessageListResp.class).decodeResponse(messageListResponse);
 
-      System.out.println(
+      LOGGER.debug(
           SaicMqttGateway.toJSON(
               SaicMqttGateway.anonymized(
                   new MessageCoder<>(MessageListResp.class), messageListResponseMessage)));
