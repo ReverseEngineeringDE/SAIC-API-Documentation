@@ -62,6 +62,8 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 @CommandLine.Command(
@@ -69,6 +71,8 @@ import picocli.CommandLine;
     mixinStandardHelpOptions = true,
     versionProvider = SaicMqttGateway.VersionProvider.class)
 public class SaicMqttGateway implements Callable<Integer> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SaicMqttGateway.class);
   static class ConfigFileConverter implements CommandLine.ITypeConverter<File> {
 
     @Override
@@ -208,7 +212,7 @@ public class SaicMqttGateway implements Callable<Integer> {
 
       String loginRequest = loginRequestMessageCoder.encodeRequest(loginRequestMessage);
 
-      System.out.println(toJSON(anonymized(loginRequestMessageCoder, loginRequestMessage)));
+      LOGGER.debug(toJSON(anonymized(loginRequestMessageCoder, loginRequestMessage)));
 
       String loginResponse = sendRequest(loginRequest, saicUri.resolve("/TAP.Web/ota.mp"));
 
@@ -243,7 +247,7 @@ public class SaicMqttGateway implements Callable<Integer> {
       Message<IASN1PreparedElement> alarmSwitchResponseMessage =
           alarmSwitchResMessageCoder.decodeResponse(alarmSwitchResponse);
 
-      System.out.println(
+      LOGGER.debug(
           toJSON(anonymized(alarmSwitchResMessageCoder, alarmSwitchResponseMessage)));
 
       if (alarmSwitchResponseMessage.getBody().getErrorMessage() != null) {
@@ -252,7 +256,7 @@ public class SaicMqttGateway implements Callable<Integer> {
                 alarmSwitchResponseMessage.getBody().getErrorMessage(), StandardCharsets.UTF_8));
       }
 
-      System.out.println(
+      LOGGER.debug(
           toJSON(anonymized(new MessageCoder<>(MP_UserLoggingInResp.class), loginResponseMessage)));
       List<Future<?>> futures =
           loginResponseMessage.getApplicationData().getVinList().stream()
