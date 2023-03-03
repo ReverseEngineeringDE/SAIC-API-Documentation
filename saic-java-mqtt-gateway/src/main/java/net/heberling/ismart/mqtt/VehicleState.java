@@ -111,7 +111,7 @@ public class VehicleState {
                 .getBytes(StandardCharsets.UTF_8));
     msg.setQos(0);
     msg.setRetained(true);
-    client.publish(mqttVINPrefix + "/drivetrain/auxillaryBatteryVoltage", msg);
+    client.publish(mqttVINPrefix + "/drivetrain/auxiliaryBatteryVoltage", msg);
 
     msg =
         new MqttMessage(
@@ -325,7 +325,7 @@ public class VehicleState {
                   .getBytes(StandardCharsets.UTF_8));
       msg.setQos(0);
       msg.setRetained(true);
-      client.publish(mqttVINPrefix + "/drivetrain/milage", msg);
+      client.publish(mqttVINPrefix + "/drivetrain/mileage", msg);
 
       // if the milage is 0, the electric range is also 0
       msg =
