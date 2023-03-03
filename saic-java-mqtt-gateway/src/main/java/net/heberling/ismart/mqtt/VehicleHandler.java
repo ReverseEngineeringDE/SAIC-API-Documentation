@@ -211,7 +211,7 @@ public class VehicleHandler {
               }
             };
         String execute = httpclient.execute(httppost, responseHandler);
-        LOGGER.info("ABRP: " + execute);
+        LOGGER.debug("ABRP: " + execute);
         msg = new MqttMessage(execute.getBytes(StandardCharsets.UTF_8));
         msg.setQos(0);
         msg.setRetained(true);
