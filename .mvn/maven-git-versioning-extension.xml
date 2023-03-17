@@ -3,11 +3,11 @@
                xsi:schemaLocation="https://github.com/qoomon/maven-git-versioning-extension https://qoomon.github.io/maven-git-versioning-extension/configuration-9.4.0.xsd">
     <!-- Will be enabled in github action -->
     <disable>true</disable>
+    <describeTagPattern>v(.+)</describeTagPattern>
+    <describeTagFirstParent>false</describeTagFirstParent>
     <refs>
         <ref type="branch">
             <pattern>main</pattern>
-            <describeTagPattern><![CDATA[v(?<version>.*)]]></describeTagPattern>
-            <describeTagFirstParent>false</describeTagFirstParent>
             <version>${describe.tag.version.major}.${describe.tag.version.minor.next}.0-SNAPSHOT</version>
             <properties>
                 <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
@@ -17,8 +17,6 @@
         </ref>
         <ref type="branch">
             <pattern>.+</pattern>
-            <describeTagPattern><![CDATA[v(?<version>.*)]]></describeTagPattern>
-            <describeTagFirstParent>false</describeTagFirstParent>
             <version>${describe.tag.version.major}.${describe.tag.version.minor}.${describe.tag.version.patch.next}-${ref.slug}-SNAPSHOT</version>
             <properties>
                 <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
@@ -35,8 +33,6 @@
         </ref>
     </refs>
     <rev>
-        <describeTagPattern><![CDATA[v(?<version>.*)]]></describeTagPattern>
-        <describeTagFirstParent>false</describeTagFirstParent>
         <version>${describe.tag.version.major}.${describe.tag.version.minor}.${describe.tag.version.patch.next}-${commit}-SNAPSHOT</version>
         <properties>
             <project.build.outputTimestamp>${commit.timestamp.year}-${commit.timestamp.month}-${commit.timestamp.day}T${commit.timestamp.hour}:${commit.timestamp.minute}:${commit.timestamp.second}Z</project.build.outputTimestamp>
