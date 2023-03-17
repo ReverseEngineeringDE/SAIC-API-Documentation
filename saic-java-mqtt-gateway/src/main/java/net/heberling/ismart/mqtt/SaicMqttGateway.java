@@ -73,6 +73,7 @@ import picocli.CommandLine;
 public class SaicMqttGateway implements Callable<Integer> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SaicMqttGateway.class);
+
   static class ConfigFileConverter implements CommandLine.ITypeConverter<File> {
 
     @Override
@@ -247,8 +248,7 @@ public class SaicMqttGateway implements Callable<Integer> {
       Message<IASN1PreparedElement> alarmSwitchResponseMessage =
           alarmSwitchResMessageCoder.decodeResponse(alarmSwitchResponse);
 
-      LOGGER.debug(
-          toJSON(anonymized(alarmSwitchResMessageCoder, alarmSwitchResponseMessage)));
+      LOGGER.debug(toJSON(anonymized(alarmSwitchResMessageCoder, alarmSwitchResponseMessage)));
 
       if (alarmSwitchResponseMessage.getBody().getErrorMessage() != null) {
         throw new IllegalStateException(
